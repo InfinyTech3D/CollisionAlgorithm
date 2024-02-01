@@ -49,6 +49,8 @@ public:
 
     virtual void normalize() = 0;
 
+    virtual double * getBaryCoord() = 0;
+
     virtual sofa::type::Vec3 getPosition(core::VecCoordId = core::VecCoordId::position()) const override { return  sofa::type::Vec3{}; }
 
     virtual sofa::type::Vec3 getVelocity(core::VecDerivId = core::VecDerivId::velocity()) const override { return  sofa::type::Vec3{}; }

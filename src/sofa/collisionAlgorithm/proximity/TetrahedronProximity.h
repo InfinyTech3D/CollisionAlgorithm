@@ -78,6 +78,11 @@ public:
 
     double f3() { return m_f3; }
 
+    double * getBaryCoord() override {
+        static double baryCoord[4] = {m_f0,m_f1,m_f2,m_f3};
+        return baryCoord;
+    }
+
     bool isNormalized() const override {
 //        if (m_f0+m_f1+m_f2+m_f3 != 1.0) return false;
 

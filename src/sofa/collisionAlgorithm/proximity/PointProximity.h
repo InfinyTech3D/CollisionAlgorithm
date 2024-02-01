@@ -46,6 +46,10 @@ public:
 
     void normalize() override {}
 
+    double * getBaryCoord() override {
+        return nullptr;
+    }
+
 protected:
     PointElement::SPtr m_elmt;
 };

@@ -84,6 +84,10 @@ public:
 
     void normalize() override {}
 
+    double * getBaryCoord() override {
+        return nullptr;
+    }
+
 protected:
     TBaseGeometry<DataTypes> * m_geometry;
     unsigned m_pid;

@@ -49,6 +49,10 @@ public:
 
     void normalize() override {}
 
+    double * getBaryCoord() override {
+        return nullptr;
+    }
+
 protected:
     std::vector<BaseProximity::SPtr> m_proximities;
 };

@@ -42,6 +42,10 @@ public:
 
   void normalize() override {}
 
+  double * getBaryCoord() override {
+      return nullptr;
+  }
+
 private:
   Vec3d m_position;
   Vec3d m_normal;

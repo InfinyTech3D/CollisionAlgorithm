@@ -59,6 +59,11 @@ public:
 
     double f2() { return m_f2; }
 
+    double * getBaryCoord() override {
+        static double baryCoord[3] = {m_f0,m_f1,m_f2};
+        return baryCoord;
+    }
+
     static TriangleProximity::SPtr create(const TriangleElement::SPtr & tri, double f0,double f1,double f2) {
         return TriangleProximity::SPtr(new TriangleProximity(tri,f0,f1,f2));
     }
