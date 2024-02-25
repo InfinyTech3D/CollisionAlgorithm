@@ -28,6 +28,7 @@ public:
 
     virtual void storeLambda(const core::ConstraintParams* , core::MultiVecDerivId , Index , Index , const sofa::linearalgebra::BaseVector* ) const = 0;
 
+    const std::type_info & getTypeInfo() { return typeid(*this); }
 };
 
 class BaseProximity : public virtual BaseBaseProximity {
