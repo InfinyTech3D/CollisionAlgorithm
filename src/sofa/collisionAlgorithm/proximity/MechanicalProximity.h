@@ -33,6 +33,10 @@ public:
         return m_geometry;
     }
 
+    TBaseGeometry<DataTypes> * getTGeometry() const {
+        return m_geometry;
+    }
+
     void addContributions(MatrixDerivRowIterator & c_it, const sofa::type::Vec3 & N,double fact) const {
         c_it.addCol(m_pid, N * fact);
     }
