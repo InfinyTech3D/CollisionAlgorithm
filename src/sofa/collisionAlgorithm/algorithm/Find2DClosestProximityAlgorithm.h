@@ -59,7 +59,7 @@ public:
 
 
     //Project 3d to 2d
-    sofa::type::Vector2 project(const type::Vec3 & p) const {
+    sofa::type::Vec2 project(const type::Vec3 & p) const {
 
         const sofa::type::Mat3x4d & P = d_projectionMatrix.getValue();
 
@@ -67,7 +67,7 @@ public:
         double ry = P[1][0] * p[0] + P[1][1] * p[1] + P[1][2] * p[2] + P[1][3];
         double rz = P[2][0] * p[0] + P[2][1] * p[1] + P[2][2] * p[2] + P[2][3];
 
-        return sofa::type::Vector2 (rx,ry) * 1.0/rz;
+        return sofa::type::Vec2 (rx,ry) * 1.0/rz;
     }
 
 
@@ -88,8 +88,8 @@ public:
             if (pdest == NULL) continue;
             pdest->normalize();
 
-            sofa::type::Vector2 a = project(P);
-            sofa::type::Vector2 b = project(pdest->getPosition());
+            sofa::type::Vec2 a = project(P);
+            sofa::type::Vec2 b = project(pdest->getPosition());
 
             double d = (a-b).norm();
             if (d < min_dist)
