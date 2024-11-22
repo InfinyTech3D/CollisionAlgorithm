@@ -5,8 +5,6 @@ namespace sofa {
 
 namespace collisionAlgorithm {
 
-SOFA_DECL_CLASS(TetrahedronGeometry)
-
 int TetrahedronGeometryClass = core::RegisterObject("TetrahedronGeometry")
 .add< TetrahedronGeometry<sofa::defaulttype::Vec3dTypes> >();
 

@@ -3,8 +3,6 @@
 
 namespace sofa::collisionAlgorithm {
 
-SOFA_DECL_CLASS(AABBBroadPhase)
-
 int AABBBroadPhaseClass = core::RegisterObject("AABBBroadPhase")
 .add< AABBBroadPhase >();
 
