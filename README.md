@@ -1,0 +1,3 @@
+\mainpage Collision Algorithm Plugin
+
+

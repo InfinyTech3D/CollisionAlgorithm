@@ -1,0 +1,15 @@
+# The Docker image that will be used to build your app
+image: python:3.12-alpine
+
+before_script:
+  - apk update 
+  - apk add doxygen graphviz ttf-freefont
+  - apk add --no-cache curl
+  - pip install requests
+
+pages:
+  script:
+  - curl https://forge.icube.unistra.fr/assist/applications/assist_doc/-/raw/master/scripts/generate.py | python
+  artifacts:
+    paths:
+    - public
