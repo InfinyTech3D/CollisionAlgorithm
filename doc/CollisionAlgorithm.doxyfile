@@ -1,6 +1,6 @@
 PROJECT_NAME = CollisionAlgorithm
-INPUT = doc/ src ../README.md
-USE_MDFILE_AS_MAINPAGE = ../README.md
+INPUT = doc/ src README.md
+USE_MDFILE_AS_MAINPAGE = README.md
 
 GENERATE_TAGFILE = public/CollisionAlgorithm.tag 
 OUTPUT_DIRECTORY = public/CollisionAlgorithm
