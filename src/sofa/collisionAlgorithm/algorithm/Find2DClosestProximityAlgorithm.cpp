@@ -3,8 +3,6 @@
 
 namespace sofa::collisionAlgorithm {
 
-SOFA_DECL_CLASS(Find2DClosestProximityAlgorithm)
-
 int Find2DClosestProximityAlgorithmClass = core::RegisterObject("Find2DClosestProximityAlgorithm")
 .add< Find2DClosestProximityAlgorithm >();
 
