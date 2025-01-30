@@ -66,9 +66,11 @@ public:
 
         void processObject(simulation::Node*, core::objectmodel::BaseObject* obj) {
             if (CollisionAlgorithm * component = dynamic_cast<CollisionAlgorithm *>(obj)) {
-//                sofa::helper::AdvancedTimer::stepBegin(":::::::::::::::::::::::: Do detection ::::::::::::::::::::::::");
+//                std::string timerName = std::string("-- Do detection : ") + obj->getName();
+
+//                sofa::helper::AdvancedTimer::stepBegin(timerName.c_str());
                 component->doDetection();
-//                sofa::helper::AdvancedTimer::stepEnd(":::::::::::::::::::::::: Do detection ::::::::::::::::::::::::");
+//                sofa::helper::AdvancedTimer::stepEnd(timerName.c_str());
             }
         }
 
@@ -82,15 +84,15 @@ public:
     void handleEvent(sofa::core::objectmodel::Event *event) {
         if (! dynamic_cast<sofa::simulation::AnimateBeginEvent*>(event)) return;
 
-        sofa::helper::AdvancedTimer::stepBegin("=========================Visitor component =========================");
+        sofa::helper::AdvancedTimer::stepBegin("Visitor component");
         UpdateComponentVisitor v_comp;
         v_comp.execute(this->getContext());
-        sofa::helper::AdvancedTimer::stepEnd("=========================Visitor component =========================");
+        sofa::helper::AdvancedTimer::stepEnd("Visitor component");
 
-        sofa::helper::AdvancedTimer::stepBegin("=========================Visitor algo =========================");
+        sofa::helper::AdvancedTimer::stepBegin("Visitor algo");
         UpdateAlgorithmVisitor v_algo;
         v_algo.execute(this->getContext());
-        sofa::helper::AdvancedTimer::stepEnd("=========================Visitor algo =========================");
+        sofa::helper::AdvancedTimer::stepEnd("Visitor algo");
     }
 
 };
