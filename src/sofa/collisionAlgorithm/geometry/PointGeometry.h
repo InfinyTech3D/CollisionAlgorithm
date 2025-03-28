@@ -27,7 +27,7 @@ public:
     PointGeometry() {}
 
     void buildPointElements() override {
-        const helper::ReadAccessor<DataVecCoord> & pos = this->getState()->read(core::VecCoordId::position());
+        const helper::ReadAccessor<DataVecCoord> & pos = this->getState()->read(core::vec_id::write_access::position);
         for (unsigned i=0;i<pos.size();i++) {
             auto prox = BaseProximity::SPtr(new MechanicalProximity<DataTypes>(this,i));
             this->pointElements().insert(PointElement::create(prox));

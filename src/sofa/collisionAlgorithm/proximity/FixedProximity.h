@@ -14,11 +14,11 @@ public:
   FixedProximity(Vec3d P, Vec3d N ) : m_position(P), m_normal(N) {}
 
   /// return proximity position in a Vec3
-  virtual Vec3d getPosition(core::VecCoordId  = core::VecCoordId::position()) const {
+  virtual Vec3d getPosition(core::VecCoordId  = core::vec_id::write_access::position) const {
     return m_position;
   }
 
-  virtual Vec3d getVelocity(core::VecDerivId = core::VecDerivId::velocity()) const {
+  virtual Vec3d getVelocity(core::VecDerivId = core::vec_id::write_access::velocity) const {
     return Vec3d(0,0,0);
   }
 

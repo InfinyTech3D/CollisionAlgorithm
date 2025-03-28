@@ -35,14 +35,14 @@ public:
     }
 
     /// return proximiy position in a Vec3
-    sofa::type::Vec3 getPosition(core::VecCoordId v = core::VecCoordId::position()) const override {
+    sofa::type::Vec3 getPosition(core::VecCoordId v = core::vec_id::write_access::position) const override {
         return m_elmt->getP0()->getPosition(v) * m_f0 +
                m_elmt->getP1()->getPosition(v) * m_f1 +
                m_elmt->getP2()->getPosition(v) * m_f2 +
                m_elmt->getP3()->getPosition(v) * m_f3;
     }
 
-    sofa::type::Vec3 getVelocity(core::VecDerivId v = core::VecDerivId::velocity()) const override {
+    sofa::type::Vec3 getVelocity(core::VecDerivId v = core::vec_id::write_access::velocity) const override {
         return m_elmt->getP0()->getVelocity(v) * m_f0 +
                m_elmt->getP1()->getVelocity(v) * m_f1 +
                m_elmt->getP2()->getVelocity(v) * m_f2 +

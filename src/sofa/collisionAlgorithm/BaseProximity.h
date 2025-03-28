@@ -20,9 +20,9 @@ public:
     typedef std::shared_ptr<BaseBaseProximity> SPtr;
 
     /// return proximiy position in a Vec3
-    virtual sofa::type::Vec3 getPosition(core::VecCoordId v = core::VecCoordId::position()) const = 0;
+    virtual sofa::type::Vec3 getPosition(core::VecCoordId v = core::vec_id::write_access::position) const = 0;
 
-    virtual sofa::type::Vec3 getVelocity(core::VecDerivId v = core::VecDerivId::velocity()) const = 0;
+    virtual sofa::type::Vec3 getVelocity(core::VecDerivId v = core::vec_id::write_access::velocity) const = 0;
 
     virtual void buildJacobianConstraint(core::MultiMatrixDerivId , const sofa::type::vector<sofa::type::Vec3> & , double , Index ) const = 0;
 
@@ -52,9 +52,9 @@ public:
 
     virtual double * getBaryCoord() = 0;
 
-    virtual sofa::type::Vec3 getPosition(core::VecCoordId = core::VecCoordId::position()) const override { return  sofa::type::Vec3{}; }
+    virtual sofa::type::Vec3 getPosition(core::VecCoordId = core::vec_id::write_access::position) const override { return  sofa::type::Vec3{}; }
 
-    virtual sofa::type::Vec3 getVelocity(core::VecDerivId = core::VecDerivId::velocity()) const override { return  sofa::type::Vec3{}; }
+    virtual sofa::type::Vec3 getVelocity(core::VecDerivId = core::vec_id::write_access::velocity) const override { return  sofa::type::Vec3{}; }
 
     virtual void buildJacobianConstraint(core::MultiMatrixDerivId , const sofa::type::vector<sofa::type::Vec3> & , double , Index ) const override {}
 
