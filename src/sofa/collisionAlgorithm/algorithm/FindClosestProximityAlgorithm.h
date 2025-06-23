@@ -21,8 +21,8 @@ public:
 //    Data<sofa::type::vector<double> > d_outputDist;
 
     FindClosestProximityAlgorithm()
-    : l_from(initLink("from", "link to from geometry"))
-    , l_dest(initLink("dest", "link to dest geometry"))
+    : l_from(initLink("fromGeom", "link to from geometry"))
+    , l_dest(initLink("destGeom", "link to dest geometry"))
     , d_drawCollision (initData(&d_drawCollision, true, "drawcollision", "draw collision"))
     , d_output(initData(&d_output,"output", "output of the collision detection"))
     , d_projective(initData(&d_projective, false,"projective", "projection of closest prox onto from element"))
