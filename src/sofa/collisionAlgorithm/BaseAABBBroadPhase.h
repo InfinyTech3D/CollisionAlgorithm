@@ -26,8 +26,8 @@ public:
     , d_static(initData(&d_static, false,"isStatic", "Optimization: object is not moving in the scene"))
     , d_method(initData(&d_method, 0,"method", "chosen method to determine the boxes containing the elements"))
     , d_thread(initData(&d_thread, 8,"thread","Number of threads")){
-        c_nbox.addInputs({&d_nbox});
-        c_nbox.addCallback(std::bind(&BaseAABBBroadPhase::updateBroadPhase,this));
+        //c_nbox.addInputs({&d_nbox});
+        //c_nbox.addCallback(std::bind(&BaseAABBBroadPhase::updateBroadPhase,this));
     }
 
     virtual void newContainer() = 0;
