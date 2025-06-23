@@ -30,6 +30,8 @@ file(GLOB_RECURSE DEPRECATED_FILES
 )
 
 find_package(Sofa.Simulation.Core REQUIRED)
+find_package(Sofa.Component.StateContainer REQUIRED)
+find_package(Sofa.Component.Constraint.Lagrangian.Solver REQUIRED)
 find_package(Sofa.GL REQUIRED)
 
 
@@ -42,6 +44,8 @@ add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES} ${SCENES_FILE
 set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-DPLUGIN_DATA_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/\"")
 target_link_libraries(${PROJECT_NAME}
     Sofa.Simulation.Core
+    Sofa.Component.StateContainer
+    Sofa.Component.Constraint.Lagrangian.Solver
     Sofa.GL
 )
 

@@ -58,7 +58,7 @@ def createScene(root):
     root.addObject("ConstraintAttachButtonSetting")
     root.addObject("VisualStyle", displayFlags="showVisualModels hideBehaviorModels showCollisionModels hideMappings hideForceFields hideWireframe showInteractionForceFields" )
     root.addObject("FreeMotionAnimationLoop")
-    root.addObject("GenericConstraintSolver", tolerance=0.01, maxIt=5000, printLog=False)
+    root.addObject("GenericConstraintSolver", tolerance=0.01, maxIt=5000, printLog=False, computeConstraintForces=True)
     root.addObject("CollisionLoop")
 
     needleBaseMaster = root.addChild("NeedleBaseMaster")
@@ -138,7 +138,8 @@ def createScene(root):
     volume.addObject("MechanicalObject", name="mstate", template="Vec3d")
     volume.addObject("TetrahedronGeometry", name="geom",draw=False)
     volume.addObject("AABBBroadPhase",name="AABBTetra",geometry="@geom",nbox=[3,3,3],thread=1)
-    volume.addObject("ParallelTetrahedronFEMForceField", name="FF",**g_gelMechanicalParameters)
+    #volume.addObject("ParallelTetrahedronFEMForceField", name="FF",**g_gelMechanicalParameters)
+    volume.addObject("TetrahedronFEMForceField", name="FF",**g_gelMechanicalParameters)
     volume.addObject("MeshMatrixMass", name="Mass",totalMass=g_gelTotalMass)
 
     volume.addObject("BoxROI",name="BoxROI",box=g_gelFixedBoxROI)
@@ -165,7 +166,7 @@ def createScene(root):
     volumeVisu.addObject("IdentityMapping")
 
 
-    root.addObject("FindClosestProximityAlgorithm",name="PunctureAlgo",fromGeom="@Needle/tipCollision/geom", destGeom="@Volume/collision/geom")
+    root.addObject("PunctureAlgorithm",name="PunctureAlgo",fromGeom="@Needle/tipCollision/geom", destGeom="@Volume/collision/geom", punctureThreshold=0.1)
     root.addObject("DistanceFilter",algo="@PunctureAlgo",distance=0.01)
     root.addObject("SecondDirection",name="punctureDirection",handler="@Volume/collision/SurfaceTriangles")
     root.addObject("ConstraintUnilateral",input="@PunctureAlgo.output",directions="@punctureDirection",draw_scale="0.001")
