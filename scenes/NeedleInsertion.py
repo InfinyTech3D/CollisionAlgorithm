@@ -56,7 +56,7 @@ def createScene(root):
 
 
     root.addObject("ConstraintAttachButtonSetting")
-    root.addObject("VisualStyle", displayFlags="showVisualModels hideBehaviorModels showCollisionModels hideMappings hideForceFields hideWireframe showInteractionForceFields" )
+    root.addObject("VisualStyle", displayFlags="showVisualModels hideBehaviorModels showCollisionModels hideMappings hideForceFields showWireframe showInteractionForceFields" )
     root.addObject("FreeMotionAnimationLoop")
     root.addObject("GenericConstraintSolver", tolerance=0.01, maxIt=5000, printLog=False, computeConstraintForces=True)
     root.addObject("CollisionLoop")
@@ -136,7 +136,9 @@ def createScene(root):
     volume.addObject("Hexa2TetraTopologicalMapping", input="@../GelGridTopo/HexaTop", output="@Container", swapping="false")
 
     volume.addObject("MechanicalObject", name="mstate", template="Vec3d")
-    volume.addObject("TetrahedronGeometry", name="geom",draw=False)
+    volume.addObject("TetrahedronGeometry", name="geom", mstate="@mstate", topology="@Container", draw=False)
+    volume.addObject("TriangleGeometry", name="tri_geom", mstate="@mstate", topology="@Container",draw=True)
+    volume.addObject("PhongTriangleNormalHandler", name="InternalTriangles", geometry="@geom")
     volume.addObject("AABBBroadPhase",name="AABBTetra",geometry="@geom",nbox=[3,3,3],thread=1)
     #volume.addObject("ParallelTetrahedronFEMForceField", name="FF",**g_gelMechanicalParameters)
     volume.addObject("TetrahedronFEMForceField", name="FF",**g_gelMechanicalParameters)
@@ -166,12 +168,14 @@ def createScene(root):
     volumeVisu.addObject("IdentityMapping")
 
 
-    root.addObject("PunctureAlgorithm",name="PunctureAlgo",fromGeom="@Needle/tipCollision/geom", destGeom="@Volume/collision/geom", punctureThreshold=0.1)
-    root.addObject("DistanceFilter",algo="@PunctureAlgo",distance=0.01)
+    root.addObject("InsertionAlgorithm", name="InsertionAlgo", fromGeom="@Needle/tipCollision/geom", destGeom="@Volume/collision/geom", destVol="@Volume/geom", punctureThreshold=0.1)
+    root.addObject("DistanceFilter",algo="@InsertionAlgo",distance=0.01)
     root.addObject("SecondDirection",name="punctureDirection",handler="@Volume/collision/SurfaceTriangles")
-    root.addObject("ConstraintUnilateral",input="@PunctureAlgo.output",directions="@punctureDirection",draw_scale="0.001")
+    root.addObject("ConstraintUnilateral",input="@InsertionAlgo.output",directions="@punctureDirection",draw_scale="0.001")#, mu="0.001")
 
 
-    root.addObject("FindClosestProximityAlgorithm",name="InsertionAlgo",fromGeom="@Needle/bodyCollision/geom", destGeom="@Volume/geom")
-    root.addObject("DistanceFilter",algo="@InsertionAlgo",distance=0.005)
+    #root.addObject("InsertionAlgorithm",name="InsertionAlgo",fromGeom="@Needle/tipCollision/geom", destGeom="@Volume/tri_geom")
+    #root.addObject("DistanceFilter",algo="@InsertionAlgo",distance=0.005)
+    #root.addObject("BindDirection",name="insertionDirection")#,handler="@Volume/InternalTriangles")
+    #root.addObject("ConstraintBilateral",input="@InsertionAlgo.output",directions="@punctureDirection",draw_scale="0.001")
 
