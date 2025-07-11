@@ -62,7 +62,7 @@ def createScene(root):
     root.addObject("CollisionLoop")
 
     needleBaseMaster = root.addChild("NeedleBaseMaster")
-    needleBaseMaster.addObject("MechanicalObject", name="mstate", position=[0.04, 0.04, 0, 0, 0, 0, 1], template="Rigid3d", showObjectScale=0.002, showObject="true", drawMode=1)
+    needleBaseMaster.addObject("MechanicalObject", name="mstate_baseMaster", position=[0.04, 0.04, 0, 0, 0, 0, 1], template="Rigid3d", showObjectScale=0.002, showObject="true", drawMode=1)
     needleBaseMaster.addObject("LinearMovementProjectiveConstraint",indices=[0], keyTimes=[0,1,7,9],movements=[[0.04, 0.04,0,0,0,0],[0.04, 0.04,0.05,0,3.14/2,0],[0.04, 0.04,-0.07,0,3.14/2,0],[0.05, 0.04,-0.07,0,3.14/2 + 3.14/16,0]],relativeMovements=False)
 
 
@@ -84,42 +84,42 @@ def createScene(root):
     needle.addObject("LinearSolverConstraintCorrection", printLog="false", linearSolver="@LinearSolver")
 
     needleBase = needle.addChild("needleBase")
-    needleBase.addObject("PointSetTopologyContainer", name="Container", position=[0, 0, 0])
-    needleBase.addObject("MechanicalObject",name="mstate", template="Rigid3d",)
-    needleBase.addObject("RestShapeSpringsForceField",points=[0],stiffness=1e8, angularStiffness=1e8,external_points=[0],external_rest_shape="@/NeedleBaseMaster/mstate")
+    needleBase.addObject("PointSetTopologyContainer", name="Container_base", position=[0, 0, 0])
+    needleBase.addObject("MechanicalObject",name="mstate_base", template="Rigid3d",)
+    needleBase.addObject("RestShapeSpringsForceField",points=[0],stiffness=1e8, angularStiffness=1e8,external_points=[0],external_rest_shape="@/NeedleBaseMaster/mstate_baseMaster")
 
     needleBase.addObject("SubsetMapping", indices="0")
 
     needleBodyCollision = needle.addChild("bodyCollision")
-    needleBodyCollision.addObject("EdgeSetTopologyContainer", name="Container", src="@../Container")
-    needleBodyCollision.addObject("MechanicalObject",name="mstate", template="Vec3d",)
-    needleBodyCollision.addObject("EdgeGeometry",name="geom",mstate="@mstate", topology="@Container")
+    needleBodyCollision.addObject("EdgeSetTopologyContainer", name="Container_body", src="@../Container")
+    needleBodyCollision.addObject("MechanicalObject",name="mstate_body", template="Vec3d",)
+    needleBodyCollision.addObject("EdgeGeometry",name="geom",mstate="@mstate_body", topology="@Container_body")
 
     needleBodyCollision.addObject("IdentityMapping")
 
 
     needleTipCollision = needle.addChild("tipCollision")
-    needleTipCollision.addObject("MechanicalObject",name="mstate",position=[g_needleLength+g_needleBaseOffset[0], g_needleBaseOffset[1], g_needleBaseOffset[2]],template="Vec3d",)
-    needleTipCollision.addObject("PointGeometry",name="geom",mstate="@mstate")
+    needleTipCollision.addObject("MechanicalObject",name="mstate_tip",position=[g_needleLength+g_needleBaseOffset[0], g_needleBaseOffset[1], g_needleBaseOffset[2]],template="Vec3d",)
+    needleTipCollision.addObject("PointGeometry",name="geom",mstate="@mstate_tip")
     needleTipCollision.addObject("RigidMapping",globalToLocalCoords=True,index=g_needleNumberOfElems)
 
 
     needleVisual = needle.addChild("visual")
-    needleVisual.addObject("QuadSetTopologyContainer", name="ContainerCath")
+    needleVisual.addObject("QuadSetTopologyContainer", name="Container_visu")
     needleVisual.addObject("QuadSetTopologyModifier", name="Modifier")
-    needleVisual.addObject("Edge2QuadTopologicalMapping", nbPointsOnEachCircle=8, radius=g_needleRadius, input="@../Container", output="@ContainerCath")
+    needleVisual.addObject("Edge2QuadTopologicalMapping", nbPointsOnEachCircle=8, radius=g_needleRadius, input="@../Container", output="@Container_visu")
 
-    needleVisual.addObject("MechanicalObject", name="VisualCatheter", showObjectScale="0.0002", showObject="true", drawMode="1")
+    needleVisual.addObject("MechanicalObject", name="mstate_visu", showObjectScale="0.0002", showObject="true", drawMode="1")
 
-    needleVisual.addObject("TubularMapping", nbPointsOnEachCircle=8, radius=g_needleRadius, input="@../mstate", output="@VisualCatheter")
+    needleVisual.addObject("TubularMapping", nbPointsOnEachCircle=8, radius=g_needleRadius, input="@../mstate", output="@mstate_visu")
 
     needleOGL = needleVisual.addChild("OGL")
-    needleOGL.addObject("OglModel", position="@../ContainerCath.position",
-                           vertices="@../ContainerCath.position",
-                           quads="@../ContainerCath.quads",
+    needleOGL.addObject("OglModel", position="@../Container_visu.position",
+                           vertices="@../Container_visu.position",
+                           quads="@../Container_visu.quads",
                            color="0.4 0.34 0.34",
                            material="texture Ambient 1 0.4 0.34 0.34 1.0 Diffuse 0 0.4 0.34 0.34 1.0 Specular 1 0.4 0.34 0.34 0.1 Emissive 1 0.5 0.54 0.54 .01 Shininess 1 20",
-                           name="VisualCatheter")
+                           name="visualOgl")
     needleOGL.addObject("IdentityMapping")
 
 
@@ -131,15 +131,15 @@ def createScene(root):
     volume = root.addChild("Volume")
     volume.addObject("EulerImplicitSolver")
     volume.addObject("EigenSimplicialLDLT", name="LinearSolver", template='CompressedRowSparseMatrixMat3x3d')
-    volume.addObject("TetrahedronSetTopologyContainer", name="Container", position="@../GelGridTopo/HexaTop.position")
-    volume.addObject("TetrahedronSetTopologyModifier", name="Modifier")
-    volume.addObject("Hexa2TetraTopologicalMapping", input="@../GelGridTopo/HexaTop", output="@Container", swapping="false")
+    volume.addObject("TetrahedronSetTopologyContainer", name="TetraContainer", position="@../GelGridTopo/HexaTop.position")
+    volume.addObject("TetrahedronSetTopologyModifier", name="TetraModifier")
+    volume.addObject("Hexa2TetraTopologicalMapping", input="@../GelGridTopo/HexaTop", output="@TetraContainer", swapping="false")
 
-    volume.addObject("MechanicalObject", name="mstate", template="Vec3d")
-    volume.addObject("TetrahedronGeometry", name="geom", mstate="@mstate", topology="@Container", draw=False)
-    volume.addObject("TriangleGeometry", name="tri_geom", mstate="@mstate", topology="@Container",draw=True)
-    volume.addObject("PhongTriangleNormalHandler", name="InternalTriangles", geometry="@geom")
-    volume.addObject("AABBBroadPhase",name="AABBTetra",geometry="@geom",nbox=[3,3,3],thread=1)
+    volume.addObject("MechanicalObject", name="mstate_gel", template="Vec3d")
+    volume.addObject("TetrahedronGeometry", name="geom_tetra", mstate="@mstate_gel", topology="@TetraContainer", draw=False)
+    #volume.addObject("TriangleGeometry", name="tri_geom", mstate="@mstate_gel", topology="@TetraContainer",draw=True)
+    volume.addObject("PhongTriangleNormalHandler", name="InternalTriangles", geometry="@geom_tetra")
+    volume.addObject("AABBBroadPhase",name="AABBTetra",geometry="@geom_tetra",nbox=[3,3,3],thread=1)
     #volume.addObject("ParallelTetrahedronFEMForceField", name="FF",**g_gelMechanicalParameters)
     volume.addObject("TetrahedronFEMForceField", name="FF",**g_gelMechanicalParameters)
     volume.addObject("MeshMatrixMass", name="Mass",totalMass=g_gelTotalMass)
@@ -151,24 +151,31 @@ def createScene(root):
 
     volumeCollision = volume.addChild("collision")
     volumeCollision.addObject("TriangleSetTopologyContainer", name="TriContainer")
-    volumeCollision.addObject("TriangleSetTopologyModifier", name="Modifier")
-    volumeCollision.addObject("Tetra2TriangleTopologicalMapping", name="mapping", input="@../Container", output="@TriContainer", flipNormals=False)
-    volumeCollision.addObject("MechanicalObject", name="mstate",position="@../Container.position")
-    volumeCollision.addObject("TriangleGeometry", name="geom", mstate="@mstate", topology="@TriContainer",draw=False)
-    volumeCollision.addObject("PhongTriangleNormalHandler", name="SurfaceTriangles", geometry="@geom")
+    volumeCollision.addObject("TriangleSetTopologyModifier", name="TriModifier")
+    volumeCollision.addObject("Tetra2TriangleTopologicalMapping", name="mapping", input="@../TetraContainer", output="@TriContainer", flipNormals=False)
+    volumeCollision.addObject("MechanicalObject", name="mstate_gelColi",position="@../TetraContainer.position")
+    volumeCollision.addObject("TriangleGeometry", name="geom_tri", mstate="@mstate_gelColi", topology="@TriContainer",draw=False)
+    volumeCollision.addObject("PhongTriangleNormalHandler", name="SurfaceTriangles", geometry="@geom_tri")
     volumeCollision.addObject("AABBBroadPhase",name="AABBTriangles",thread=1,nbox=[2,2,3])
 
-    volumeCollision.addObject("IdentityMapping", name="identityMappingToCollision", input="@../mstate", output="@mstate", isMechanical=True)
+    volumeCollision.addObject("IdentityMapping", name="identityMappingToCollision", input="@../mstate_gel", output="@mstate_gelColi", isMechanical=True)
 
     volumeVisu = volumeCollision.addChild("visu")
     volumeVisu.addObject("OglModel", position="@../TriContainer.position",
                         vertices="@../TriContainer.position",
                         triangles="@../TriContainer.triangles",
-                        color=g_cubeColor,name="VisualCatheter",template="Vec3d")
+                        color=g_cubeColor,name="volume_visu",template="Vec3d")
+    volumeVisu.addObject("IdentityMapping")
+
+    volumeVisu = volume.addChild("visu")
+    volumeVisu.addObject("OglModel", position="@../TetraContainer.position",
+                        vertices="@../TetraContainer.position",
+                        triangles="@../TetraContainer.triangles",
+                        color=[1, 0, 1, 1],name="volume_visu",template="Vec3d")
     volumeVisu.addObject("IdentityMapping")
 
 
-    root.addObject("InsertionAlgorithm", name="InsertionAlgo", fromGeom="@Needle/tipCollision/geom", destGeom="@Volume/collision/geom", destVol="@Volume/geom", punctureThreshold=0.1)
+    root.addObject("InsertionAlgorithm", name="InsertionAlgo", fromGeom="@Needle/tipCollision/geom", destGeom="@Volume/collision/geom_tri", destVol="@Volume/geom_tetra", punctureThreshold=0.1)
     root.addObject("DistanceFilter",algo="@InsertionAlgo",distance=0.01)
     root.addObject("SecondDirection",name="punctureDirection",handler="@Volume/collision/SurfaceTriangles")
     root.addObject("ConstraintUnilateral",input="@InsertionAlgo.output",directions="@punctureDirection",draw_scale="0.001")#, mu="0.001")
