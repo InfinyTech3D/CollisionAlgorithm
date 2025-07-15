@@ -176,7 +176,14 @@ def createScene(root):
     volumeVisuWire.addObject("IdentityMapping")
 
 
-    root.addObject("InsertionAlgorithm", name="InsertionAlgo", fromGeom="@Needle/tipCollision/geom", destGeom="@Volume/collision/geom_tri", destVol="@Volume/geom_tetra", punctureThreshold=0.1)
+    root.addObject("InsertionAlgorithm", name="InsertionAlgo", 
+        fromGeom="@Needle/tipCollision/geom", 
+        destGeom="@Volume/collision/geom_tri", 
+        destVol="@Volume/geom_tetra", 
+        punctureThreshold=0.1, 
+        slideDistance=0.012
+        #projective=True
+    )
     root.addObject("DistanceFilter",algo="@InsertionAlgo",distance=0.01)
     root.addObject("SecondDirection",name="punctureDirection",handler="@Volume/collision/SurfaceTriangles")
     root.addObject("ConstraintUnilateral",input="@InsertionAlgo.output",directions="@punctureDirection",draw_scale="0.001")#, mu="0.001")
