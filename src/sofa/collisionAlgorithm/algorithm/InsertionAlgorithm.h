@@ -21,6 +21,8 @@ public:
     core::objectmodel::SingleLink<InsertionAlgorithm,BaseGeometry,BaseLink::FLAG_STOREPATH|BaseLink::FLAG_STRONGLINK> l_dest;
     core::objectmodel::SingleLink<InsertionAlgorithm,BaseGeometry,BaseLink::FLAG_STOREPATH|BaseLink::FLAG_STRONGLINK> l_destVol;
     Data<bool> d_drawCollision ;
+    Data<bool> d_drawPoints ;
+    Data<SReal> d_sphereRadius ;
     Data<DetectionOutput<BaseProximity,BaseProximity> > d_output;
     Data<DetectionOutput<BaseProximity,BaseProximity> > d_outputList;
     Data<bool> d_projective ;
@@ -29,13 +31,15 @@ public:
 //    Data<sofa::type::vector<double> > d_outputDist;
     sofa::component::constraint::lagrangian::solver::ConstraintSolverImpl* m_constraintSolver;
     std::vector<BaseProximity::SPtr> m_proximities;
-    //std::vector<TetrahedronElement::SPtr> m_tetras;
+    std::vector<TetrahedronElement::SPtr> m_tetras;
 
     InsertionAlgorithm()
     : l_from(initLink("fromGeom", "link to from geometry"))
     , l_dest(initLink("destGeom", "link to dest geometry"))
     , l_destVol(initLink("destVol", "link to dest geometry (volume)"))
     , d_drawCollision (initData(&d_drawCollision, true, "drawcollision", "draw collision"))
+    , d_drawPoints(initData(&d_drawPoints, true, "drawPoints", "draw detection outputs"))
+    , d_sphereRadius(initData(&d_sphereRadius, 0.001, "sphereRadius", "radius for drawing detection outputs"))
     , d_output(initData(&d_output,"output", "output of the collision detection"))
     , d_outputList(initData(&d_outputList,"outputList", "output of the detection inside the volume"))
     , d_projective(initData(&d_projective, false,"projective", "projection of closest prox onto from element"))
@@ -43,6 +47,7 @@ public:
     , d_slideDistance(initData(&d_slideDistance, std::numeric_limits<double>::min(), "slideDistance", "Distance along the insertion trajectory after which the proximities slide backwards along the needle shaft"))
 //    , d_outputDist(initData(&d_outputDist,"outputDist", "Distance of the outpu pair of detections"))
     , m_constraintSolver(nullptr)
+    , m_tetras()
     {}
 
     void init() override {
@@ -56,38 +61,26 @@ public:
         vparams->drawTool()->disableLighting();
 
         DetectionOutput output = d_output.getValue() ;
-        for (unsigned i=0;i<output.size();i++) {
-            vparams->drawTool()->drawLine(
-                output[i].first->getPosition(), 
-                output[i].second->getPosition(), 
-                sofa::type::RGBAColor(0, 1, 0, 1)
-            );
+        for (const auto& it : output) {
+            vparams->drawTool()->drawLine(it.first->getPosition(), it.second->getPosition(), sofa::type::RGBAColor(0, 1, 0, 1));
         }
 
         DetectionOutput outputList = d_outputList.getValue() ;
-        //for (unsigned i=0;i<outputList.size();i++) {
-        //    vparams->drawTool()->drawLine(
-        //        outputList[i].first->getPosition(), 
-        //        outputList[i].second->getPosition(), 
-        //        sofa::type::RGBAColor(1, 1, 0, 1)
-        //    );
-        //}
-        for (const auto& output : outputList) {
-            vparams->drawTool()->drawPoint(
-                output.second->getPosition(), 
-                sofa::type::RGBAColor(1, 1, 0, 1)
-            );
+        for (const auto& it : outputList) {
+            vparams->drawTool()->drawSphere(it.first->getPosition(),  d_sphereRadius.getValue(), sofa::type::RGBAColor(1, 0, 0, 1));
+            vparams->drawTool()->drawSphere(it.second->getPosition(), d_sphereRadius.getValue(), sofa::type::RGBAColor(0, 0, 1, 1));
+            vparams->drawTool()->drawLine(it.first->getPosition(), it.second->getPosition(), sofa::type::RGBAColor(1, 1, 0, 1));
         }
 
-        //for(unsigned i = 0; i < m_tetras.size(); ++i) {
-        //    vparams->drawTool()->drawTetrahedron(
-        //        m_tetras[i]->getP0()->getPosition(),
-        //        m_tetras[i]->getP1()->getPosition(),
-        //        m_tetras[i]->getP2()->getPosition(),
-        //        m_tetras[i]->getP3()->getPosition(),
-        //        sofa::type::RGBAColor(1, 1, 0, 1)
-        //    );
-        //}
+        for(const auto& it : m_tetras) {
+            vparams->drawTool()->drawTetrahedron(
+                it->getP0()->getPosition(),
+                it->getP1()->getPosition(),
+                it->getP2()->getPosition(),
+                it->getP3()->getPosition(),
+                sofa::type::RGBAColor(1, 1, 0, 0.3)
+            );
+        }
 
     }
 
@@ -121,7 +114,7 @@ public:
         }
 
         output.clear();
-        //outputInside.clear();
+        //outputList.clear();
 
         auto itfrom = l_from->begin();
 
@@ -165,20 +158,19 @@ public:
                     auto pdestVol = findClosestProxOpVol(pfrom, l_destVol.get(), projectVolOp, getFilterFunc());
                     if (pdestVol != nullptr) 
                     {
-                        //TetrahedronProximity::SPtr tetraProx = std::dynamic_pointer_cast<TetrahedronProximity>(pdestVol);
-                        //double* baryCoords = tetraProx->getBaryCoord();
-                        //if (toolbox::TetrahedronToolBox::isInTetra(
-                        //        pfrom->getPosition(),
-                        //        tetraProx->element()->getTetrahedronInfo(),
-                        //        baryCoords[0],
-                        //        baryCoords[1],
-                        //        baryCoords[2],
-                        //        baryCoords[3]
-                        //    )
-                        //)
-                        //{
-                        //    //m_tetras.push_back(tetraProx->element());
-                        //}
+                        /*
+                        TetrahedronProximity::SPtr tetraProx = std::dynamic_pointer_cast<TetrahedronProximity>(pdestVol);
+                        double* baryCoords = tetraProx->getBaryCoord();
+                        if (toolbox::TetrahedronToolBox::isInTetra(
+                                pfrom->getPosition(),
+                                tetraProx->element()->getTetrahedronInfo(),
+                                baryCoords[0],
+                                baryCoords[1],
+                                baryCoords[2],
+                                baryCoords[3]
+                            )
+                        ) m_tetras.push_back(tetraProx->element());
+                        */
 
                         pdestVol->normalize();
 
