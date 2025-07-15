@@ -101,7 +101,7 @@ def createScene(root):
     needleTipCollision = needle.addChild("tipCollision")
     needleTipCollision.addObject("MechanicalObject",name="mstate",position=[g_needleLength+g_needleBaseOffset[0], g_needleBaseOffset[1], g_needleBaseOffset[2]],template="Vec3d",)
     needleTipCollision.addObject("PointGeometry",name="geom",mstate="@mstate")
-    needleTipCollision.addObject("RigidMapping",globalToLocalCoords=True)
+    needleTipCollision.addObject("RigidMapping",globalToLocalCoords=True,index=g_needleNumberOfElems)
 
 
     needleVisual = needle.addChild("visual")
