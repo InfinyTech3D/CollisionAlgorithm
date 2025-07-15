@@ -95,7 +95,7 @@ public:
         if (m_constraintSolver)
         {
             defaulttype::RigidTypes::Vec3 lambda = 
-                m_constraintSolver->getLambda()[mstate].read()->getValue()[0].getVCenter();
+                m_constraintSolver->getLambda()[mstate].read()->getValue()[mstate->getSize()-1].getVCenter();
             if (lambda.norm() > d_punctureThreshold.getValue())
             {
                 for (const auto& itOutputPair : output) {
