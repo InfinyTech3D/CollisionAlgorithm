@@ -34,7 +34,7 @@ public:
     }
 
     typename sofa::type::vector<PairDetection>::const_iterator end() const {
-        return m_output.begin();
+        return m_output.end();
     }
 
     unsigned size() const {
