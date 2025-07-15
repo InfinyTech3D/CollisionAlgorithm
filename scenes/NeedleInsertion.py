@@ -181,7 +181,7 @@ def createScene(root):
         destGeom="@Volume/collision/geom_tri", 
         destVol="@Volume/geom_tetra", 
         punctureThreshold=0.1, 
-        slideDistance=0.012
+        slideDistance=0.015
         #projective=True
     )
     root.addObject("DistanceFilter",algo="@InsertionAlgo",distance=0.01)
