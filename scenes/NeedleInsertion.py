@@ -50,9 +50,8 @@ def createScene(root):
                                                 'Sofa.GL.Component.Rendering3D',
                                                 'Sofa.GUI.Component',
                                                 'Sofa.Component.Engine.Select',
-                                                'MultiThreading',
-                                                'CollisionAlgorithm',
-                                                'ConstraintGeometry'])
+                                                'MultiThreading'
+                                                ])
 
 
     root.addObject("ConstraintAttachButtonSetting")
