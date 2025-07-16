@@ -50,7 +50,9 @@ def createScene(root):
                                                 'Sofa.GL.Component.Rendering3D',
                                                 'Sofa.GUI.Component',
                                                 'Sofa.Component.Engine.Select',
-                                                'MultiThreading'
+                                                'MultiThreading',
+                                                'CollisionAlgorithm',
+                                                'ConstraintGeometry'
                                                 ])
 
 
