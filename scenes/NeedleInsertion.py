@@ -166,12 +166,12 @@ def createScene(root):
                         color=g_cubeColor,name="volume_visu",template="Vec3d")
     volumeVisu.addObject("IdentityMapping")
 
-    volumeVisu = volume.addChild("visu")
-    volumeVisu.addObject("OglModel", position="@../TetraContainer.position",
+    volumeVisuWire = volume.addChild("visu_wire")
+    volumeVisuWire.addObject("OglModel", position="@../TetraContainer.position",
                         vertices="@../TetraContainer.position",
                         triangles="@../TetraContainer.triangles",
                         color=[1, 0, 1, 1],name="volume_visu",template="Vec3d")
-    volumeVisu.addObject("IdentityMapping")
+    volumeVisuWire.addObject("IdentityMapping")
 
 
     root.addObject("InsertionAlgorithm", name="InsertionAlgo", fromGeom="@Needle/tipCollision/geom", destGeom="@Volume/collision/geom_tri", destVol="@Volume/geom_tetra", punctureThreshold=0.1)
