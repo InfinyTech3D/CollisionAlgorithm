@@ -179,9 +179,10 @@ def createScene(root):
     root.addObject("InsertionAlgorithm", name="InsertionAlgo", 
         fromGeom="@Needle/tipCollision/geom", 
         destGeom="@Volume/collision/geom_tri", 
+        fromVol="@Needle/bodyCollision/geom", 
         destVol="@Volume/geom_tetra", 
         punctureThreshold=0.1, 
-        slideDistance=0.015
+        slideDistance=0.005
         #projective=True
     )
     root.addObject("DistanceFilter",algo="@InsertionAlgo",distance=0.01)
