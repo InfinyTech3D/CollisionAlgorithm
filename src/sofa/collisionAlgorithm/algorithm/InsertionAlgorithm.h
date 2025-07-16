@@ -19,6 +19,7 @@ public:
 
     core::objectmodel::SingleLink<InsertionAlgorithm,BaseGeometry,BaseLink::FLAG_STOREPATH|BaseLink::FLAG_STRONGLINK> l_from;
     core::objectmodel::SingleLink<InsertionAlgorithm,BaseGeometry,BaseLink::FLAG_STOREPATH|BaseLink::FLAG_STRONGLINK> l_dest;
+    core::objectmodel::SingleLink<InsertionAlgorithm,BaseGeometry,BaseLink::FLAG_STOREPATH|BaseLink::FLAG_STRONGLINK> l_fromVol;
     core::objectmodel::SingleLink<InsertionAlgorithm,BaseGeometry,BaseLink::FLAG_STOREPATH|BaseLink::FLAG_STRONGLINK> l_destVol;
     Data<bool> d_drawCollision ;
     Data<bool> d_drawPoints ;
@@ -30,16 +31,18 @@ public:
     Data<SReal> d_slideDistance ;
 //    Data<sofa::type::vector<double> > d_outputDist;
     sofa::component::constraint::lagrangian::solver::ConstraintSolverImpl* m_constraintSolver;
-    std::vector<BaseProximity::SPtr> m_proximities;
     std::vector<TetrahedronElement::SPtr> m_tetras;
+    std::vector<BaseProximity::SPtr> m_needlePts;
+    std::vector<BaseProximity::SPtr> m_couplingPts;
 
     InsertionAlgorithm()
     : l_from(initLink("fromGeom", "link to from geometry"))
     , l_dest(initLink("destGeom", "link to dest geometry"))
+    , l_fromVol(initLink("fromVol", "link to from geometry (volume)"))
     , l_destVol(initLink("destVol", "link to dest geometry (volume)"))
     , d_drawCollision (initData(&d_drawCollision, true, "drawcollision", "draw collision"))
     , d_drawPoints(initData(&d_drawPoints, true, "drawPoints", "draw detection outputs"))
-    , d_sphereRadius(initData(&d_sphereRadius, 0.001, "sphereRadius", "radius for drawing detection outputs"))
+    , d_sphereRadius(initData(&d_sphereRadius, 0.0005, "sphereRadius", "radius for drawing detection outputs"))
     , d_output(initData(&d_output,"output", "output of the collision detection"))
     , d_outputList(initData(&d_outputList,"outputList", "output of the detection inside the volume"))
     , d_projective(initData(&d_projective, false,"projective", "projection of closest prox onto from element"))
@@ -48,6 +51,8 @@ public:
 //    , d_outputDist(initData(&d_outputDist,"outputDist", "Distance of the outpu pair of detections"))
     , m_constraintSolver(nullptr)
     , m_tetras()
+    , m_needlePts()
+    , m_couplingPts()
     {}
 
     void init() override {
@@ -81,61 +86,57 @@ public:
                 sofa::type::RGBAColor(1, 1, 0, 0.3)
             );
         }
-
     }
 
     void doDetection() {
         if (l_from == NULL) return;
         if (l_dest == NULL) return;
+        if (l_fromVol == NULL) return;
+        if (l_destVol == NULL) return;
 
         auto& output = *d_output.beginEdit();
         auto& outputList = *d_outputList.beginEdit();
 
-        const sofa::component::statecontainer::MechanicalObject<defaulttype::Vec3Types>* mstate
-            = l_from->getContext()->get<sofa::component::statecontainer::MechanicalObject<defaulttype::Vec3Types>>();
-        if (mstate->getSize() > 1)
+        if (outputList.size() == 0) 
         {
-            msg_warning() << "Requested MechanicalObject, corresponding to the tip of the needle in the InsertionAlgorithm, has a size greater than 1. "
-                        << "The algorithm is designed to work with a single point. Only the first element will be used.";
-        }
-        if (m_constraintSolver)
-        {
-            defaulttype::Vec3Types::VecCoord lambda =
-                m_constraintSolver->getLambda()[mstate].read()->getValue();
-            if (lambda[0].norm() > d_punctureThreshold.getValue())
-            {
-                for (const auto& dpair : output) {
-                    outputList.add(dpair.first->copy(), dpair.second->copy());
-                    //m_proximities.push_back(itOutputPair.second->copy());
-                }
-                output.clear();
-                return;
+            const sofa::component::statecontainer::MechanicalObject<defaulttype::Vec3Types>* mstate
+                = l_from->getContext()->get<sofa::component::statecontainer::MechanicalObject<defaulttype::Vec3Types>>();
+            if (mstate->getSize() > 1) {
+                msg_warning() << "Requested MechanicalObject, corresponding to the tip of the needle in the InsertionAlgorithm, has a size greater than 1. "
+                            << "The algorithm is designed to work with a single point. Only the first element will be used.";
             }
-        }
-
-        output.clear();
-        //outputList.clear();
-
-        auto itfrom = l_from->begin();
-
-        auto createProximityOp = Operations::CreateCenterProximity::Operation::get(itfrom->getTypeInfo());
-        auto findClosestProxOp = Operations::FindClosestProximity::Operation::get(l_dest);
-        auto projectOp = Operations::Project::Operation::get(l_dest);
-        auto projectVolOp = Operations::Project::Operation::get(l_destVol);
-        auto projectFromOp = Operations::Project::Operation::get(l_from);
-
-        auto findClosestProxOpVol = Operations::FindClosestProximity::Operation::get(l_destVol);
-
-        for (; itfrom != l_from->end(); itfrom++) 
-        {
-            auto pfrom = createProximityOp(itfrom->element());
-            if (pfrom == nullptr) continue;
-
-            if (outputList.size() == 0)
+            if (m_constraintSolver)
             {
-                auto pdest = findClosestProxOp(pfrom, l_dest.get(), projectOp, getFilterFunc());
-                if (pdest != nullptr)
+                defaulttype::Vec3Types::VecCoord lambda =
+                    m_constraintSolver->getLambda()[mstate].read()->getValue();
+                if (lambda[0].norm() > d_punctureThreshold.getValue())
                 {
+                    for (const auto& dpair : output)
+                    {
+                        outputList.add(dpair.first->copy(), dpair.second->copy());
+                        m_needlePts.push_back(dpair.first->copy());
+                        m_couplingPts.push_back(dpair.second->copy());
+                    }
+                    output.clear();
+                    return;
+                }
+            }
+
+            output.clear();
+
+            auto itfrom = l_from->begin();
+
+            auto createProximityOp = Operations::CreateCenterProximity::Operation::get(itfrom->getTypeInfo());
+            auto findClosestProxOp = Operations::FindClosestProximity::Operation::get(l_dest);
+            auto projectOp = Operations::Project::Operation::get(l_dest);
+            auto projectFromOp = Operations::Project::Operation::get(l_from);
+
+            for (; itfrom != l_from->end(); itfrom++) 
+            {
+                auto pfrom = createProximityOp(itfrom->element());
+                if (pfrom == nullptr) continue;
+                auto pdest = findClosestProxOp(pfrom, l_dest.get(), projectOp, getFilterFunc());
+                if (pdest != nullptr) {
                     pdest->normalize();
 
                     if (d_projective.getValue()) {
@@ -150,41 +151,58 @@ public:
                     }
                 }
             }
-            else
+        }
+        else
+        {
+            const SReal dist = (m_needlePts.back()->getPosition() - m_couplingPts.back()->getPosition()).norm();
+
+            if(dist > d_slideDistance.getValue()) 
             {
-                const SReal dist = (pfrom->getPosition() - outputList.back().second->getPosition()).norm();
-                if(dist > d_slideDistance.getValue()) 
+                outputList.clear();
+                auto findClosestProxOp_vol = Operations::FindClosestProximity::Operation::get(l_destVol);
+                auto projectOp_vol = Operations::Project::Operation::get(l_destVol);
+                auto projectFromOp_vol = Operations::Project::Operation::get(l_fromVol);
+                auto pdestVol = findClosestProxOp_vol(m_needlePts.back(), l_destVol.get(), projectOp_vol, getFilterFunc());
+                if (pdestVol != nullptr) 
                 {
-                    auto pdestVol = findClosestProxOpVol(pfrom, l_destVol.get(), projectVolOp, getFilterFunc());
-                    if (pdestVol != nullptr) 
+                    /*
+                    TetrahedronProximity::SPtr tetraProx = std::dynamic_pointer_cast<TetrahedronProximity>(pdestVol);
+                    double* baryCoords = tetraProx->getBaryCoord();
+                    if (toolbox::TetrahedronToolBox::isInTetra(
+                            pfrom->getPosition(),
+                            tetraProx->element()->getTetrahedronInfo(),
+                            baryCoords[0],
+                            baryCoords[1],
+                            baryCoords[2],
+                            baryCoords[3]
+                        )
+                    ) m_tetras.push_back(tetraProx->element());
+                    */
+
+                    pdestVol->normalize();
+                    m_couplingPts.push_back(pdestVol);
+                    m_needlePts.push_back(m_needlePts.back());
+
+                    auto itfromVol = l_fromVol->begin(l_fromVol->getSize() - 1 - m_couplingPts.size());
+                    auto createProximityOp_vol = Operations::CreateCenterProximity::Operation::get(itfromVol->getTypeInfo());
+
+                    for(int i = 0 ; i < m_needlePts.size() - 1; i++)
                     {
-                        /*
-                        TetrahedronProximity::SPtr tetraProx = std::dynamic_pointer_cast<TetrahedronProximity>(pdestVol);
-                        double* baryCoords = tetraProx->getBaryCoord();
-                        if (toolbox::TetrahedronToolBox::isInTetra(
-                                pfrom->getPosition(),
-                                tetraProx->element()->getTetrahedronInfo(),
-                                baryCoords[0],
-                                baryCoords[1],
-                                baryCoords[2],
-                                baryCoords[3]
-                            )
-                        ) m_tetras.push_back(tetraProx->element());
-                        */
-
-                        pdestVol->normalize();
-
+                        auto pfromVol = createProximityOp_vol(itfromVol->element());
                         if (d_projective.getValue()) {
-                            auto pfromProj = projectFromOp(pdestVol->getPosition(), itfrom->element()).prox;
-                            if (pfromProj == nullptr) continue;
-                            pfromProj->normalize();
-
-                            outputList.add(pfromProj, pdestVol);
+                            auto pfromVolProj = projectFromOp_vol(pdestVol->getPosition(), itfromVol->element()).prox;
+                            if (pfromVolProj == nullptr) continue;
+                            pfromVolProj->normalize();
+                            m_needlePts[i] = pfromVolProj;
                         }
                         else {
-                            outputList.add(pfrom, pdestVol);
+                            m_needlePts[i] = pfromVol;
                         }
+                        itfromVol++;
                     }
+
+                    for(int i = 0 ; i < m_needlePts.size(); i++)
+                        outputList.add(m_needlePts[i], m_couplingPts[i]);
                 }
             }
         }
