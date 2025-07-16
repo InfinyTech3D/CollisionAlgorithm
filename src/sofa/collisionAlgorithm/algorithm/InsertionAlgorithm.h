@@ -31,7 +31,6 @@ public:
     Data<SReal> d_slideDistance ;
 //    Data<sofa::type::vector<double> > d_outputDist;
     sofa::component::constraint::lagrangian::solver::ConstraintSolverImpl* m_constraintSolver;
-    std::vector<TetrahedronElement::SPtr> m_tetras;
     std::vector<BaseProximity::SPtr> m_needlePts;
     std::vector<BaseProximity::SPtr> m_couplingPts;
 
@@ -50,7 +49,6 @@ public:
     , d_slideDistance(initData(&d_slideDistance, std::numeric_limits<double>::min(), "slideDistance", "Distance along the insertion trajectory after which the proximities slide backwards along the needle shaft"))
 //    , d_outputDist(initData(&d_outputDist,"outputDist", "Distance of the outpu pair of detections"))
     , m_constraintSolver(nullptr)
-    , m_tetras()
     , m_needlePts()
     , m_couplingPts()
     {}
@@ -75,16 +73,6 @@ public:
             vparams->drawTool()->drawSphere(it.first->getPosition(),  d_sphereRadius.getValue(), sofa::type::RGBAColor(1, 0, 0, 1));
             vparams->drawTool()->drawSphere(it.second->getPosition(), d_sphereRadius.getValue(), sofa::type::RGBAColor(0, 0, 1, 1));
             vparams->drawTool()->drawLine(it.first->getPosition(), it.second->getPosition(), sofa::type::RGBAColor(1, 1, 0, 1));
-        }
-
-        for(const auto& it : m_tetras) {
-            vparams->drawTool()->drawTetrahedron(
-                it->getP0()->getPosition(),
-                it->getP1()->getPosition(),
-                it->getP2()->getPosition(),
-                it->getP3()->getPosition(),
-                sofa::type::RGBAColor(1, 1, 0, 0.3)
-            );
         }
     }
 
@@ -165,20 +153,6 @@ public:
                 auto pdestVol = findClosestProxOp_vol(m_needlePts.back(), l_destVol.get(), projectOp_vol, getFilterFunc());
                 if (pdestVol != nullptr) 
                 {
-                    /*
-                    TetrahedronProximity::SPtr tetraProx = std::dynamic_pointer_cast<TetrahedronProximity>(pdestVol);
-                    double* baryCoords = tetraProx->getBaryCoord();
-                    if (toolbox::TetrahedronToolBox::isInTetra(
-                            pfrom->getPosition(),
-                            tetraProx->element()->getTetrahedronInfo(),
-                            baryCoords[0],
-                            baryCoords[1],
-                            baryCoords[2],
-                            baryCoords[3]
-                        )
-                    ) m_tetras.push_back(tetraProx->element());
-                    */
-
                     pdestVol->normalize();
                     m_couplingPts.push_back(pdestVol);
                     m_needlePts.push_back(m_needlePts.back());
