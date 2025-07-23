@@ -158,25 +158,14 @@ public:
                     m_needlePts.push_back(m_needlePts.back());
 
                     auto itfromVol = l_fromVol->begin(l_fromVol->getSize() - 1 - m_couplingPts.size());
-                    //auto createProximityOp_vol = Operations::CreateCenterProximity::Operation::get(itfromVol->getTypeInfo());
 
                     auto findClosestProxOp_needle = Operations::FindClosestProximity::Operation::get(l_fromVol);
                     auto projectOp_needle = Operations::Project::Operation::get(l_fromVol);
 
                     for(int i = 0 ; i < m_needlePts.size() - 1; i++)
                     {
-                        //auto pfromVol = createProximityOp_vol(itfromVol->element());
                         auto pfromVol = findClosestProxOp_needle(m_couplingPts[i], l_fromVol.get(), projectOp_needle, getFilterFunc());
-                        if (d_projective.getValue()) {
-                            auto pfromVolProj = projectFromOp_vol(m_couplingPts[i]->getPosition(), itfromVol->element()).prox;
-                            if (pfromVolProj == nullptr) continue;
-                            pfromVolProj->normalize();
-                            m_needlePts[i] = pfromVolProj;
-                        }
-                        else {
-                            m_needlePts[i] = pfromVol;
-                        }
-                        itfromVol++;
+                        m_needlePts[i] = pfromVol;
                     }
 
                     for(int i = 0 ; i < m_needlePts.size(); i++)
