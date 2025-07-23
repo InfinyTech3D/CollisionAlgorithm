@@ -90,13 +90,18 @@ public:
         auto& output = *d_output.beginEdit();
         auto& outputInside = *d_outputInside.beginEdit();
 
-        const sofa::component::statecontainer::MechanicalObject<defaulttype::RigidTypes>* mstate
-            = l_from->getContext()->get<sofa::component::statecontainer::MechanicalObject<defaulttype::RigidTypes>>();
+        const sofa::component::statecontainer::MechanicalObject<defaulttype::Vec3Types>* mstate
+            = l_from->getContext()->get<sofa::component::statecontainer::MechanicalObject<defaulttype::Vec3Types>>();
+        if (mstate->getSize() > 1)
+        {
+            msg_warning() << "Requested MechanicalObject, corresponding to the tip of the needle in the InsertionAlgorithm, has a size greater than 1. "
+                        << "The algorithm is designed to work with a single point. Only the first element will be used.";
+        }
         if (m_constraintSolver)
         {
-            defaulttype::RigidTypes::Vec3 lambda = 
-                m_constraintSolver->getLambda()[mstate].read()->getValue()[0].getVCenter();
-            if (lambda.norm() > d_punctureThreshold.getValue())
+            defaulttype::Vec3Types::VecCoord lambda =
+                m_constraintSolver->getLambda()[mstate].read()->getValue();
+            if (lambda[0].norm() > d_punctureThreshold.getValue())
             {
                 for (const auto& itOutputPair : output) {
                     m_proximities.push_back(itOutputPair.second->copy());
