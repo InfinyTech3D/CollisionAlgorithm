@@ -146,36 +146,38 @@ public:
         }
         else
         {
-            const SReal dist = (m_needlePts.back()->getPosition() - m_couplingPts.back()->getPosition()).norm();
+            auto itfrom = l_from->begin();
+            auto createProximityOp = Operations::CreateCenterProximity::Operation::get(itfrom->getTypeInfo());
+            auto pfrom = createProximityOp(itfrom->element());
 
+            const SReal dist = (pfrom->getPosition() - m_couplingPts.back()->getPosition()).norm();
+
+            outputList.clear();
             if(dist > d_slideDistance.getValue()) 
             {
-                outputList.clear();
                 auto findClosestProxOp_vol = Operations::FindClosestProximity::Operation::get(l_destVol);
                 auto projectOp_vol = Operations::Project::Operation::get(l_destVol);
                 auto projectFromOp_vol = Operations::Project::Operation::get(l_fromVol);
-                auto pdestVol = findClosestProxOp_vol(m_needlePts.back(), l_destVol.get(), projectOp_vol, getFilterFunc());
-                if (pdestVol != nullptr) 
+                auto pdestVol = findClosestProxOp_vol(pfrom, l_destVol.get(), projectOp_vol, getFilterFunc());
+                if (pdestVol != nullptr)
                 {
                     pdestVol->normalize();
                     m_couplingPts.push_back(pdestVol);
                     m_needlePts.push_back(m_needlePts.back());
-
-                    auto itfromVol = l_fromVol->begin(l_fromVol->getSize() - 1 - m_couplingPts.size());
-
-                    auto findClosestProxOp_needle = Operations::FindClosestProximity::Operation::get(l_fromVol);
-                    auto projectOp_needle = Operations::Project::Operation::get(l_fromVol);
-
-                    for(int i = 0 ; i < m_needlePts.size() - 1; i++)
-                    {
-                        auto pfromVol = findClosestProxOp_needle(m_couplingPts[i], l_fromVol.get(), projectOp_needle, getFilterFunc());
-                        m_needlePts[i] = pfromVol;
-                    }
-
-                    for(int i = 0 ; i < m_needlePts.size(); i++)
-                        outputList.add(m_needlePts[i], m_couplingPts[i]);
                 }
             }
+
+            auto findClosestProxOp_needle = Operations::FindClosestProximity::Operation::get(l_fromVol);
+            auto projectOp_needle = Operations::Project::Operation::get(l_fromVol);
+
+            for(int i = 0 ; i < m_needlePts.size(); i++)
+            {
+                auto pfromVol = findClosestProxOp_needle(m_couplingPts[i], l_fromVol.get(), projectOp_needle, getFilterFunc());
+                m_needlePts[i] = pfromVol;
+            }
+
+            for(int i = 0 ; i < m_needlePts.size(); i++)
+                outputList.add(m_needlePts[i], m_couplingPts[i]);
         }
 
         d_output.endEdit();
