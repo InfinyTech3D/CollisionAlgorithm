@@ -87,8 +87,8 @@ public:
 
         if (outputList.size() == 0) 
         {
-            const sofa::component::statecontainer::MechanicalObject<defaulttype::Vec3Types>* mstate
-                = l_from->getContext()->get<sofa::component::statecontainer::MechanicalObject<defaulttype::Vec3Types>>();
+            const sofa::core::behavior::MechanicalState<defaulttype::Vec3Types>* mstate
+                = l_from->getContext()->get<sofa::core::behavior::MechanicalState<defaulttype::Vec3Types>>();
             if (mstate->getSize() > 1) {
                 msg_warning() << "Requested MechanicalObject, corresponding to the tip of the needle in the InsertionAlgorithm, has a size greater than 1. "
                             << "The algorithm is designed to work with a single point. Only the first element will be used.";
@@ -99,11 +99,15 @@ public:
                     m_constraintSolver->getLambda()[mstate].read()->getValue();
                 if (lambda[0].norm() > d_punctureThreshold.getValue())
                 {
+                    auto findClosestProxOp_needle = Operations::FindClosestProximity::Operation::get(l_fromVol);
+                    auto projectOp_needle = Operations::Project::Operation::get(l_fromVol);
                     for (const auto& dpair : output)
                     {
-                        outputList.add(dpair.first->copy(), dpair.second->copy());
-                        m_needlePts.push_back(dpair.first->copy());
+                        // Reproject onto the needle to create an EdgeProximity - The EdgeHandler requires this
+                        auto pfromVol = findClosestProxOp_needle(dpair.second, l_fromVol.get(), projectOp_needle, getFilterFunc());
+                        m_needlePts.push_back(pfromVol);
                         m_couplingPts.push_back(dpair.second->copy());
+                        outputList.add(pfromVol, dpair.second->copy());
                     }
                     output.clear();
                     return;

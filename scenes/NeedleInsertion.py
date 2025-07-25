@@ -94,14 +94,15 @@ def createScene(root):
     needleBodyCollision = needle.addChild("bodyCollision")
     needleBodyCollision.addObject("EdgeSetTopologyContainer", name="Container_body", src="@../Container")
     needleBodyCollision.addObject("MechanicalObject",name="mstate_body", template="Vec3d",)
-    needleBodyCollision.addObject("EdgeGeometry",name="geom",mstate="@mstate_body", topology="@Container_body")
+    needleBodyCollision.addObject("EdgeGeometry",name="geom_body",mstate="@mstate_body", topology="@Container_body")
+    needleBodyCollision.addObject("EdgeNormalHandler", name="NeedleBeams", geometry="@geom_body")
 
     needleBodyCollision.addObject("IdentityMapping")
 
 
     needleTipCollision = needle.addChild("tipCollision")
     needleTipCollision.addObject("MechanicalObject",name="mstate_tip",position=[g_needleLength+g_needleBaseOffset[0], g_needleBaseOffset[1], g_needleBaseOffset[2]],template="Vec3d",)
-    needleTipCollision.addObject("PointGeometry",name="geom",mstate="@mstate_tip")
+    needleTipCollision.addObject("PointGeometry",name="geom_tip",mstate="@mstate_tip")
     needleTipCollision.addObject("RigidMapping",globalToLocalCoords=True,index=g_needleNumberOfElems)
 
 
@@ -177,21 +178,21 @@ def createScene(root):
 
 
     root.addObject("InsertionAlgorithm", name="InsertionAlgo", 
-        fromGeom="@Needle/tipCollision/geom", 
+        fromGeom="@Needle/tipCollision/geom_tip", 
         destGeom="@Volume/collision/geom_tri", 
-        fromVol="@Needle/bodyCollision/geom", 
+        fromVol="@Needle/bodyCollision/geom_body", 
         destVol="@Volume/geom_tetra", 
-        punctureThreshold=0.1, 
-        slideDistance=0.005
+        punctureThreshold=0.05, 
+        slideDistance=0.005,
+        drawcollision=True,
+        sphereRadius=0.0001
         #projective=True
     )
     root.addObject("DistanceFilter",algo="@InsertionAlgo",distance=0.01)
     root.addObject("SecondDirection",name="punctureDirection",handler="@Volume/collision/SurfaceTriangles")
     root.addObject("ConstraintUnilateral",input="@InsertionAlgo.output",directions="@punctureDirection",draw_scale="0.001")#, mu="0.001")
 
+    root.addObject("FirstDirection",name="bindDirection", handler="@Needle/bodyCollision/NeedleBeams")
+    root.addObject("ConstraintInsertion",input="@InsertionAlgo.outputList", directions="@bindDirection",draw_scale="0.005")#, mu="0.001")
 
-    #root.addObject("InsertionAlgorithm",name="InsertionAlgo",fromGeom="@Needle/tipCollision/geom", destGeom="@Volume/tri_geom")
-    #root.addObject("DistanceFilter",algo="@InsertionAlgo",distance=0.005)
-    #root.addObject("BindDirection",name="insertionDirection")#,handler="@Volume/InternalTriangles")
-    #root.addObject("ConstraintBilateral",input="@InsertionAlgo.output",directions="@punctureDirection",draw_scale="0.001")
 
