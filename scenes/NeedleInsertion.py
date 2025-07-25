@@ -59,7 +59,7 @@ def createScene(root):
     root.addObject("ConstraintAttachButtonSetting")
     root.addObject("VisualStyle", displayFlags="showVisualModels hideBehaviorModels showCollisionModels hideMappings hideForceFields showWireframe showInteractionForceFields" )
     root.addObject("FreeMotionAnimationLoop")
-    root.addObject("GenericConstraintSolver", tolerance=0.01, maxIt=5000, printLog=False, computeConstraintForces=True)
+    root.addObject("GenericConstraintSolver", tolerance=0.00001, maxIt=5000, printLog=False, computeConstraintForces=True)
     root.addObject("CollisionLoop")
 
     needleBaseMaster = root.addChild("NeedleBaseMaster")
@@ -193,4 +193,4 @@ def createScene(root):
     root.addObject("ConstraintUnilateral",input="@InsertionAlgo.output",directions="@punctureDirection",draw_scale="0.001")#, mu="0.001")
 
     root.addObject("FirstDirection",name="bindDirection", handler="@Needle/bodyCollision/NeedleBeams")
-    root.addObject("ConstraintInsertion",input="@InsertionAlgo.outputList", directions="@bindDirection",draw_scale="0.002", frictionCoeff=0.1)
+    root.addObject("ConstraintInsertion",input="@InsertionAlgo.outputList", directions="@bindDirection",draw_scale="0.002", frictionCoeff=0.0)
