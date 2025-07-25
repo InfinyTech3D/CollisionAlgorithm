@@ -17,7 +17,7 @@ g_gelRegularGridParameters = {
     "max":[0.125, 0.125, -0.100]
 } #Again all in mm
 g_gelMechanicalParameters = {
-    "youngModulus":8000,
+    "youngModulus":8e5,
     "poissonRatio":0.45,
     "method":"large"
 }
@@ -182,7 +182,7 @@ def createScene(root):
         destGeom="@Volume/collision/geom_tri", 
         fromVol="@Needle/bodyCollision/geom_body", 
         destVol="@Volume/geom_tetra", 
-        punctureThreshold=0.05, 
+        punctureThreshold=2., 
         slideDistance=0.003,
         drawcollision=True,
         sphereRadius=0.0001
@@ -193,4 +193,4 @@ def createScene(root):
     root.addObject("ConstraintUnilateral",input="@InsertionAlgo.output",directions="@punctureDirection",draw_scale="0.001")#, mu="0.001")
 
     root.addObject("FirstDirection",name="bindDirection", handler="@Needle/bodyCollision/NeedleBeams")
-    root.addObject("ConstraintInsertion",input="@InsertionAlgo.outputList", directions="@bindDirection",draw_scale="0.002", frictionCoeff=0.0)
+    root.addObject("ConstraintInsertion",input="@InsertionAlgo.outputList", directions="@bindDirection",draw_scale="0.002", frictionCoeff=0.05)
