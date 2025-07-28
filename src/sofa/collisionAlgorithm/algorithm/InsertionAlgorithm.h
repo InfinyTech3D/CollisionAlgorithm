@@ -9,7 +9,7 @@
 #include <sofa/component/statecontainer/MechanicalObject.h>
 #include <sofa/component/constraint/lagrangian/solver/ConstraintSolverImpl.h>
 
-#include <sofa/collisionAlgorithm/proximity/TetrahedronProximity.h>
+#include <sofa/collisionAlgorithm/proximity/EdgeProximity.h>
 
 namespace sofa::collisionAlgorithm {
 
@@ -152,7 +152,20 @@ public:
             auto createProximityOp = Operations::CreateCenterProximity::Operation::get(itfrom->getTypeInfo());
             auto pfrom = createProximityOp(itfrom->element());
 
-            const SReal dist = (pfrom->getPosition() - m_couplingPts.back()->getPosition()).norm();
+            auto itfromVol = l_fromVol->begin(l_fromVol->getSize() - 2);
+            auto createProximityOpVol = Operations::CreateCenterProximity::Operation::get(itfromVol->getTypeInfo());
+            auto pfromVol = createProximityOpVol(itfromVol->element());
+            const EdgeProximity::SPtr edgeProx = dynamic_pointer_cast<EdgeProximity>(pfromVol);
+            const type::Vec3 normal = (edgeProx->element()->getP1()->getPosition() - edgeProx->element()->getP0()->getPosition()).normalized();
+            type::Vec3 ab = m_couplingPts.back()->getPosition() - pfrom->getPosition();
+            const SReal dotProd = dot(ab, normal);
+            if (dotProd > 0.0)
+            {
+                m_couplingPts.pop_back();
+                m_needlePts.pop_back();
+            }
+
+            const SReal dist = ab.norm();
             if(dist > d_slideDistance.getValue()) 
             {
                 auto findClosestProxOp_vol = Operations::FindClosestProximity::Operation::get(l_destVol);
