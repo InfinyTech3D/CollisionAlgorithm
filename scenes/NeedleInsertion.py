@@ -17,7 +17,7 @@ g_gelRegularGridParameters = {
     "max":[0.125, 0.125, -0.100]
 } #Again all in mm
 g_gelMechanicalParameters = {
-    "youngModulus":8000,
+    "youngModulus":8e5,
     "poissonRatio":0.45,
     "method":"large"
 }
@@ -59,7 +59,7 @@ def createScene(root):
     root.addObject("ConstraintAttachButtonSetting")
     root.addObject("VisualStyle", displayFlags="showVisualModels hideBehaviorModels showCollisionModels hideMappings hideForceFields showWireframe showInteractionForceFields" )
     root.addObject("FreeMotionAnimationLoop")
-    root.addObject("GenericConstraintSolver", tolerance=0.01, maxIt=5000, printLog=False, computeConstraintForces=True)
+    root.addObject("GenericConstraintSolver", tolerance=0.00001, maxIt=5000, printLog=False, computeConstraintForces=True)
     root.addObject("CollisionLoop")
 
     needleBaseMaster = root.addChild("NeedleBaseMaster")
@@ -182,8 +182,8 @@ def createScene(root):
         destGeom="@Volume/collision/geom_tri", 
         fromVol="@Needle/bodyCollision/geom_body", 
         destVol="@Volume/geom_tetra", 
-        punctureThreshold=0.05, 
-        slideDistance=0.005,
+        punctureThreshold=2., 
+        slideDistance=0.003,
         drawcollision=True,
         sphereRadius=0.0001
         #projective=True
@@ -193,6 +193,4 @@ def createScene(root):
     root.addObject("ConstraintUnilateral",input="@InsertionAlgo.output",directions="@punctureDirection",draw_scale="0.001")#, mu="0.001")
 
     root.addObject("FirstDirection",name="bindDirection", handler="@Needle/bodyCollision/NeedleBeams")
-    root.addObject("ConstraintInsertion",input="@InsertionAlgo.outputList", directions="@bindDirection",draw_scale="0.005")#, mu="0.001")
-
-
+    root.addObject("ConstraintInsertion",input="@InsertionAlgo.outputList", directions="@bindDirection",draw_scale="0.002", frictionCoeff=0.05)
