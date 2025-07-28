@@ -59,11 +59,11 @@ def createScene(root):
     root.addObject("ConstraintAttachButtonSetting")
     root.addObject("VisualStyle", displayFlags="showVisualModels hideBehaviorModels showCollisionModels hideMappings hideForceFields showWireframe showInteractionForceFields" )
     root.addObject("FreeMotionAnimationLoop")
-    root.addObject("GenericConstraintSolver", tolerance=0.00001, maxIt=5000, printLog=False, computeConstraintForces=True)
+    root.addObject("GenericConstraintSolver", tolerance=0.00001, maxIt=5000)
     root.addObject("CollisionLoop")
 
     needleBaseMaster = root.addChild("NeedleBaseMaster")
-    needleBaseMaster.addObject("MechanicalObject", name="mstate_baseMaster", position=[0.04, 0.04, 0, 0, 0, 0, 1], template="Rigid3d", showObjectScale=0.002, showObject="false", drawMode=1)
+    needleBaseMaster.addObject("MechanicalObject", name="mstate_baseMaster", position=[0.04, 0.04, 0, 0, 0, 0, 1], template="Rigid3d", showObjectScale=0.002, showObject=False, drawMode=1)
     needleBaseMaster.addObject("LinearMovementProjectiveConstraint",indices=[0], keyTimes=[0,1,7,9],movements=
         [ [0.04, 0.04,0,0,0,0]
         , [0.04, 0.04,0.05,0,3.14/2,0]
@@ -82,12 +82,11 @@ def createScene(root):
     needle.addObject("EdgeSetTopologyModifier", name="modifier")
     needle.addObject("PointSetTopologyModifier", name="modifier2")
 
-    needle.addObject("MechanicalObject", name="mstate", template="Rigid3d", showObjectScale=0.0002, showObject="false", drawMode=1)
+    needle.addObject("MechanicalObject", name="mstate", template="Rigid3d", showObjectScale=0.0002, showObject=False, drawMode=1)
 
     needle.addObject("UniformMass", totalMass=g_needleTotalMass)
     needle.addObject("BeamFEMForceField", name="FEM", **g_needleMechanicalParameters)
-    # needle.addObject("FixedLagrangianConstraint", indices="0"  )
-    needle.addObject("LinearSolverConstraintCorrection", printLog="false", linearSolver="@LinearSolver")
+    needle.addObject("LinearSolverConstraintCorrection", printLog=False, linearSolver="@LinearSolver")
 
     needleBase = needle.addChild("needleBase")
     needleBase.addObject("PointSetTopologyContainer", name="Container_base", position=[0, 0, 0])
@@ -116,7 +115,7 @@ def createScene(root):
     needleVisual.addObject("QuadSetTopologyModifier", name="Modifier")
     needleVisual.addObject("Edge2QuadTopologicalMapping", nbPointsOnEachCircle=8, radius=g_needleRadius, input="@../Container", output="@Container_visu")
 
-    needleVisual.addObject("MechanicalObject", name="mstate_visu", showObjectScale="0.0002", showObject="true", drawMode="1")
+    needleVisual.addObject("MechanicalObject", name="mstate_visu", showObjectScale=0.0002, showObject=True, drawMode=1)
 
     needleVisual.addObject("TubularMapping", nbPointsOnEachCircle=8, radius=g_needleRadius, input="@../mstate", output="@mstate_visu")
 
@@ -124,7 +123,7 @@ def createScene(root):
     needleOGL.addObject("OglModel", position="@../Container_visu.position",
                            vertices="@../Container_visu.position",
                            quads="@../Container_visu.quads",
-                           color="0.4 0.34 0.34",
+                           color=[0.4, 0.34, 0.34],
                            material="texture Ambient 1 0.4 0.34 0.34 1.0 Diffuse 0 0.4 0.34 0.34 1.0 Specular 1 0.4 0.34 0.34 0.1 Emissive 1 0.5 0.54 0.54 .01 Shininess 1 20",
                            name="visualOgl")
     needleOGL.addObject("IdentityMapping")
@@ -140,21 +139,18 @@ def createScene(root):
     volume.addObject("EigenSimplicialLDLT", name="LinearSolver", template='CompressedRowSparseMatrixMat3x3d')
     volume.addObject("TetrahedronSetTopologyContainer", name="TetraContainer", position="@../GelGridTopo/HexaTop.position")
     volume.addObject("TetrahedronSetTopologyModifier", name="TetraModifier")
-    volume.addObject("Hexa2TetraTopologicalMapping", input="@../GelGridTopo/HexaTop", output="@TetraContainer", swapping="false")
+    volume.addObject("Hexa2TetraTopologicalMapping", input="@../GelGridTopo/HexaTop", output="@TetraContainer", swapping=False)
 
     volume.addObject("MechanicalObject", name="mstate_gel", template="Vec3d")
     volume.addObject("TetrahedronGeometry", name="geom_tetra", mstate="@mstate_gel", topology="@TetraContainer", draw=False)
-    #volume.addObject("TriangleGeometry", name="tri_geom", mstate="@mstate_gel", topology="@TetraContainer",draw=True)
-    #volume.addObject("PhongTriangleNormalHandler", name="InternalTriangles", geometry="@geom_tetra")
     volume.addObject("AABBBroadPhase",name="AABBTetra",geometry="@geom_tetra",nbox=[3,3,3],thread=1)
-    #volume.addObject("ParallelTetrahedronFEMForceField", name="FF",**g_gelMechanicalParameters)
     volume.addObject("TetrahedronFEMForceField", name="FF",**g_gelMechanicalParameters)
     volume.addObject("MeshMatrixMass", name="Mass",totalMass=g_gelTotalMass)
 
     volume.addObject("BoxROI",name="BoxROI",box=g_gelFixedBoxROI)
-    volume.addObject("RestShapeSpringsForceField", stiffness='1e6',points="@BoxROI.indices"  )
+    volume.addObject("RestShapeSpringsForceField", stiffness=1e6,points="@BoxROI.indices"  )
 
-    volume.addObject("LinearSolverConstraintCorrection", printLog="false", linearSolver="@LinearSolver")
+    volume.addObject("LinearSolverConstraintCorrection", printLog=False, linearSolver="@LinearSolver")
 
     volumeCollision = volume.addChild("collision")
     volumeCollision.addObject("TriangleSetTopologyContainer", name="TriContainer")
@@ -191,11 +187,10 @@ def createScene(root):
         slideDistance=0.003,
         drawcollision=True,
         sphereRadius=0.0001
-        #projective=True
     )
     root.addObject("DistanceFilter",algo="@InsertionAlgo",distance=0.01)
     root.addObject("SecondDirection",name="punctureDirection",handler="@Volume/collision/SurfaceTriangles")
-    root.addObject("ConstraintUnilateral",input="@InsertionAlgo.output",directions="@punctureDirection",draw_scale="0.001")
+    root.addObject("ConstraintUnilateral",input="@InsertionAlgo.output",directions="@punctureDirection",draw_scale=0.001)
 
     root.addObject("FirstDirection",name="bindDirection", handler="@Needle/bodyCollision/NeedleBeams")
-    root.addObject("ConstraintInsertion",input="@InsertionAlgo.outputList", directions="@bindDirection",draw_scale="0.002", frictionCoeff=0.05)
+    root.addObject("ConstraintInsertion",input="@InsertionAlgo.outputList", directions="@bindDirection",draw_scale=0.002, frictionCoeff=0.05)
