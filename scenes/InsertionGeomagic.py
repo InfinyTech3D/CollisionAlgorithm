@@ -62,7 +62,7 @@ def createScene(root):
     root.addObject("ConstraintAttachButtonSetting")
     root.addObject("VisualStyle", displayFlags="showVisualModels hideBehaviorModels showCollisionModels hideMappings hideForceFields showWireframe showInteractionForceFields" )
     root.addObject("FreeMotionAnimationLoop")
-    root.addObject("GenericConstraintSolver", tolerance=0.00001, maxIt=5000, printLog=False, computeConstraintForces=True)
+    root.addObject("GenericConstraintSolver", tolerance=0.00001, maxIt=5000)
     root.addObject("CollisionLoop")
 
     root.addObject("GeomagicDriver"
@@ -71,7 +71,7 @@ def createScene(root):
         , scale=0.02 
         , drawDeviceFrame=False 
         , drawDevice=False 
-        , manualStart=0
+        , manualStart=False
         , positionBase=[0.12, 0, 0] 
         , orientationBase=[0, 0.174, 0, -0.985] 
     )
@@ -92,12 +92,11 @@ def createScene(root):
 
     needle.addObject("UniformMass", totalMass=g_needleTotalMass)
     needle.addObject("BeamFEMForceField", name="FEM", **g_needleMechanicalParameters)
-    # needle.addObject("FixedLagrangianConstraint", indices="0"  )
-    needle.addObject("LinearSolverConstraintCorrection", printLog=False, linearSolver="@LinearSolver")
+    needle.addObject("LinearSolverConstraintCorrection", linearSolver="@LinearSolver")
     needle.addObject("LCPForceFeedback", activate=1, forceCoef=0.01)
 
     needleBase = needle.addChild("needleBase")
-    needleBase.addObject("PointSetTopologyContainer", name="Container_base", position="@../mstate.position")#"@../../GeomagicDevice.positionBase")
+    needleBase.addObject("PointSetTopologyContainer", name="Container_base", position="@../mstate.position")
     needleBase.addObject("MechanicalObject",name="mstate_base", template="Rigid3d")
     needleBase.addObject("RestShapeSpringsForceField",points=[0],stiffness=1e9, angularStiffness=1e9,external_points=[0],external_rest_shape="@/ToolController/mstate_baseMaster")
     needleBase.addObject("SubsetMapping", indices=0)
@@ -135,26 +134,17 @@ def createScene(root):
     needleOGL.addObject("IdentityMapping")
 
 
-
-    #gelTopo = root.addChild("GelGridTopo")
-    #gelTopo.addObject("RegularGridTopology", name="HexaTop", **g_gelRegularGridParameters)
-
-
     volume = root.addChild("Volume")
     volume.addObject("EulerImplicitSolver")
     volume.addObject("EigenSimplicialLDLT", name="LinearSolver", template='CompressedRowSparseMatrixMat3x3d')
-    #volume.addObject("TetrahedronSetTopologyContainer", name="TetraContainer", position="@../GelGridTopo/HexaTop.position")
     volume.addObject("MeshGmshLoader", name="meshLoader", filename="mesh/liver.msh", scale3d=[0.08, 0.08, 0.08], translation=[0, -0.3, -0.2])
     volume.addObject("TetrahedronSetTopologyContainer", name="TetraContainer", position="@meshLoader.position", tetrahedra="@meshLoader.tetrahedra")
     volume.addObject("TetrahedronSetTopologyModifier", name="TetraModifier")
-    #volume.addObject("Hexa2TetraTopologicalMapping", input="@../GelGridTopo/HexaTop", output="@TetraContainer", swapping="false")
 
     volume.addObject("MechanicalObject", name="mstate_gel", template="Vec3d")
     volume.addObject("TetrahedronGeometry", name="geom_tetra", mstate="@mstate_gel", topology="@TetraContainer", draw=False)
-    #volume.addObject("TriangleGeometry", name="tri_geom", mstate="@mstate_gel", topology="@TetraContainer",draw=True)
     volume.addObject("PhongTriangleNormalHandler", name="InternalTriangles", geometry="@geom_tetra")
     volume.addObject("AABBBroadPhase",name="AABBTetra",geometry="@geom_tetra",nbox=[3,3,3],thread=1)
-    #volume.addObject("ParallelTetrahedronFEMForceField", name="FF",**g_gelMechanicalParameters)
     volume.addObject("TetrahedronFEMForceField", name="FF",**g_gelMechanicalParameters)
     volume.addObject("MeshMatrixMass", name="Mass",totalMass=g_gelTotalMass)
 
@@ -198,7 +188,6 @@ def createScene(root):
         slideDistance=0.003,
         drawcollision=True,
         sphereRadius=0.0001
-        #projective=True
     )
     root.addObject("DistanceFilter",algo="@InsertionAlgo",distance=0.01)
     root.addObject("SecondDirection",name="punctureDirection",handler="@Volume/collision/SurfaceTriangles")
