@@ -17,19 +17,24 @@ class InsertionAlgorithm : public BaseAlgorithm {
 public:
     SOFA_CLASS(InsertionAlgorithm, BaseAlgorithm);
 
-    core::objectmodel::SingleLink<InsertionAlgorithm,BaseGeometry,BaseLink::FLAG_STOREPATH|BaseLink::FLAG_STRONGLINK> l_from;
-    core::objectmodel::SingleLink<InsertionAlgorithm,BaseGeometry,BaseLink::FLAG_STOREPATH|BaseLink::FLAG_STRONGLINK> l_dest;
-    core::objectmodel::SingleLink<InsertionAlgorithm,BaseGeometry,BaseLink::FLAG_STOREPATH|BaseLink::FLAG_STRONGLINK> l_fromVol;
-    core::objectmodel::SingleLink<InsertionAlgorithm,BaseGeometry,BaseLink::FLAG_STOREPATH|BaseLink::FLAG_STRONGLINK> l_destVol;
+    typedef sofa::core::behavior::MechanicalState<defaulttype::Vec3Types> MechStateTipType;
+    typedef core::objectmodel::SingleLink<InsertionAlgorithm,BaseGeometry,BaseLink::FLAG_STOREPATH|BaseLink::FLAG_STRONGLINK> GeomLink;
+    typedef DetectionOutput<BaseProximity,BaseProximity> AlgorithmOutput;
+    typedef sofa::component::constraint::lagrangian::solver::ConstraintSolverImpl ConstraintSolver;
+
+    GeomLink l_from;
+    GeomLink l_dest;
+    GeomLink l_fromVol;
+    GeomLink l_destVol;
     Data<bool> d_drawCollision ;
     Data<bool> d_drawPoints ;
     Data<SReal> d_drawPointsScale ;
-    Data<DetectionOutput<BaseProximity,BaseProximity> > d_output;
-    Data<DetectionOutput<BaseProximity,BaseProximity> > d_outputList;
+    Data<AlgorithmOutput> d_output;
+    Data<AlgorithmOutput> d_outputList;
     Data<bool> d_projective ;
     Data<SReal> d_punctureThreshold ;
     Data<SReal> d_slideDistance ;
-    sofa::component::constraint::lagrangian::solver::ConstraintSolverImpl* m_constraintSolver;
+    ConstraintSolver* m_constraintSolver;
     std::vector<BaseProximity::SPtr> m_needlePts;
     std::vector<BaseProximity::SPtr> m_couplingPts;
 
@@ -54,7 +59,7 @@ public:
     void init() override {
         BaseAlgorithm::init();
         m_constraintSolver
-            = this->getContext()->get<sofa::component::constraint::lagrangian::solver::ConstraintSolverImpl>();
+            = this->getContext()->get<ConstraintSolver>();
     }
 
     void draw(const core::visual::VisualParams* vparams) {
@@ -85,12 +90,10 @@ public:
 
         if (outputList.size() == 0) 
         {
-            const sofa::core::behavior::MechanicalState<defaulttype::Vec3Types>* mstate
-                = l_from->getContext()->get<sofa::core::behavior::MechanicalState<defaulttype::Vec3Types>>();
+                const MechStateTipType* mstate = l_from->getContext()->get<MechStateTipType>();
             if (m_constraintSolver)
             {
-                defaulttype::Vec3Types::VecCoord lambda =
-                    m_constraintSolver->getLambda()[mstate].read()->getValue();
+                const auto lambda = m_constraintSolver->getLambda()[mstate].read()->getValue();
                 if (lambda[0].norm() > d_punctureThreshold.getValue())
                 {
                     auto findClosestProxOp_needle = Operations::FindClosestProximity::Operation::get(l_fromVol);
