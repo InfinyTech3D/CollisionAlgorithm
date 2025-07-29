@@ -58,8 +58,7 @@ public:
 
     void init() override {
         BaseAlgorithm::init();
-        m_constraintSolver
-            = this->getContext()->get<ConstraintSolver>();
+        m_constraintSolver = this->getContext()->get<ConstraintSolver>();
     }
 
     void draw(const core::visual::VisualParams* vparams) {
@@ -68,14 +67,14 @@ public:
 
         DetectionOutput output = d_output.getValue() ;
         for (const auto& it : output) {
-            vparams->drawTool()->drawLine(it.first->getPosition(), it.second->getPosition(), sofa::type::RGBAColor(0, 1, 0, 1));
+            vparams->drawTool()->drawLine(it.first->getPosition(), it.second->getPosition(), type::RGBAColor(0, 1, 0, 1));
         }
 
         DetectionOutput outputList = d_outputList.getValue() ;
         for (const auto& it : outputList) {
-            vparams->drawTool()->drawSphere(it.first->getPosition(),  d_drawPointsScale.getValue(), sofa::type::RGBAColor(1, 0, 1, 0.9));
-            vparams->drawTool()->drawSphere(it.second->getPosition(), d_drawPointsScale.getValue(), sofa::type::RGBAColor(0, 0, 1, 0.9));
-            vparams->drawTool()->drawLine(it.first->getPosition(), it.second->getPosition(), sofa::type::RGBAColor(1, 1, 0, 1));
+            vparams->drawTool()->drawSphere(it.first->getPosition(),  d_drawPointsScale.getValue(), type::RGBAColor(1, 0, 1, 0.9));
+            vparams->drawTool()->drawSphere(it.second->getPosition(), d_drawPointsScale.getValue(), type::RGBAColor(0, 0, 1, 0.9));
+            vparams->drawTool()->drawLine(it.first->getPosition(), it.second->getPosition(), type::RGBAColor(1, 1, 0, 1));
         }
     }
 
