@@ -77,7 +77,7 @@ def createScene(root):
     )
 
     toolController = root.addChild("ToolController")
-    toolController.addObject("MechanicalObject", name="mstate_baseMaster", position="@GeomagicDevice.positionDevice", template="Rigid3d", showObjectScale=0.01, showObject="true", drawMode=1)
+    toolController.addObject("MechanicalObject", name="mstate_baseMaster", position="@GeomagicDevice.positionDevice", template="Rigid3d", showObjectScale=0.01, showObject="false", drawMode=1)
 
     needle = root.addChild("Needle")
     needle.addObject("EulerImplicitSolver", firstOrder=True)
@@ -88,7 +88,7 @@ def createScene(root):
     needle.addObject("EdgeSetTopologyModifier", name="modifier")
     needle.addObject("PointSetTopologyModifier", name="modifier2")
 
-    needle.addObject("MechanicalObject", name="mstate", template="Rigid3d", showObjectScale=0.002, showObject="true", drawMode=1)
+    needle.addObject("MechanicalObject", name="mstate", template="Rigid3d", showObjectScale=0.002, showObject="false", drawMode=1)
 
     needle.addObject("UniformMass", totalMass=g_needleTotalMass)
     needle.addObject("BeamFEMForceField", name="FEM", **g_needleMechanicalParameters)
@@ -205,4 +205,4 @@ def createScene(root):
     root.addObject("ConstraintUnilateral",input="@InsertionAlgo.output",directions="@punctureDirection",draw_scale="0.001")#, mu="0.001")
 
     root.addObject("FirstDirection",name="bindDirection", handler="@Needle/bodyCollision/NeedleBeams")
-    root.addObject("ConstraintInsertion",input="@InsertionAlgo.outputList", directions="@bindDirection",draw_scale="0.002", frictionCoeff=0.001)
+    root.addObject("ConstraintInsertion",input="@InsertionAlgo.outputList", directions="@bindDirection",draw_scale="0.01", frictionCoeff=0.000)
