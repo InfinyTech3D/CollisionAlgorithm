@@ -180,10 +180,10 @@ def createScene(root):
 
 
     root.addObject("InsertionAlgorithm", name="InsertionAlgo", 
-        fromGeom="@Needle/tipCollision/geom_tip", 
-        destGeom="@Volume/collision/geom_tri", 
-        fromVol="@Needle/bodyCollision/geom_body", 
-        destVol="@Volume/geom_tetra", 
+        tipGeom="@Needle/tipCollision/geom_tip", 
+        surfGeom="@Volume/collision/geom_tri", 
+        shaftGeom="@Needle/bodyCollision/geom_body", 
+        volGeom="@Volume/geom_tetra", 
         punctureThreshold=2., 
         slideDistance=0.003,
         drawcollision=True,
