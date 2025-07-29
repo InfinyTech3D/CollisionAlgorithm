@@ -23,7 +23,7 @@ public:
     typedef component::constraint::lagrangian::solver::ConstraintSolverImpl ConstraintSolver;
 
     GeomLink l_from, l_dest, l_fromVol, l_destVol;
-    Data<AlgorithmOutput> d_output, d_outputList;
+    Data<AlgorithmOutput> d_collisionOutput, d_insertionOutput;
     Data<bool> d_projective ;
     Data<SReal> d_punctureThreshold, d_slideDistance;
     ConstraintSolver* m_constraintSolver;
@@ -36,8 +36,8 @@ public:
     , l_dest(initLink("destGeom", "link to dest geometry"))
     , l_fromVol(initLink("fromVol", "link to from geometry (volume)"))
     , l_destVol(initLink("destVol", "link to dest geometry (volume)"))
-    , d_output(initData(&d_output,"output", "output of the collision detection"))
-    , d_outputList(initData(&d_outputList,"outputList", "output of the detection inside the volume"))
+    , d_collisionOutput(initData(&d_collisionOutput,"collisionOutput", "detected proximities during puncture"))
+    , d_insertionOutput(initData(&d_insertionOutput,"insertionOutput", "detected proximities during insertion"))
     , d_projective(initData(&d_projective, false,"projective", "projection of closest prox onto from element"))
     , d_punctureThreshold(initData(&d_punctureThreshold, std::numeric_limits<double>::max(), "punctureThreshold", "Threshold for puncture detection"))
     , d_slideDistance(initData(&d_slideDistance, std::numeric_limits<double>::min(), "slideDistance", "Distance along the insertion trajectory after which the proximities slide backwards along the needle shaft"))
@@ -58,13 +58,13 @@ public:
         if (! vparams->displayFlags().getShowCollisionModels() && ! d_drawCollision.getValue()) return;
         vparams->drawTool()->disableLighting();
 
-        DetectionOutput output = d_output.getValue() ;
-        for (const auto& it : output) {
+        DetectionOutput collisionOutput = d_collisionOutput.getValue() ;
+        for (const auto& it : collisionOutput) {
             vparams->drawTool()->drawLine(it.first->getPosition(), it.second->getPosition(), type::RGBAColor(0, 1, 0, 1));
         }
 
-        DetectionOutput outputList = d_outputList.getValue() ;
-        for (const auto& it : outputList) {
+        DetectionOutput insertionOutput = d_insertionOutput.getValue() ;
+        for (const auto& it : insertionOutput) {
             vparams->drawTool()->drawSphere(it.first->getPosition(),  d_drawPointsScale.getValue(), type::RGBAColor(1, 0, 1, 0.9));
             vparams->drawTool()->drawSphere(it.second->getPosition(), d_drawPointsScale.getValue(), type::RGBAColor(0, 0, 1, 0.9));
             vparams->drawTool()->drawLine(it.first->getPosition(), it.second->getPosition(), type::RGBAColor(1, 1, 0, 1));
@@ -77,10 +77,10 @@ public:
         if (l_fromVol == NULL) return;
         if (l_destVol == NULL) return;
 
-        auto& output = *d_output.beginEdit();
-        auto& outputList = *d_outputList.beginEdit();
+        auto& collisionOutput = *d_collisionOutput.beginEdit();
+        auto& insertionOutput = *d_insertionOutput.beginEdit();
 
-        if (outputList.size() == 0) 
+        if (insertionOutput.size() == 0) 
         {
                 const MechStateTipType* mstate = l_from->getContext()->get<MechStateTipType>();
             if (m_constraintSolver)
@@ -90,20 +90,20 @@ public:
                 {
                     auto findClosestProxOp_needle = Operations::FindClosestProximity::Operation::get(l_fromVol);
                     auto projectOp_needle = Operations::Project::Operation::get(l_fromVol);
-                    for (const auto& dpair : output)
+                    for (const auto& dpair : collisionOutput)
                     {
                         // Reproject onto the needle to create an EdgeProximity - The EdgeHandler requires this
                         auto pfromVol = findClosestProxOp_needle(dpair.second, l_fromVol.get(), projectOp_needle, getFilterFunc());
                         m_needlePts.push_back(pfromVol);
                         m_couplingPts.push_back(dpair.second->copy());
-                        outputList.add(pfromVol, dpair.second->copy());
+                        insertionOutput.add(pfromVol, dpair.second->copy());
                     }
-                    output.clear();
+                    collisionOutput.clear();
                     return;
                 }
             }
 
-            output.clear();
+            collisionOutput.clear();
 
             auto itfrom = l_from->begin();
 
@@ -125,17 +125,17 @@ public:
                         if (pfromProj == nullptr) continue;
                         pfromProj->normalize();
 
-                        output.add(pfromProj, pdest);
+                        collisionOutput.add(pfromProj, pdest);
                     }
                     else {
-                        output.add(pfrom, pdest);
+                        collisionOutput.add(pfrom, pdest);
                     }
                 }
             }
         }
         else
         {
-            outputList.clear();
+            insertionOutput.clear();
 
             auto itfrom = l_from->begin();
             auto createProximityOp = Operations::CreateCenterProximity::Operation::get(itfrom->getTypeInfo());
@@ -179,11 +179,11 @@ public:
             }
 
             for(int i = 0 ; i < m_couplingPts.size(); i++)
-                outputList.add(m_needlePts[i], m_couplingPts[i]);
+                insertionOutput.add(m_needlePts[i], m_couplingPts[i]);
         }
 
-        d_output.endEdit();
-        d_outputList.endEdit();
+        d_collisionOutput.endEdit();
+        d_insertionOutput.endEdit();
     }
 
 };

@@ -206,7 +206,7 @@ def createScene(root):
     )
     root.addObject("DistanceFilter",algo="@InsertionAlgo",distance=0.01)
     root.addObject("SecondDirection",name="punctureDirection",handler="@Volume/collision/SurfaceTriangles")
-    root.addObject("ConstraintUnilateral",input="@InsertionAlgo.output",directions="@punctureDirection",draw_scale=0.001, mu=0.001)
+    root.addObject("ConstraintUnilateral",input="@InsertionAlgo.collisionOutput",directions="@punctureDirection",draw_scale=0.001, mu=0.001)
 
     root.addObject("FirstDirection",name="bindDirection", handler="@Needle/bodyCollision/NeedleBeams")
-    root.addObject("ConstraintInsertion",input="@InsertionAlgo.outputList", directions="@bindDirection",draw_scale=0.002, frictionCoeff=0.0023)
+    root.addObject("ConstraintInsertion",input="@InsertionAlgo.insertionOutput", directions="@bindDirection",draw_scale=0.002, frictionCoeff=0.0023)
