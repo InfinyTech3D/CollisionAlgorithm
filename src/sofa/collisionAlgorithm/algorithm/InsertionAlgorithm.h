@@ -87,10 +87,6 @@ public:
         {
             const sofa::core::behavior::MechanicalState<defaulttype::Vec3Types>* mstate
                 = l_from->getContext()->get<sofa::core::behavior::MechanicalState<defaulttype::Vec3Types>>();
-            if (mstate->getSize() > 1) {
-                msg_warning() << "Requested MechanicalObject, corresponding to the tip of the needle in the InsertionAlgorithm, has a size greater than 1. "
-                            << "The algorithm is designed to work with a single point. Only the first element will be used.";
-            }
             if (m_constraintSolver)
             {
                 defaulttype::Vec3Types::VecCoord lambda =
