@@ -29,7 +29,6 @@ public:
     Data<bool> d_projective ;
     Data<SReal> d_punctureThreshold ;
     Data<SReal> d_slideDistance ;
-//    Data<sofa::type::vector<double> > d_outputDist;
     sofa::component::constraint::lagrangian::solver::ConstraintSolverImpl* m_constraintSolver;
     std::vector<BaseProximity::SPtr> m_needlePts;
     std::vector<BaseProximity::SPtr> m_couplingPts;
@@ -47,7 +46,6 @@ public:
     , d_projective(initData(&d_projective, false,"projective", "projection of closest prox onto from element"))
     , d_punctureThreshold(initData(&d_punctureThreshold, std::numeric_limits<double>::max(), "punctureThreshold", "Threshold for puncture detection"))
     , d_slideDistance(initData(&d_slideDistance, std::numeric_limits<double>::min(), "slideDistance", "Distance along the insertion trajectory after which the proximities slide backwards along the needle shaft"))
-//    , d_outputDist(initData(&d_outputDist,"outputDist", "Distance of the outpu pair of detections"))
     , m_constraintSolver(nullptr)
     , m_needlePts()
     , m_couplingPts()
