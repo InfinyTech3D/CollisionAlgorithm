@@ -202,7 +202,7 @@ def createScene(root):
         punctureThreshold=2., 
         slideDistance=0.003,
         drawcollision=True,
-        sphereRadius=0.0001
+        drawPointsScale=0.0001
     )
     root.addObject("DistanceFilter",algo="@InsertionAlgo",distance=0.01)
     root.addObject("SecondDirection",name="punctureDirection",handler="@Volume/collision/SurfaceTriangles")

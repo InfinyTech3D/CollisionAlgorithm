@@ -23,7 +23,7 @@ public:
     core::objectmodel::SingleLink<InsertionAlgorithm,BaseGeometry,BaseLink::FLAG_STOREPATH|BaseLink::FLAG_STRONGLINK> l_destVol;
     Data<bool> d_drawCollision ;
     Data<bool> d_drawPoints ;
-    Data<SReal> d_sphereRadius ;
+    Data<SReal> d_drawPointsScale ;
     Data<DetectionOutput<BaseProximity,BaseProximity> > d_output;
     Data<DetectionOutput<BaseProximity,BaseProximity> > d_outputList;
     Data<bool> d_projective ;
@@ -40,7 +40,7 @@ public:
     , l_destVol(initLink("destVol", "link to dest geometry (volume)"))
     , d_drawCollision (initData(&d_drawCollision, false, "drawcollision", "draw collision"))
     , d_drawPoints(initData(&d_drawPoints, false, "drawPoints", "draw detection outputs"))
-    , d_sphereRadius(initData(&d_sphereRadius, 0.0005, "sphereRadius", "radius for drawing detection outputs"))
+    , d_drawPointsScale(initData(&d_drawPointsScale, 0.0005, "drawPointsScale", "scale the drawing of detection output points"))
     , d_output(initData(&d_output,"output", "output of the collision detection"))
     , d_outputList(initData(&d_outputList,"outputList", "output of the detection inside the volume"))
     , d_projective(initData(&d_projective, false,"projective", "projection of closest prox onto from element"))
@@ -68,8 +68,8 @@ public:
 
         DetectionOutput outputList = d_outputList.getValue() ;
         for (const auto& it : outputList) {
-            vparams->drawTool()->drawSphere(it.first->getPosition(),  d_sphereRadius.getValue(), sofa::type::RGBAColor(1, 0, 1, 0.9));
-            vparams->drawTool()->drawSphere(it.second->getPosition(), d_sphereRadius.getValue(), sofa::type::RGBAColor(0, 0, 1, 0.9));
+            vparams->drawTool()->drawSphere(it.first->getPosition(),  d_drawPointsScale.getValue(), sofa::type::RGBAColor(1, 0, 1, 0.9));
+            vparams->drawTool()->drawSphere(it.second->getPosition(), d_drawPointsScale.getValue(), sofa::type::RGBAColor(0, 0, 1, 0.9));
             vparams->drawTool()->drawLine(it.first->getPosition(), it.second->getPosition(), sofa::type::RGBAColor(1, 1, 0, 1));
         }
     }
