@@ -17,35 +17,25 @@ class InsertionAlgorithm : public BaseAlgorithm {
 public:
     SOFA_CLASS(InsertionAlgorithm, BaseAlgorithm);
 
-    typedef sofa::core::behavior::MechanicalState<defaulttype::Vec3Types> MechStateTipType;
+    typedef core::behavior::MechanicalState<defaulttype::Vec3Types> MechStateTipType;
     typedef core::objectmodel::SingleLink<InsertionAlgorithm,BaseGeometry,BaseLink::FLAG_STOREPATH|BaseLink::FLAG_STRONGLINK> GeomLink;
     typedef DetectionOutput<BaseProximity,BaseProximity> AlgorithmOutput;
-    typedef sofa::component::constraint::lagrangian::solver::ConstraintSolverImpl ConstraintSolver;
+    typedef component::constraint::lagrangian::solver::ConstraintSolverImpl ConstraintSolver;
 
-    GeomLink l_from;
-    GeomLink l_dest;
-    GeomLink l_fromVol;
-    GeomLink l_destVol;
-    Data<bool> d_drawCollision ;
-    Data<bool> d_drawPoints ;
-    Data<SReal> d_drawPointsScale ;
-    Data<AlgorithmOutput> d_output;
-    Data<AlgorithmOutput> d_outputList;
+    GeomLink l_from, l_dest, l_fromVol, l_destVol;
+    Data<AlgorithmOutput> d_output, d_outputList;
     Data<bool> d_projective ;
-    Data<SReal> d_punctureThreshold ;
-    Data<SReal> d_slideDistance ;
+    Data<SReal> d_punctureThreshold, d_slideDistance;
     ConstraintSolver* m_constraintSolver;
-    std::vector<BaseProximity::SPtr> m_needlePts;
-    std::vector<BaseProximity::SPtr> m_couplingPts;
+    std::vector<BaseProximity::SPtr> m_needlePts, m_couplingPts;
+    Data<bool> d_drawCollision, d_drawPoints ;
+    Data<SReal> d_drawPointsScale ;
 
     InsertionAlgorithm()
     : l_from(initLink("fromGeom", "link to from geometry"))
     , l_dest(initLink("destGeom", "link to dest geometry"))
     , l_fromVol(initLink("fromVol", "link to from geometry (volume)"))
     , l_destVol(initLink("destVol", "link to dest geometry (volume)"))
-    , d_drawCollision (initData(&d_drawCollision, false, "drawcollision", "draw collision"))
-    , d_drawPoints(initData(&d_drawPoints, false, "drawPoints", "draw detection outputs"))
-    , d_drawPointsScale(initData(&d_drawPointsScale, 0.0005, "drawPointsScale", "scale the drawing of detection output points"))
     , d_output(initData(&d_output,"output", "output of the collision detection"))
     , d_outputList(initData(&d_outputList,"outputList", "output of the detection inside the volume"))
     , d_projective(initData(&d_projective, false,"projective", "projection of closest prox onto from element"))
@@ -54,6 +44,9 @@ public:
     , m_constraintSolver(nullptr)
     , m_needlePts()
     , m_couplingPts()
+    , d_drawCollision (initData(&d_drawCollision, false, "drawcollision", "draw collision"))
+    , d_drawPoints(initData(&d_drawPoints, false, "drawPoints", "draw detection outputs"))
+    , d_drawPointsScale(initData(&d_drawPointsScale, 0.0005, "drawPointsScale", "scale the drawing of detection output points"))
     {}
 
     void init() override {
