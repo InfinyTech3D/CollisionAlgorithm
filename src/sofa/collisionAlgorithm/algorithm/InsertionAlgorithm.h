@@ -29,7 +29,7 @@ class InsertionAlgorithm : public BaseAlgorithm
     Data<AlgorithmOutput> d_collisionOutput, d_insertionOutput;
     Data<bool> d_projective;
     Data<SReal> d_punctureForceThreshold, d_tipDistThreshold;
-    ConstraintSolver* m_constraintSolver;
+    ConstraintSolver::SPtr m_constraintSolver;
     std::vector<BaseProximity::SPtr> m_needlePts, m_couplingPts;
     Data<bool> d_drawCollision, d_drawPoints;
     Data<SReal> d_drawPointsScale;
@@ -71,7 +71,7 @@ class InsertionAlgorithm : public BaseAlgorithm
     void init() override
     {
         BaseAlgorithm::init();
-        m_constraintSolver = this->getContext()->get<ConstraintSolver>();
+        this->getContext()->get<ConstraintSolver>(m_constraintSolver);
     }
 
     void draw(const core::visual::VisualParams* vparams)
@@ -108,10 +108,10 @@ class InsertionAlgorithm : public BaseAlgorithm
 
         if (insertionOutput.size() == 0)
         {
-            const MechStateTipType* mstate = l_tipGeom->getContext()->get<MechStateTipType>();
+            const MechStateTipType::SPtr mstate = l_tipGeom->getContext()->get<MechStateTipType>();
             if (m_constraintSolver)
             {
-                const auto lambda = m_constraintSolver->getLambda()[mstate].read()->getValue();
+                const auto lambda = m_constraintSolver->getLambda()[mstate.get()].read()->getValue();
                 if (lambda[0].norm() > d_punctureForceThreshold.getValue())
                 {
                     auto findClosestProxOnShaft =
