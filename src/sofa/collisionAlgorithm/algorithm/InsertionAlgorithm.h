@@ -112,14 +112,14 @@ public:
             for (; itTip != l_tipGeom->end(); itTip++) 
             {
                 auto tipProx = createTipProximity(itTip->element());
-                if (tipProx == nullptr) continue;
+                if (!tipProx) continue;
                 auto surfProx = findClosestProxOnSurf(tipProx, l_surfGeom.get(), projectOnSurf, getFilterFunc());
-                if (surfProx != nullptr) {
+                if (surfProx) {
                     surfProx->normalize();
 
                     if (d_projective.getValue()) {
                         auto pfromProj = projectOnTip(surfProx->getPosition(), itTip->element()).prox;
-                        if (pfromProj == nullptr) continue;
+                        if (!pfromProj) continue;
                         pfromProj->normalize();
 
                         collisionOutput.add(pfromProj, surfProx);
