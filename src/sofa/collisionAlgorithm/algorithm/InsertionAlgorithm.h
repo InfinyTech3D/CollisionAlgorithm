@@ -134,7 +134,7 @@ class InsertionAlgorithm : public BaseAlgorithm
 
             collisionOutput.clear();
 
-            auto itTip = l_tipGeom->begin();
+            ElementIterator::SPtr itTip = l_tipGeom->begin();
             auto createTipProximity =
                 Operations::CreateCenterProximity::Operation::get(itTip->getTypeInfo());
             auto findClosestProxOnSurf =
@@ -171,12 +171,12 @@ class InsertionAlgorithm : public BaseAlgorithm
         {
             insertionOutput.clear();
 
-            auto itTip = l_tipGeom->begin();
+            ElementIterator::SPtr itTip = l_tipGeom->begin();
             auto createTipProximity =
                 Operations::CreateCenterProximity::Operation::get(itTip->getTypeInfo());
             auto tipProx = createTipProximity(itTip->element());
 
-            auto itShaft = l_shaftGeom->begin(l_shaftGeom->getSize() - 2);
+            ElementIterator::SPtr itShaft = l_shaftGeom->begin(l_shaftGeom->getSize() - 2);
             auto createShaftProximity =
                 Operations::CreateCenterProximity::Operation::get(itShaft->getTypeInfo());
             auto shaftProx = createShaftProximity(itShaft->element());
