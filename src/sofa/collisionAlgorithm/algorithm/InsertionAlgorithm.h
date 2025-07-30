@@ -72,6 +72,8 @@ class InsertionAlgorithm : public BaseAlgorithm
     {
         BaseAlgorithm::init();
         this->getContext()->get<ConstraintSolver>(m_constraintSolver);
+        if (!m_constraintSolver)
+            msg_warning("No constraint solver found in context. Insertion algorithm is disabled.");
     }
 
     void draw(const core::visual::VisualParams* vparams)
