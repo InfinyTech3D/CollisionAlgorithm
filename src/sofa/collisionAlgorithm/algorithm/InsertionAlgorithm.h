@@ -129,7 +129,9 @@ class InsertionAlgorithm : public BaseAlgorithm
             {
                 const auto& lambda =
                     m_constraintSolver->getLambda()[mstate.get()].read()->getValue();
-                if (lambda[0].norm() > d_punctureForceThreshold.getValue())
+                SReal norm{0.};
+                for (const auto& l : lambda) norm += l.norm();
+                if (norm > d_punctureForceThreshold.getValue())
                 {
                     auto findClosestProxOnShaft =
                         Operations::FindClosestProximity::Operation::get(l_shaftGeom);
