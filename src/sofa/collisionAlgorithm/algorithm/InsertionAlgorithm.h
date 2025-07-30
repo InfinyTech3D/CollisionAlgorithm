@@ -88,15 +88,15 @@ public:
                 const auto lambda = m_constraintSolver->getLambda()[mstate].read()->getValue();
                 if (lambda[0].norm() > d_punctureThreshold.getValue())
                 {
-                    auto findClosestProxOp_needle = Operations::FindClosestProximity::Operation::get(l_shaftGeom);
-                    auto projectOp_needle = Operations::Project::Operation::get(l_shaftGeom);
+                    auto findClosestProxOnShaft = Operations::FindClosestProximity::Operation::get(l_shaftGeom);
+                    auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
                     for (const auto& dpair : collisionOutput)
                     {
-                        // Reproject onto the needle to create an EdgeProximity - The EdgeHandler requires this
-                        auto pfromVol = findClosestProxOp_needle(dpair.second, l_shaftGeom.get(), projectOp_needle, getFilterFunc());
-                        m_needlePts.push_back(pfromVol);
+                        // Reproject onto the needle to create an EdgeProximity - the EdgeNormalHandler in the Constraint classes will need this
+                        auto shaftProx = findClosestProxOnShaft(dpair.second, l_shaftGeom.get(), projectOnShaft, getFilterFunc());
+                        m_needlePts.push_back(shaftProx);
                         m_couplingPts.push_back(dpair.second->copy());
-                        insertionOutput.add(pfromVol, dpair.second->copy());
+                        insertionOutput.add(shaftProx, dpair.second->copy());
                     }
                     collisionOutput.clear();
                     return;
@@ -105,30 +105,30 @@ public:
 
             collisionOutput.clear();
 
-            auto itfrom = l_tipGeom->begin();
+            auto itTip = l_tipGeom->begin();
 
-            auto createProximityOp = Operations::CreateCenterProximity::Operation::get(itfrom->getTypeInfo());
-            auto findClosestProxOp = Operations::FindClosestProximity::Operation::get(l_surfGeom);
-            auto projectOp = Operations::Project::Operation::get(l_surfGeom);
-            auto projectFromOp = Operations::Project::Operation::get(l_tipGeom);
+            auto createTipProximity = Operations::CreateCenterProximity::Operation::get(itTip->getTypeInfo());
+            auto findClosestProxOnSurf = Operations::FindClosestProximity::Operation::get(l_surfGeom);
+            auto projectOnSurf = Operations::Project::Operation::get(l_surfGeom);
+            auto projectOnTip = Operations::Project::Operation::get(l_tipGeom);
 
-            for (; itfrom != l_tipGeom->end(); itfrom++) 
+            for (; itTip != l_tipGeom->end(); itTip++) 
             {
-                auto pfrom = createProximityOp(itfrom->element());
-                if (pfrom == nullptr) continue;
-                auto pdest = findClosestProxOp(pfrom, l_surfGeom.get(), projectOp, getFilterFunc());
-                if (pdest != nullptr) {
-                    pdest->normalize();
+                auto tipProx = createTipProximity(itTip->element());
+                if (tipProx == nullptr) continue;
+                auto surfProx = findClosestProxOnSurf(tipProx, l_surfGeom.get(), projectOnSurf, getFilterFunc());
+                if (surfProx != nullptr) {
+                    surfProx->normalize();
 
                     if (d_projective.getValue()) {
-                        auto pfromProj = projectFromOp(pdest->getPosition(), itfrom->element()).prox;
+                        auto pfromProj = projectOnTip(surfProx->getPosition(), itTip->element()).prox;
                         if (pfromProj == nullptr) continue;
                         pfromProj->normalize();
 
-                        collisionOutput.add(pfromProj, pdest);
+                        collisionOutput.add(pfromProj, surfProx);
                     }
                     else {
-                        collisionOutput.add(pfrom, pdest);
+                        collisionOutput.add(tipProx, surfProx);
                     }
                 }
             }
@@ -137,16 +137,16 @@ public:
         {
             insertionOutput.clear();
 
-            auto itfrom = l_tipGeom->begin();
-            auto createProximityOp = Operations::CreateCenterProximity::Operation::get(itfrom->getTypeInfo());
-            auto pfrom = createProximityOp(itfrom->element());
+            auto itTip = l_tipGeom->begin();
+            auto createTipProximity = Operations::CreateCenterProximity::Operation::get(itTip->getTypeInfo());
+            auto tipProx = createTipProximity(itTip->element());
 
-            auto itfromVol = l_shaftGeom->begin(l_shaftGeom->getSize() - 2);
-            auto createProximityOpVol = Operations::CreateCenterProximity::Operation::get(itfromVol->getTypeInfo());
-            auto pfromVol = createProximityOpVol(itfromVol->element());
-            const EdgeProximity::SPtr edgeProx = dynamic_pointer_cast<EdgeProximity>(pfromVol);
+            auto itShaft = l_shaftGeom->begin(l_shaftGeom->getSize() - 2);
+            auto createShaftProximity = Operations::CreateCenterProximity::Operation::get(itShaft->getTypeInfo());
+            auto shaftProx = createShaftProximity(itShaft->element());
+            const EdgeProximity::SPtr edgeProx = dynamic_pointer_cast<EdgeProximity>(shaftProx);
             const type::Vec3 normal = (edgeProx->element()->getP1()->getPosition() - edgeProx->element()->getP0()->getPosition()).normalized();
-            type::Vec3 ab = m_couplingPts.back()->getPosition() - pfrom->getPosition();
+            type::Vec3 ab = m_couplingPts.back()->getPosition() - tipProx->getPosition();
             const SReal dotProd = dot(ab, normal);
             if (dotProd > 0.0)
             {
@@ -157,25 +157,24 @@ public:
             const SReal dist = ab.norm();
             if(dist > d_slideDistance.getValue()) 
             {
-                auto findClosestProxOp_vol = Operations::FindClosestProximity::Operation::get(l_volGeom);
-                auto projectOp_vol = Operations::Project::Operation::get(l_volGeom);
-                auto projectFromOp_vol = Operations::Project::Operation::get(l_shaftGeom);
-                auto pdestVol = findClosestProxOp_vol(pfrom, l_volGeom.get(), projectOp_vol, getFilterFunc());
-                if (pdestVol)
+                auto findClosestProxOnVol = Operations::FindClosestProximity::Operation::get(l_volGeom);
+                auto projectOnVol = Operations::Project::Operation::get(l_volGeom);
+                auto volProx = findClosestProxOnVol(tipProx, l_volGeom.get(), projectOnVol, getFilterFunc());
+                if (volProx)
                 {
-                    pdestVol->normalize();
-                    m_couplingPts.push_back(pdestVol);
+                    volProx->normalize();
+                    m_couplingPts.push_back(volProx);
                     m_needlePts.push_back(m_needlePts.back());
                 }
             }
 
-            auto findClosestProxOp_needle = Operations::FindClosestProximity::Operation::get(l_shaftGeom);
-            auto projectOp_needle = Operations::Project::Operation::get(l_shaftGeom);
+            auto findClosestProxOnShaft = Operations::FindClosestProximity::Operation::get(l_shaftGeom);
+            auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
 
             for(int i = 0 ; i < m_couplingPts.size(); i++)
             {
-                auto pfromVol = findClosestProxOp_needle(m_couplingPts[i], l_shaftGeom.get(), projectOp_needle, getFilterFunc());
-                m_needlePts[i] = pfromVol;
+                auto shaftProx = findClosestProxOnShaft(m_couplingPts[i], l_shaftGeom.get(), projectOnShaft, getFilterFunc());
+                m_needlePts[i] = shaftProx;
             }
 
             for(int i = 0 ; i < m_couplingPts.size(); i++)
