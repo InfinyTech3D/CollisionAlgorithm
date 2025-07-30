@@ -111,7 +111,8 @@ class InsertionAlgorithm : public BaseAlgorithm
             const MechStateTipType::SPtr mstate = l_tipGeom->getContext()->get<MechStateTipType>();
             if (m_constraintSolver)
             {
-                const auto lambda = m_constraintSolver->getLambda()[mstate.get()].read()->getValue();
+                const auto lambda =
+                    m_constraintSolver->getLambda()[mstate.get()].read()->getValue();
                 if (lambda[0].norm() > d_punctureForceThreshold.getValue())
                 {
                     auto findClosestProxOnShaft =
@@ -121,7 +122,7 @@ class InsertionAlgorithm : public BaseAlgorithm
                     {
                         // Reproject onto the needle to create an EdgeProximity - the
                         // EdgeNormalHandler in the Constraint classes will need this
-                        BaseProximity::SPtr shaftProx = findClosestProxOnShaft(
+                        const BaseProximity::SPtr shaftProx = findClosestProxOnShaft(
                             dpair.second, l_shaftGeom.get(), projectOnShaft, getFilterFunc());
                         m_needlePts.push_back(shaftProx);
                         m_couplingPts.push_back(dpair.second->copy());
@@ -146,7 +147,7 @@ class InsertionAlgorithm : public BaseAlgorithm
             {
                 BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
                 if (!tipProx) continue;
-                BaseProximity::SPtr surfProx = findClosestProxOnSurf(
+                const BaseProximity::SPtr surfProx = findClosestProxOnSurf(
                     tipProx, l_surfGeom.get(), projectOnSurf, getFilterFunc());
                 if (surfProx)
                 {
@@ -173,12 +174,12 @@ class InsertionAlgorithm : public BaseAlgorithm
             ElementIterator::SPtr itTip = l_tipGeom->begin();
             auto createTipProximity =
                 Operations::CreateCenterProximity::Operation::get(itTip->getTypeInfo());
-            BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
+            const BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
 
             ElementIterator::SPtr itShaft = l_shaftGeom->begin(l_shaftGeom->getSize() - 2);
             auto createShaftProximity =
                 Operations::CreateCenterProximity::Operation::get(itShaft->getTypeInfo());
-            BaseProximity::SPtr shaftProx = createShaftProximity(itShaft->element());
+            const BaseProximity::SPtr shaftProx = createShaftProximity(itShaft->element());
             const EdgeProximity::SPtr edgeProx = dynamic_pointer_cast<EdgeProximity>(shaftProx);
             const type::Vec3 normal = (edgeProx->element()->getP1()->getPosition() -
                                        edgeProx->element()->getP0()->getPosition())
@@ -197,7 +198,7 @@ class InsertionAlgorithm : public BaseAlgorithm
                 auto findClosestProxOnVol =
                     Operations::FindClosestProximity::Operation::get(l_volGeom);
                 auto projectOnVol = Operations::Project::Operation::get(l_volGeom);
-                BaseProximity::SPtr volProx =
+                const BaseProximity::SPtr volProx =
                     findClosestProxOnVol(tipProx, l_volGeom.get(), projectOnVol, getFilterFunc());
                 if (volProx)
                 {
@@ -213,8 +214,8 @@ class InsertionAlgorithm : public BaseAlgorithm
 
             for (int i = 0; i < m_couplingPts.size(); i++)
             {
-                BaseProximity::SPtr shaftProx = findClosestProxOnShaft(m_couplingPts[i], l_shaftGeom.get(),
-                                                        projectOnShaft, getFilterFunc());
+                const BaseProximity::SPtr shaftProx = findClosestProxOnShaft(
+                    m_couplingPts[i], l_shaftGeom.get(), projectOnShaft, getFilterFunc());
                 m_needlePts[i] = shaftProx;
             }
 
