@@ -48,13 +48,11 @@ class InsertionAlgorithm : public BaseAlgorithm
           d_projective(initData(
               &d_projective, false, "projective",
               "Projection of closest detected proximity back onto the needle tip element.")),
-          d_punctureForceThreshold(initData(&d_punctureForceThreshold,
-                                            std::numeric_limits<double>::max(),
+          d_punctureForceThreshold(initData(&d_punctureForceThreshold, -1.,
                                             "punctureForceThreshold",
                                             "Threshold for the force applied to the needle tip. "
                                             "Once exceeded, puncture is initiated.")),
-          d_tipDistThreshold(initData(&d_tipDistThreshold, std::numeric_limits<double>::min(),
-                                      "tipDistThreshold",
+          d_tipDistThreshold(initData(&d_tipDistThreshold, -1., "tipDistThreshold",
                                       "Threshold for the distance advanced by the needle tip since "
                                       "the last proximity detection. Once exceeded, a new "
                                       "proximity pair is added for the needle-volume coupling.")),
@@ -72,8 +70,24 @@ class InsertionAlgorithm : public BaseAlgorithm
     {
         BaseAlgorithm::init();
         this->getContext()->get<ConstraintSolver>(m_constraintSolver);
-        if (!m_constraintSolver)
-            msg_warning("No constraint solver found in context. Insertion algorithm is disabled.");
+        msg_warning_when(!m_constraintSolver)
+            << "No constraint solver found in context. Insertion algorithm is disabled.";
+
+        if (d_punctureForceThreshold.getValue() < 0)
+        {
+            msg_warning() << d_punctureForceThreshold.getName() +
+                                 " parameter not defined or set to negative value." msgendl
+                          << "Puncture will not function properly; provide a positive value";
+            d_punctureForceThreshold.setValue(std::numeric_limits<double>::max());
+        }
+
+        if (d_tipDistThreshold.getValue() < 0)
+        {
+            msg_warning() << d_tipDistThreshold.getName() +
+                                 " parameter not defined or set to negative value." msgendl
+                          << "Needle-volume coupling is disabled; provide a positive value";
+            d_tipDistThreshold.setValue(std::numeric_limits<double>::max());
+        }
     }
 
     void draw(const core::visual::VisualParams* vparams)
