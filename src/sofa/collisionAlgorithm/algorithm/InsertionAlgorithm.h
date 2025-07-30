@@ -25,28 +25,28 @@ public:
     GeomLink l_tipGeom, l_surfGeom, l_shaftGeom, l_volGeom;
     Data<AlgorithmOutput> d_collisionOutput, d_insertionOutput;
     Data<bool> d_projective ;
-    Data<SReal> d_punctureThreshold, d_slideDistance;
+    Data<SReal> d_punctureForceThreshold, d_tipDistThreshold;
     ConstraintSolver* m_constraintSolver;
     std::vector<BaseProximity::SPtr> m_needlePts, m_couplingPts;
     Data<bool> d_drawCollision, d_drawPoints ;
     Data<SReal> d_drawPointsScale ;
 
     InsertionAlgorithm()
-    : l_tipGeom(initLink("tipGeom", "link to the geometry structure of the needle tip"))
-    , l_surfGeom(initLink("surfGeom", "link to the geometry of the surface punctured by the needle"))
-    , l_shaftGeom(initLink("shaftGeom", "link to the geometry structure of the needle shaft"))
-    , l_volGeom(initLink("volGeom", "link to the geometry of volume wherein the needle is inserted"))
-    , d_collisionOutput(initData(&d_collisionOutput,"collisionOutput", "detected proximities during puncture"))
-    , d_insertionOutput(initData(&d_insertionOutput,"insertionOutput", "detected proximities during insertion"))
-    , d_projective(initData(&d_projective, false,"projective", "projection of closest prox onto from element"))
-    , d_punctureThreshold(initData(&d_punctureThreshold, std::numeric_limits<double>::max(), "punctureThreshold", "Threshold for puncture detection"))
-    , d_slideDistance(initData(&d_slideDistance, std::numeric_limits<double>::min(), "slideDistance", "Distance along the insertion trajectory after which the proximities slide backwards along the needle shaft"))
+    : l_tipGeom(initLink("tipGeom", "Link to the geometry structure of the needle tip."))
+    , l_surfGeom(initLink("surfGeom", "Link to the geometry of the surface punctured by the needle."))
+    , l_shaftGeom(initLink("shaftGeom", "Link to the geometry structure of the needle shaft."))
+    , l_volGeom(initLink("volGeom", "Link to the geometry of volume wherein the needle is inserted."))
+    , d_collisionOutput(initData(&d_collisionOutput,"collisionOutput", "Detected proximities during puncture."))
+    , d_insertionOutput(initData(&d_insertionOutput,"insertionOutput", "Detected proximities during insertion."))
+    , d_projective(initData(&d_projective, false,"projective", "Projection of closest detected proximity back onto the needle tip element."))
+    , d_punctureForceThreshold(initData(&d_punctureForceThreshold, std::numeric_limits<double>::max(), "punctureForceThreshold", "Threshold for the force applied to the needle tip. Once exceeded, puncture is initiated."))
+    , d_tipDistThreshold(initData(&d_tipDistThreshold, std::numeric_limits<double>::min(), "tipDistThreshold", "Threshold for the distance advanced by the needle tip since the last proximity detection. Once exceeded, a new proximity pair is added for the needle-volume coupling."))
     , m_constraintSolver(nullptr)
     , m_needlePts()
     , m_couplingPts()
-    , d_drawCollision (initData(&d_drawCollision, false, "drawcollision", "draw collision"))
-    , d_drawPoints(initData(&d_drawPoints, false, "drawPoints", "draw detection outputs"))
-    , d_drawPointsScale(initData(&d_drawPointsScale, 0.0005, "drawPointsScale", "scale the drawing of detection output points"))
+    , d_drawCollision (initData(&d_drawCollision, false, "drawcollision", "Draw collision."))
+    , d_drawPoints(initData(&d_drawPoints, false, "drawPoints", "Draw detection outputs."))
+    , d_drawPointsScale(initData(&d_drawPointsScale, 0.0005, "drawPointsScale", "Scale the drawing of detection output points."))
     {}
 
     void init() override {
@@ -86,7 +86,7 @@ public:
             if (m_constraintSolver)
             {
                 const auto lambda = m_constraintSolver->getLambda()[mstate].read()->getValue();
-                if (lambda[0].norm() > d_punctureThreshold.getValue())
+                if (lambda[0].norm() > d_punctureForceThreshold.getValue())
                 {
                     auto findClosestProxOnShaft = Operations::FindClosestProximity::Operation::get(l_shaftGeom);
                     auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
@@ -155,7 +155,7 @@ public:
             }
 
             const SReal dist = ab.norm();
-            if(dist > d_slideDistance.getValue()) 
+            if(dist > d_tipDistThreshold.getValue()) 
             {
                 auto findClosestProxOnVol = Operations::FindClosestProximity::Operation::get(l_volGeom);
                 auto projectOnVol = Operations::Project::Operation::get(l_volGeom);
