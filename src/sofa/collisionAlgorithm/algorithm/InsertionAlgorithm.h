@@ -72,10 +72,7 @@ public:
     }
 
     void doDetection() {
-        if (l_tipGeom == NULL) return;
-        if (l_surfGeom == NULL) return;
-        if (l_shaftGeom == NULL) return;
-        if (l_volGeom == NULL) return;
+        if (!l_tipGeom || !l_surfGeom || !l_shaftGeom || !l_volGeom) return;
 
         auto& collisionOutput = *d_collisionOutput.beginEdit();
         auto& insertionOutput = *d_insertionOutput.beginEdit();
