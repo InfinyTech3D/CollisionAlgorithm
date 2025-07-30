@@ -153,12 +153,11 @@ class InsertionAlgorithm : public BaseAlgorithm
                     surfProx->normalize();
                     if (d_projective.getValue())
                     {
-                        auto pfromProj =
-                            projectOnTip(surfProx->getPosition(), itTip->element()).prox;
-                        if (!pfromProj) continue;
-                        pfromProj->normalize();
+                        tipProx = projectOnTip(surfProx->getPosition(), itTip->element()).prox;
+                        if (!tipProx) continue;
+                        tipProx->normalize();
 
-                        collisionOutput.add(pfromProj, surfProx);
+                        collisionOutput.add(tipProx, surfProx);
                     }
                     else
                     {
