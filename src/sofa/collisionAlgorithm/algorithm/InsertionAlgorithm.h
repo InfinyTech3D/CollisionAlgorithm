@@ -80,14 +80,14 @@ class InsertionAlgorithm : public BaseAlgorithm
             return;
         vparams->drawTool()->disableLighting();
 
-        DetectionOutput collisionOutput = d_collisionOutput.getValue();
+        const AlgorithmOutput& collisionOutput = d_collisionOutput.getValue();
         for (const auto& it : collisionOutput)
         {
             vparams->drawTool()->drawLine(it.first->getPosition(), it.second->getPosition(),
                                           type::RGBAColor(0, 1, 0, 1));
         }
 
-        DetectionOutput insertionOutput = d_insertionOutput.getValue();
+        const AlgorithmOutput& insertionOutput = d_insertionOutput.getValue();
         for (const auto& it : insertionOutput)
         {
             vparams->drawTool()->drawSphere(it.first->getPosition(), d_drawPointsScale.getValue(),
@@ -111,7 +111,7 @@ class InsertionAlgorithm : public BaseAlgorithm
             const MechStateTipType::SPtr mstate = l_tipGeom->getContext()->get<MechStateTipType>();
             if (m_constraintSolver)
             {
-                const auto lambda =
+                const auto& lambda =
                     m_constraintSolver->getLambda()[mstate.get()].read()->getValue();
                 if (lambda[0].norm() > d_punctureForceThreshold.getValue())
                 {
@@ -184,7 +184,7 @@ class InsertionAlgorithm : public BaseAlgorithm
             const type::Vec3 normal = (edgeProx->element()->getP1()->getPosition() -
                                        edgeProx->element()->getP0()->getPosition())
                                           .normalized();
-            type::Vec3 ab = m_couplingPts.back()->getPosition() - tipProx->getPosition();
+            const type::Vec3 ab = m_couplingPts.back()->getPosition() - tipProx->getPosition();
             const SReal dotProd = dot(ab, normal);
             if (dotProd > 0.0)
             {
