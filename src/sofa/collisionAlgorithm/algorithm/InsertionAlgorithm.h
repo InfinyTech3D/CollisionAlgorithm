@@ -122,7 +122,7 @@ class InsertionAlgorithm : public BaseAlgorithm
         auto& collisionOutput = *d_collisionOutput.beginEdit();
         auto& insertionOutput = *d_insertionOutput.beginEdit();
 
-        if (insertionOutput.size() == 0)
+        if (m_couplingPts.empty())
         {
             const MechStateTipType::SPtr mstate = l_tipGeom->getContext()->get<MechStateTipType>();
             if (m_constraintSolver)
