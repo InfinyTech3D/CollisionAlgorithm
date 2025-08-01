@@ -188,8 +188,8 @@ class InsertionAlgorithm : public BaseAlgorithm
                 Operations::CreateCenterProximity::Operation::get(itTip->getTypeInfo());
             const BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
 
-            const type::Vec3 ab = m_couplingPts.back()->getPosition() - tipProx->getPosition();
-            if (ab.norm() > d_tipDistThreshold.getValue())
+            const type::Vec3 tip2Pt = m_couplingPts.back()->getPosition() - tipProx->getPosition();
+            if (tip2Pt.norm() > d_tipDistThreshold.getValue())
             {
                 auto findClosestProxOnVol =
                     Operations::FindClosestProximity::Operation::get(l_volGeom);
@@ -212,8 +212,7 @@ class InsertionAlgorithm : public BaseAlgorithm
                 const type::Vec3 normal = (edgeProx->element()->getP1()->getPosition() -
                                            edgeProx->element()->getP0()->getPosition())
                                               .normalized();
-                const SReal dotProd = dot(ab, normal);
-                if (dotProd > 0.0) {
+                if (dot(tip2Pt, normal) > 0_sreal) {
                     m_couplingPts.pop_back();
                 }
             }
