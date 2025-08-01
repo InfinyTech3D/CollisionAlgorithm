@@ -188,22 +188,8 @@ class InsertionAlgorithm : public BaseAlgorithm
                 Operations::CreateCenterProximity::Operation::get(itTip->getTypeInfo());
             const BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
 
-            ElementIterator::SPtr itShaft = l_shaftGeom->begin(l_shaftGeom->getSize() - 2);
-            auto createShaftProximity =
-                Operations::CreateCenterProximity::Operation::get(itShaft->getTypeInfo());
-            const BaseProximity::SPtr shaftProx = createShaftProximity(itShaft->element());
-            const EdgeProximity::SPtr edgeProx = dynamic_pointer_cast<EdgeProximity>(shaftProx);
-            const type::Vec3 normal = (edgeProx->element()->getP1()->getPosition() -
-                                       edgeProx->element()->getP0()->getPosition())
-                                          .normalized();
             const type::Vec3 ab = m_couplingPts.back()->getPosition() - tipProx->getPosition();
-            const SReal dotProd = dot(ab, normal);
-            if (dotProd > 0.0) {
-                m_couplingPts.pop_back();
-            }
-
-            const SReal dist = ab.norm();
-            if (dist > d_tipDistThreshold.getValue())
+            if (ab.norm() > d_tipDistThreshold.getValue())
             {
                 auto findClosestProxOnVol =
                     Operations::FindClosestProximity::Operation::get(l_volGeom);
@@ -214,6 +200,21 @@ class InsertionAlgorithm : public BaseAlgorithm
                 {
                     volProx->normalize();
                     m_couplingPts.push_back(volProx);
+                }
+            }
+            else // Don't bother with removing the point that was just added
+            {
+                ElementIterator::SPtr itShaft = l_shaftGeom->begin(l_shaftGeom->getSize() - 2);
+                auto createShaftProximity =
+                    Operations::CreateCenterProximity::Operation::get(itShaft->getTypeInfo());
+                const BaseProximity::SPtr shaftProx = createShaftProximity(itShaft->element());
+                const EdgeProximity::SPtr edgeProx = dynamic_pointer_cast<EdgeProximity>(shaftProx);
+                const type::Vec3 normal = (edgeProx->element()->getP1()->getPosition() -
+                                           edgeProx->element()->getP0()->getPosition())
+                                              .normalized();
+                const SReal dotProd = dot(ab, normal);
+                if (dotProd > 0.0) {
+                    m_couplingPts.pop_back();
                 }
             }
 
