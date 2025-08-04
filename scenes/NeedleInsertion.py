@@ -179,18 +179,18 @@ def createScene(root):
 
 
     root.addObject("InsertionAlgorithm", name="InsertionAlgo", 
-        fromGeom="@Needle/tipCollision/geom_tip", 
-        destGeom="@Volume/collision/geom_tri", 
-        fromVol="@Needle/bodyCollision/geom_body", 
-        destVol="@Volume/geom_tetra", 
-        punctureThreshold=2., 
-        slideDistance=0.003,
+        tipGeom="@Needle/tipCollision/geom_tip", 
+        surfGeom="@Volume/collision/geom_tri", 
+        shaftGeom="@Needle/bodyCollision/geom_body", 
+        volGeom="@Volume/geom_tetra", 
+        punctureForceThreshold=2., 
+        tipDistThreshold=0.003,
         drawcollision=True,
-        sphereRadius=0.0001
+        drawPointsScale=0.0001
     )
     root.addObject("DistanceFilter",algo="@InsertionAlgo",distance=0.01)
     root.addObject("SecondDirection",name="punctureDirection",handler="@Volume/collision/SurfaceTriangles")
-    root.addObject("ConstraintUnilateral",input="@InsertionAlgo.output",directions="@punctureDirection",draw_scale=0.001)
+    root.addObject("ConstraintUnilateral",input="@InsertionAlgo.collisionOutput",directions="@punctureDirection",draw_scale=0.001)
 
     root.addObject("FirstDirection",name="bindDirection", handler="@Needle/bodyCollision/NeedleBeams")
-    root.addObject("ConstraintInsertion",input="@InsertionAlgo.outputList", directions="@bindDirection",draw_scale=0.002, frictionCoeff=0.05)
+    root.addObject("ConstraintInsertion",input="@InsertionAlgo.insertionOutput", directions="@bindDirection",draw_scale=0.002, frictionCoeff=0.05)
