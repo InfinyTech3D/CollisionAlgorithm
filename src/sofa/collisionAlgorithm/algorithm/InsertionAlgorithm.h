@@ -174,6 +174,34 @@ class InsertionAlgorithm : public BaseAlgorithm
                     collisionOutput.add(tipProx, surfProx);
                 }
             }
+
+            // 1.3 Collision with the shaft geometry
+            if (collisionOutput.size())
+            {
+            auto createShaftProximity =
+                Operations::CreateCenterProximity::Operation::get(l_shaftGeom->getTypeInfo());
+            auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
+                for (const auto& itShaft : *l_shaftGeom)
+                {
+                    BaseProximity::SPtr shaftProx = createShaftProximity(itShaft.element());
+                    if (!shaftProx) continue;
+                    const BaseProximity::SPtr surfProx = findClosestProxOnSurf(
+                        shaftProx, l_surfGeom.get(), projectOnSurf, getFilterFunc());
+                    if (surfProx)
+                    {
+                        surfProx->normalize();
+    
+                        // 1.2 If not, create a proximity pair for the tip-surface collision
+                        if (d_projective.getValue())
+                        {
+                            shaftProx = projectOnShaft(surfProx->getPosition(), itShaft.element()).prox;
+                            if (!shaftProx) continue;
+                            shaftProx->normalize();
+                        }
+                        collisionOutput.add(shaftProx, surfProx);
+                    }
+                }
+            }
         }
         else
         {
