@@ -29,8 +29,8 @@ class InsertionAlgorithm : public BaseAlgorithm
     Data<AlgorithmOutput> d_collisionOutput, d_insertionOutput;
     Data<bool> d_projective;
     Data<SReal> d_punctureForceThreshold, d_tipDistThreshold;
-    ConstraintSolver* m_constraintSolver;
-    std::vector<BaseProximity::SPtr> m_needlePts, m_couplingPts;
+    ConstraintSolver::SPtr m_constraintSolver;
+    std::vector<BaseProximity::SPtr> m_couplingPts;
     Data<bool> d_drawCollision, d_drawPoints;
     Data<SReal> d_drawPointsScale;
 
@@ -48,18 +48,15 @@ class InsertionAlgorithm : public BaseAlgorithm
           d_projective(initData(
               &d_projective, false, "projective",
               "Projection of closest detected proximity back onto the needle tip element.")),
-          d_punctureForceThreshold(initData(&d_punctureForceThreshold,
-                                            std::numeric_limits<double>::max(),
+          d_punctureForceThreshold(initData(&d_punctureForceThreshold, -1.,
                                             "punctureForceThreshold",
                                             "Threshold for the force applied to the needle tip. "
                                             "Once exceeded, puncture is initiated.")),
-          d_tipDistThreshold(initData(&d_tipDistThreshold, std::numeric_limits<double>::min(),
-                                      "tipDistThreshold",
+          d_tipDistThreshold(initData(&d_tipDistThreshold, -1., "tipDistThreshold",
                                       "Threshold for the distance advanced by the needle tip since "
                                       "the last proximity detection. Once exceeded, a new "
                                       "proximity pair is added for the needle-volume coupling.")),
           m_constraintSolver(nullptr),
-          m_needlePts(),
           m_couplingPts(),
           d_drawCollision(initData(&d_drawCollision, false, "drawcollision", "Draw collision.")),
           d_drawPoints(initData(&d_drawPoints, false, "drawPoints", "Draw detection outputs.")),
@@ -71,7 +68,25 @@ class InsertionAlgorithm : public BaseAlgorithm
     void init() override
     {
         BaseAlgorithm::init();
-        m_constraintSolver = this->getContext()->get<ConstraintSolver>();
+        this->getContext()->get<ConstraintSolver>(m_constraintSolver);
+        msg_warning_when(!m_constraintSolver)
+            << "No constraint solver found in context. Insertion algorithm is disabled.";
+
+        if (d_punctureForceThreshold.getValue() < 0)
+        {
+            msg_warning() << d_punctureForceThreshold.getName() +
+                                 " parameter not defined or set to negative value." msgendl
+                          << "Puncture will not function properly; provide a positive value";
+            d_punctureForceThreshold.setValue(std::numeric_limits<double>::max());
+        }
+
+        if (d_tipDistThreshold.getValue() < 0)
+        {
+            msg_warning() << d_tipDistThreshold.getName() +
+                                 " parameter not defined or set to negative value." msgendl
+                          << "Needle-volume coupling is disabled; provide a positive value";
+            d_tipDistThreshold.setValue(std::numeric_limits<double>::max());
+        }
     }
 
     void draw(const core::visual::VisualParams* vparams)
@@ -80,14 +95,14 @@ class InsertionAlgorithm : public BaseAlgorithm
             return;
         vparams->drawTool()->disableLighting();
 
-        DetectionOutput collisionOutput = d_collisionOutput.getValue();
+        const AlgorithmOutput& collisionOutput = d_collisionOutput.getValue();
         for (const auto& it : collisionOutput)
         {
             vparams->drawTool()->drawLine(it.first->getPosition(), it.second->getPosition(),
                                           type::RGBAColor(0, 1, 0, 1));
         }
 
-        DetectionOutput insertionOutput = d_insertionOutput.getValue();
+        const AlgorithmOutput& insertionOutput = d_insertionOutput.getValue();
         for (const auto& it : insertionOutput)
         {
             vparams->drawTool()->drawSphere(it.first->getPosition(), d_drawPointsScale.getValue(),
@@ -106,120 +121,134 @@ class InsertionAlgorithm : public BaseAlgorithm
         auto& collisionOutput = *d_collisionOutput.beginEdit();
         auto& insertionOutput = *d_insertionOutput.beginEdit();
 
-        if (insertionOutput.size() == 0)
+        insertionOutput.clear();
+        collisionOutput.clear();
+
+        if (m_couplingPts.empty())
         {
-            const MechStateTipType* mstate = l_tipGeom->getContext()->get<MechStateTipType>();
-            if (m_constraintSolver)
-            {
-                const auto lambda = m_constraintSolver->getLambda()[mstate].read()->getValue();
-                if (lambda[0].norm() > d_punctureForceThreshold.getValue())
-                {
-                    auto findClosestProxOnShaft =
-                        Operations::FindClosestProximity::Operation::get(l_shaftGeom);
-                    auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
-                    for (const auto& dpair : collisionOutput)
-                    {
-                        // Reproject onto the needle to create an EdgeProximity - the
-                        // EdgeNormalHandler in the Constraint classes will need this
-                        BaseProximity::SPtr shaftProx = findClosestProxOnShaft(
-                            dpair.second, l_shaftGeom.get(), projectOnShaft, getFilterFunc());
-                        m_needlePts.push_back(shaftProx);
-                        m_couplingPts.push_back(dpair.second->copy());
-                        insertionOutput.add(shaftProx, dpair.second->copy());
-                    }
-                    collisionOutput.clear();
-                    return;
-                }
-            }
-
-            collisionOutput.clear();
-
-            ElementIterator::SPtr itTip = l_tipGeom->begin();
+            // 1. Puncture algorithm
             auto createTipProximity =
-                Operations::CreateCenterProximity::Operation::get(itTip->getTypeInfo());
+                Operations::CreateCenterProximity::Operation::get(l_tipGeom->getTypeInfo());
             auto findClosestProxOnSurf =
                 Operations::FindClosestProximity::Operation::get(l_surfGeom);
             auto projectOnSurf = Operations::Project::Operation::get(l_surfGeom);
             auto projectOnTip = Operations::Project::Operation::get(l_tipGeom);
 
-            for (; itTip != l_tipGeom->end(); itTip++)
+            for (const auto& itTip : *l_tipGeom)
             {
-                BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
+                BaseProximity::SPtr tipProx = createTipProximity(itTip.element());
                 if (!tipProx) continue;
-                BaseProximity::SPtr surfProx = findClosestProxOnSurf(
+                const BaseProximity::SPtr surfProx = findClosestProxOnSurf(
                     tipProx, l_surfGeom.get(), projectOnSurf, getFilterFunc());
                 if (surfProx)
                 {
                     surfProx->normalize();
+
+                    // 1.1 Check whether puncture is happening - if so, create coupling point
+                    if (m_constraintSolver)
+                    {
+                        const MechStateTipType::SPtr mstate =
+                            l_tipGeom->getContext()->get<MechStateTipType>();
+                        const auto& lambda =
+                            m_constraintSolver->getLambda()[mstate.get()].read()->getValue();
+                        SReal norm{0.};
+                        for (const auto& l : lambda) norm += l.norm();
+                        if (norm > d_punctureForceThreshold.getValue())
+                        {
+                            m_couplingPts.push_back(surfProx);
+                            continue;
+                        }
+                    }
+
+                    // 1.2 If not, create a proximity pair for the tip-surface collision
                     if (d_projective.getValue())
                     {
-                        tipProx = projectOnTip(surfProx->getPosition(), itTip->element()).prox;
+                        tipProx = projectOnTip(surfProx->getPosition(), itTip.element()).prox;
                         if (!tipProx) continue;
                         tipProx->normalize();
-
-                        collisionOutput.add(tipProx, surfProx);
                     }
-                    else
+                    collisionOutput.add(tipProx, surfProx);
+                }
+            }
+
+            // 1.3 Collision with the shaft geometry
+            if (collisionOutput.size())
+            {
+            auto createShaftProximity =
+                Operations::CreateCenterProximity::Operation::get(l_shaftGeom->getTypeInfo());
+            auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
+                for (const auto& itShaft : *l_shaftGeom)
+                {
+                    BaseProximity::SPtr shaftProx = createShaftProximity(itShaft.element());
+                    if (!shaftProx) continue;
+                    const BaseProximity::SPtr surfProx = findClosestProxOnSurf(
+                        shaftProx, l_surfGeom.get(), projectOnSurf, getFilterFunc());
+                    if (surfProx)
                     {
-                        collisionOutput.add(tipProx, surfProx);
+                        surfProx->normalize();
+    
+                        // 1.2 If not, create a proximity pair for the tip-surface collision
+                        if (d_projective.getValue())
+                        {
+                            shaftProx = projectOnShaft(surfProx->getPosition(), itShaft.element()).prox;
+                            if (!shaftProx) continue;
+                            shaftProx->normalize();
+                        }
+                        collisionOutput.add(shaftProx, surfProx);
                     }
                 }
             }
         }
         else
         {
-            insertionOutput.clear();
-
+            // 2. Needle insertion algorithm
             ElementIterator::SPtr itTip = l_tipGeom->begin();
             auto createTipProximity =
                 Operations::CreateCenterProximity::Operation::get(itTip->getTypeInfo());
-            BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
+            const BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
 
-            ElementIterator::SPtr itShaft = l_shaftGeom->begin(l_shaftGeom->getSize() - 2);
-            auto createShaftProximity =
-                Operations::CreateCenterProximity::Operation::get(itShaft->getTypeInfo());
-            BaseProximity::SPtr shaftProx = createShaftProximity(itShaft->element());
-            const EdgeProximity::SPtr edgeProx = dynamic_pointer_cast<EdgeProximity>(shaftProx);
-            const type::Vec3 normal = (edgeProx->element()->getP1()->getPosition() -
-                                       edgeProx->element()->getP0()->getPosition())
-                                          .normalized();
-            type::Vec3 ab = m_couplingPts.back()->getPosition() - tipProx->getPosition();
-            const SReal dotProd = dot(ab, normal);
-            if (dotProd > 0.0)
-            {
-                m_couplingPts.pop_back();
-                m_needlePts.pop_back();
-            }
-
-            const SReal dist = ab.norm();
-            if (dist > d_tipDistThreshold.getValue())
+            // 2.1 Check whether coupling point should be added
+            const type::Vec3 tip2Pt = m_couplingPts.back()->getPosition() - tipProx->getPosition();
+            if (tip2Pt.norm() > d_tipDistThreshold.getValue())
             {
                 auto findClosestProxOnVol =
                     Operations::FindClosestProximity::Operation::get(l_volGeom);
                 auto projectOnVol = Operations::Project::Operation::get(l_volGeom);
-                BaseProximity::SPtr volProx =
+                const BaseProximity::SPtr volProx =
                     findClosestProxOnVol(tipProx, l_volGeom.get(), projectOnVol, getFilterFunc());
                 if (volProx)
                 {
                     volProx->normalize();
                     m_couplingPts.push_back(volProx);
-                    m_needlePts.push_back(m_needlePts.back());
                 }
             }
+            else // Don't bother with removing the point that was just added
+            {
+                // 2.2. Check whether coupling point should be removed 
+                ElementIterator::SPtr itShaft = l_shaftGeom->begin(l_shaftGeom->getSize() - 2);
+                auto createShaftProximity =
+                    Operations::CreateCenterProximity::Operation::get(itShaft->getTypeInfo());
+                const BaseProximity::SPtr shaftProx = createShaftProximity(itShaft->element());
+                const EdgeProximity::SPtr edgeProx = dynamic_pointer_cast<EdgeProximity>(shaftProx);
+                const type::Vec3 normal = (edgeProx->element()->getP1()->getPosition() -
+                                           edgeProx->element()->getP0()->getPosition())
+                                              .normalized();
+                if (dot(tip2Pt, normal) > 0.0) m_couplingPts.pop_back();
+            }
+        }
 
+        if (!m_couplingPts.empty())
+        {
+            // 3. Re-project proximities on the shaft geometry
             auto findClosestProxOnShaft =
                 Operations::FindClosestProximity::Operation::get(l_shaftGeom);
             auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
-
             for (int i = 0; i < m_couplingPts.size(); i++)
             {
-                BaseProximity::SPtr shaftProx = findClosestProxOnShaft(m_couplingPts[i], l_shaftGeom.get(),
-                                                        projectOnShaft, getFilterFunc());
-                m_needlePts[i] = shaftProx;
+                const BaseProximity::SPtr shaftProx = findClosestProxOnShaft(
+                    m_couplingPts[i], l_shaftGeom.get(), projectOnShaft, getFilterFunc());
+                insertionOutput.add(shaftProx, m_couplingPts[i]);
             }
-
-            for (int i = 0; i < m_couplingPts.size(); i++)
-                insertionOutput.add(m_needlePts[i], m_couplingPts[i]);
         }
 
         d_collisionOutput.endEdit();
