@@ -13,18 +13,18 @@ g_needleTotalMass=0.01
 
 g_gelRegularGridParameters = [
 {
-    "n":[12, 4, 6],
+    "n":[6, 4, 4],
     "min":[-0.350, -0.050, -0.350],
-    "max":[0.350, 0.049, -0.100]
+    "max":[0.350, 0.0499, -0.100]
 },
 {
-    "n":[12, 4, 6],
-    "min":[-0.350, 0.051, -0.350],
+    "n":[6, 4, 4],
+    "min":[-0.350, 0.0501, -0.350],
     "max":[0.350, 0.150, -0.100]
 }
 ] #Again all in mm
 g_gelMechanicalParameters = {
-    "youngModulus":8e5,
+    "youngModulus":8e7,
     "poissonRatio":0.45,
     "method":"large"
 }
@@ -163,7 +163,8 @@ def createScene(root):
         volume.addObject("MeshMatrixMass", name="Mass",totalMass=g_gelTotalMass)
     
         volume.addObject("BoxROI",name="BoxROI",box=g_gelFixedBoxROI)
-        volume.addObject("RestShapeSpringsForceField", stiffness=1e6,points="@BoxROI.indices"  )
+        volume.addObject("RestShapeSpringsForceField", stiffness=1e6, points="@BoxROI.indices"  )
+        volume.addObject("FixedLagrangianConstraint", indices="@BoxROI.indices"  )
     
         volume.addObject("LinearSolverConstraintCorrection", printLog=False, linearSolver="@LinearSolver")
     
@@ -196,6 +197,12 @@ def createScene(root):
                             triangles="@../TetraContainer.triangles",
                             color=g_wireColor[i],name="volume_visu",template="Vec3d")
         volumeVisuWire.addObject("IdentityMapping")
+
+    root.addObject("NearestPointROI", template="Vec3d", name="attachROI", radius=0.0025,
+                   object1="@Layer0/mstate_gel", object2="@Layer1/mstate_gel")
+    root.addObject("BilateralLagrangianConstraint", name="layerAttachment", 
+                   first_point="@attachROI.indices1", second_point="@attachROI.indices2",
+                   object1="@Layer0/mstate_gel", object2="@Layer1/mstate_gel")
 
 
     #root.addObject("InsertionAlgorithm", name="InsertionAlgo", 
