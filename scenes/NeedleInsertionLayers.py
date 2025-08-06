@@ -15,11 +15,11 @@ g_gelRegularGridParameters = [
 {
     "n":[12, 4, 6],
     "min":[-0.350, -0.050, -0.350],
-    "max":[0.350, 0.050, -0.100]
+    "max":[0.350, 0.049, -0.100]
 },
 {
     "n":[12, 4, 6],
-    "min":[-0.350, 0.050, -0.350],
+    "min":[-0.350, 0.051, -0.350],
     "max":[0.350, 0.150, -0.100]
 }
 ] #Again all in mm
@@ -65,10 +65,16 @@ def createScene(root):
 
 
     root.addObject("ConstraintAttachButtonSetting")
-    root.addObject("VisualStyle", displayFlags="showVisualModels hideBehaviorModels hideCollisionModels hideMappings hideForceFields hideWireframe showInteractionForceFields" )
+    root.addObject("VisualStyle", displayFlags="showVisualModels hideBehaviorModels hideCollisionModels hideMappings hideForceFields hideWireframe hideInteractionForceFields")
     root.addObject("FreeMotionAnimationLoop")
     root.addObject("GenericConstraintSolver", tolerance=0.00001, maxIt=5000)
     root.addObject("CollisionLoop")
+
+    root.addObject("CollisionPipeline", name="pipeline", depth=6, verbose=0)
+    root.addObject("BruteForceBroadPhase")
+    root.addObject("BVHNarrowPhase")
+    root.addObject("CollisionResponse", response="FrictionContact")
+    root.addObject("LocalMinDistance", name="proximity", alarmDistance=0.002, contactDistance=0.0005)
 
     #needleBaseMaster = root.addChild("NeedleBaseMaster")
     #needleBaseMaster.addObject("MechanicalObject", name="mstate_baseMaster", position=[0.04, 0.04, 0, 0, 0, 0, 1], template="Rigid3d", showObjectScale=0.002, showObject=False, drawMode=1)
@@ -170,6 +176,10 @@ def createScene(root):
         volumeCollision.addObject("PhongTriangleNormalHandler", name="SurfaceTriangles", geometry="@geom_tri")
         volumeCollision.addObject("AABBBroadPhase",name="AABBTriangles",thread=1,nbox=[2,2,3])
 
+        volumeCollision.addObject("TriangleCollisionModel", name="colli_tri", group=i)
+        volumeCollision.addObject("LineCollisionModel", name="colli_line", group=i)
+        volumeCollision.addObject("PointCollisionModel", name="colli_point", group=i)
+    
         volumeCollision.addObject("IdentityMapping", name="identityMappingToCollision", input="@../mstate_gel", output="@mstate_gelColi", isMechanical=True)
     
         volumeVisu = volumeCollision.addChild("visu")
