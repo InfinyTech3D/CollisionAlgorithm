@@ -122,6 +122,8 @@ class InsertionAlgorithm : public BaseAlgorithm
         auto& collisionOutput = *d_collisionOutput.beginEdit();
         auto& insertionOutput = *d_insertionOutput.beginEdit();
 
+        insertionOutput.clear();
+
         if (m_couplingPts.empty())
         {
             const MechStateTipType::SPtr mstate = l_tipGeom->getContext()->get<MechStateTipType>();
@@ -145,8 +147,8 @@ class InsertionAlgorithm : public BaseAlgorithm
                         const BaseProximity::SPtr shaftProx = findClosestProxOnShaft(
                             dpair.second, l_shaftGeom.get(), projectOnShaft, getFilterFunc());
                         m_needlePts.push_back(shaftProx);
-                        m_couplingPts.push_back(dpair.second->copy());
-                        insertionOutput.add(shaftProx, dpair.second->copy());
+                        m_couplingPts.push_back(dpair.second);
+                        insertionOutput.add(shaftProx, dpair.second);
                     }
                     collisionOutput.clear();
                     return;
@@ -155,17 +157,16 @@ class InsertionAlgorithm : public BaseAlgorithm
 
             collisionOutput.clear();
 
-            ElementIterator::SPtr itTip = l_tipGeom->begin();
             auto createTipProximity =
-                Operations::CreateCenterProximity::Operation::get(itTip->getTypeInfo());
+                Operations::CreateCenterProximity::Operation::get(l_tipGeom->getTypeInfo());
             auto findClosestProxOnSurf =
                 Operations::FindClosestProximity::Operation::get(l_surfGeom);
             auto projectOnSurf = Operations::Project::Operation::get(l_surfGeom);
             auto projectOnTip = Operations::Project::Operation::get(l_tipGeom);
 
-            for (; itTip != l_tipGeom->end(); itTip++)
+            for (const auto& itTip : *l_tipGeom)
             {
-                BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
+                BaseProximity::SPtr tipProx = createTipProximity(itTip.element());
                 if (!tipProx) continue;
                 const BaseProximity::SPtr surfProx = findClosestProxOnSurf(
                     tipProx, l_surfGeom.get(), projectOnSurf, getFilterFunc());
@@ -174,22 +175,16 @@ class InsertionAlgorithm : public BaseAlgorithm
                     surfProx->normalize();
                     if (d_projective.getValue())
                     {
-                        tipProx = projectOnTip(surfProx->getPosition(), itTip->element()).prox;
+                        tipProx = projectOnTip(surfProx->getPosition(), itTip.element()).prox;
                         if (!tipProx) continue;
                         tipProx->normalize();
-
-                        collisionOutput.add(tipProx, surfProx);
                     }
-                    else
-                    {
-                        collisionOutput.add(tipProx, surfProx);
-                    }
+                    collisionOutput.add(tipProx, surfProx);
                 }
             }
         }
         else
         {
-            insertionOutput.clear();
 
             ElementIterator::SPtr itTip = l_tipGeom->begin();
             auto createTipProximity =
