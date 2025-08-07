@@ -1,13 +1,13 @@
 import Sofa
 
-g_needleLength=0.100 #(m)
-g_needleNumberOfElems=20 #(# of edges)
+g_needleLength=0.200 #(m)
+g_needleNumberOfElems=40 #(# of edges)
 g_needleBaseOffset=[0.15,0.04,0.04]
 g_needleRadius = 0.001 #(m)
 g_needleMechanicalParameters = {
     "radius":g_needleRadius,
-    "youngModulus":1e11,
-    "poissonRatio":0.3
+    "youngModulus":2e13,
+    "poissonRatio":0.45
 }
 g_needleTotalMass=0.01
 
@@ -17,8 +17,8 @@ g_gelRegularGridParameters = {
     "max":[0.125, 0.125, -0.100]
 } #Again all in mm
 g_gelMechanicalParameters = {
-    "youngModulus":9e4,
-    "poissonRatio":0.45,
+    "youngModulus":4e4,
+    "poissonRatio":0.3,
     "method":"large"
 }
 g_gelTotalMass = 1
@@ -62,10 +62,11 @@ def createScene(root):
     root.addObject("ConstraintAttachButtonSetting")
     root.addObject("VisualStyle", displayFlags="showVisualModels hideBehaviorModels showCollisionModels hideMappings hideForceFields showWireframe showInteractionForceFields" )
     root.addObject("FreeMotionAnimationLoop")
-    root.addObject("GenericConstraintSolver", tolerance=0.00001, maxIt=5000)
+    root.addObject("GenericConstraintSolver", tolerance=0.00001, maxIt=5000, regularizationTerm=0.001)
     root.addObject("CollisionLoop")
 
-    root.addObject("GeomagicDriver"
+    toolController = root.addChild("ToolController")
+    toolController.addObject("GeomagicDriver"
         , name='GeomagicDevice' 
         , deviceName='Default Device' 
         , scale=0.02 
@@ -75,30 +76,34 @@ def createScene(root):
         , positionBase=[0.12, 0, 0] 
         , orientationBase=[0, 0.174, 0, -0.985] 
     )
-
-    toolController = root.addChild("ToolController")
-    toolController.addObject("MechanicalObject", name="mstate_baseMaster", position="@GeomagicDevice.positionDevice", template="Rigid3d", showObjectScale=0.01, showObject=False, drawMode=1)
+    toolController.addObject("MechanicalObject", name="mstate_baseMaster"
+        , position="@GeomagicDevice.positionDevice"
+        , template="Rigid3d"
+        , showObjectScale=0.01
+        , showObject=False
+        , drawMode=1
+    )
 
     needle = root.addChild("Needle")
     needle.addObject("EulerImplicitSolver", firstOrder=True)
     needle.addObject("EigenSparseLU", name="LinearSolver", template="CompressedRowSparseMatrixd")
-    needle.addObject("EdgeSetTopologyContainer", name="Container", position=[[g_needleBaseOffset[0], g_needleBaseOffset[1], -(i * g_needleLength/(g_needleNumberOfElems) + g_needleBaseOffset[2])] for i in range(g_needleNumberOfElems + 1)]
-                                                                 , edges=[[i, i+1] for i in range(g_needleNumberOfElems)])
-
+    needle.addObject("EdgeSetTopologyContainer", name="Container"
+        , position=[[g_needleBaseOffset[0], g_needleBaseOffset[1], -(i * g_needleLength/(g_needleNumberOfElems) + g_needleBaseOffset[2])] for i in range(g_needleNumberOfElems + 1)]
+        , edges=[[i, i+1] for i in range(g_needleNumberOfElems)]
+    )
     needle.addObject("EdgeSetTopologyModifier", name="modifier")
     needle.addObject("PointSetTopologyModifier", name="modifier2")
-
-    needle.addObject("MechanicalObject", name="mstate", template="Rigid3d", showObjectScale=0.002, showObject=False, drawMode=1)
+    needle.addObject("MechanicalObject", name="mstate", template="Rigid3d"
+        , showObjectScale=0.002, showObject=False, drawMode=1)
 
     needle.addObject("UniformMass", totalMass=g_needleTotalMass)
     needle.addObject("BeamFEMForceField", name="FEM", **g_needleMechanicalParameters)
     needle.addObject("LinearSolverConstraintCorrection", linearSolver="@LinearSolver")
-    needle.addObject("LCPForceFeedback", activate=1, forceCoef=0.01)
+    needle.addObject("RestShapeSpringsForceField",points=[0],stiffness=1e9, angularStiffness=1e11,external_points=[0],external_rest_shape="@/ToolController/mstate_baseMaster")
 
     needleBase = needle.addChild("needleBase")
     needleBase.addObject("PointSetTopologyContainer", name="Container_base", position="@../mstate.position")
     needleBase.addObject("MechanicalObject",name="mstate_base", template="Rigid3d")
-    needleBase.addObject("RestShapeSpringsForceField",points=[0],stiffness=1e9, angularStiffness=1e9,external_points=[0],external_rest_shape="@/ToolController/mstate_baseMaster")
     needleBase.addObject("SubsetMapping", indices=0)
 
     needleBodyCollision = needle.addChild("bodyCollision")
@@ -106,11 +111,12 @@ def createScene(root):
     needleBodyCollision.addObject("MechanicalObject",name="mstate_body", template="Vec3d", drawMode=0, showObject=False, showObjectScale=10)
     needleBodyCollision.addObject("EdgeGeometry",name="geom_body",mstate="@mstate_body", topology="@Container_body")
     needleBodyCollision.addObject("EdgeNormalHandler", name="NeedleBeams", geometry="@geom_body")
-
     needleBodyCollision.addObject("IdentityMapping")
 
     needleTipCollision = needle.addChild("tipCollision")
-    needleTipCollision.addObject("MechanicalObject",name="mstate_tip",position=[g_needleBaseOffset[0], g_needleBaseOffset[1], -(g_needleLength+g_needleBaseOffset[2])],template="Vec3d", showObject=False, showObjectScale=20)
+    needleTipCollision.addObject("PointSetTopologyContainer", name="Container_tip"
+        , position=[g_needleBaseOffset[0], g_needleBaseOffset[1], -(g_needleLength+g_needleBaseOffset[2])])
+    needleTipCollision.addObject("MechanicalObject",name="mstate_tip",template="Vec3d", showObject=False, showObjectScale=20)
     needleTipCollision.addObject("PointGeometry",name="geom_tip",mstate="@mstate_tip")
     needleTipCollision.addObject("RigidMapping",globalToLocalCoords=True,index=g_needleNumberOfElems)
 
@@ -119,9 +125,7 @@ def createScene(root):
     needleVisual.addObject("QuadSetTopologyContainer", name="Container_visu")
     needleVisual.addObject("QuadSetTopologyModifier", name="Modifier")
     needleVisual.addObject("Edge2QuadTopologicalMapping", nbPointsOnEachCircle=8, radius=g_needleRadius, input="@../Container", output="@Container_visu")
-
     needleVisual.addObject("MechanicalObject", name="mstate_visu", showObjectScale=0.0002, showObject=False, drawMode=1)
-
     needleVisual.addObject("TubularMapping", nbPointsOnEachCircle=8, radius=g_needleRadius, input="@../mstate", output="@mstate_visu")
 
     needleOGL = needleVisual.addChild("OGL")
@@ -133,6 +137,18 @@ def createScene(root):
                            name="visualOgl")
     needleOGL.addObject("IdentityMapping")
 
+    FF = root.addChild("ForceFeedback")
+    FF.addObject("MechanicalObject", name="mstate_lcp", template="Rigid3d"
+        , showObject=False, src="@../Needle/needleBase/mstate_base")
+    FF.addObject("LCPForceFeedback", name="lcp_ff", activate=1, forceCoef=1)
+    FFCollision = FF.addChild("Collision")
+    FFCollision.addObject("EdgeSetTopologyContainer", name="Container", src="@../../Needle/bodyCollision/Container_body")
+    FFCollision.addObject("MechanicalObject", name="mstate_coli", constraint="@../../Needle/bodyCollision/mstate_body.constraint")
+    FFCollision.addObject("RigidMapping")
+    FFTip = FF.addChild("Tip")
+    FFTip.addObject("PointSetTopologyContainer", name="Container", src="@../../Needle/tipCollision/Container_tip")
+    FFTip.addObject("MechanicalObject", name="mstate_coli", constraint="@../../Needle/tipCollision/mstate_tip.constraint")
+    FFTip.addObject("RigidMapping")
 
     volume = root.addChild("Volume")
     volume.addObject("EulerImplicitSolver")
@@ -184,12 +200,12 @@ def createScene(root):
         surfGeom="@Volume/collision/geom_tri", 
         shaftGeom="@Needle/bodyCollision/geom_body", 
         volGeom="@Volume/geom_tetra", 
-        punctureForceThreshold=2., 
-        tipDistThreshold=0.003,
+        punctureForceThreshold=1., 
+        tipDistThreshold=0.01,
         drawcollision=True,
         drawPointsScale=0.0001
     )
-    root.addObject("DistanceFilter",algo="@InsertionAlgo",distance=0.01)
+    root.addObject("DistanceFilter",algo="@InsertionAlgo",distance=0.02)
     root.addObject("SecondDirection",name="punctureDirection",handler="@Volume/collision/SurfaceTriangles")
     root.addObject("ConstraintUnilateral",input="@InsertionAlgo.collisionOutput",directions="@punctureDirection",draw_scale=0.001, mu=0.001)
 
