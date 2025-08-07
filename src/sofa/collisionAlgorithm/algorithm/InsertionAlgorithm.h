@@ -52,7 +52,7 @@ class InsertionAlgorithm : public BaseAlgorithm
                                             "punctureForceThreshold",
                                             "Threshold for the force applied to the needle tip. "
                                             "Once exceeded, puncture is initiated.")),
-          d_tipDistThreshold(initData(&d_tipDistThreshold, -1., "tipDistThreshold",
+          d_tipDistThreshold(initData(&d_tipDistThreshold, -1_sreal, "tipDistThreshold",
                                       "Threshold for the distance advanced by the needle tip since "
                                       "the last proximity detection. Once exceeded, a new "
                                       "proximity pair is added for the needle-volume coupling.")),
