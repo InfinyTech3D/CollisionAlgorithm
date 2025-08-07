@@ -129,7 +129,7 @@ class InsertionAlgorithm : public BaseAlgorithm
             {
                 const auto& lambda =
                     m_constraintSolver->getLambda()[mstate.get()].read()->getValue();
-                SReal norm{0.};
+                SReal norm{0_sreal};
                 for (const auto& l : lambda) norm += l.norm();
                 if (norm > d_punctureForceThreshold.getValue())
                 {
