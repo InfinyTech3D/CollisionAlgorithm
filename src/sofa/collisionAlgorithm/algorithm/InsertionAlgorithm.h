@@ -48,7 +48,7 @@ class InsertionAlgorithm : public BaseAlgorithm
           d_projective(initData(
               &d_projective, false, "projective",
               "Projection of closest detected proximity back onto the needle tip element.")),
-          d_punctureForceThreshold(initData(&d_punctureForceThreshold, -1.,
+          d_punctureForceThreshold(initData(&d_punctureForceThreshold, -1_sreal,
                                             "punctureForceThreshold",
                                             "Threshold for the force applied to the needle tip. "
                                             "Once exceeded, puncture is initiated.")),
