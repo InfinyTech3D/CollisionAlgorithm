@@ -198,7 +198,9 @@ class InsertionAlgorithm : public BaseAlgorithm
                                           .normalized();
             const type::Vec3 ab = m_couplingPts.back()->getPosition() - tipProx->getPosition();
             const SReal dotProd = dot(ab, normal);
-            if (dotProd > 0.0) m_couplingPts.pop_back();
+            if (dotProd > 0.0) {
+                m_couplingPts.pop_back();
+            }
 
             const SReal dist = ab.norm();
             if (dist > d_tipDistThreshold.getValue())
