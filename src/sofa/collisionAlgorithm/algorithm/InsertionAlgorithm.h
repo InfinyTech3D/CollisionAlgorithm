@@ -253,7 +253,10 @@ class InsertionAlgorithm : public BaseAlgorithm
             {
                 const BaseProximity::SPtr shaftProx = findClosestProxOnShaft(
                     m_couplingPts[i], l_shaftGeom.get(), projectOnShaft, getFilterFunc());
-                insertionOutput.add(shaftProx, m_couplingPts[i]);
+                if(shaftProx) {
+                    shaftProx->normalize();
+                    insertionOutput.add(shaftProx, m_couplingPts[i]);
+                }
             }
         }
 
