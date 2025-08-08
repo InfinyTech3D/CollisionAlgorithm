@@ -210,6 +210,7 @@ class InsertionAlgorithm : public BaseAlgorithm
             auto createTipProximity =
                 Operations::CreateCenterProximity::Operation::get(itTip->getTypeInfo());
             const BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
+            if(!tipProx) return;
 
             // 2.1 Check whether coupling point should be added
             const type::Vec3 tip2Pt = m_couplingPts.back()->getPosition() - tipProx->getPosition();
