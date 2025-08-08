@@ -122,39 +122,11 @@ class InsertionAlgorithm : public BaseAlgorithm
         auto& insertionOutput = *d_insertionOutput.beginEdit();
 
         insertionOutput.clear();
+        collisionOutput.clear();
 
         if (m_couplingPts.empty())
         {
-            const MechStateTipType::SPtr mstate = l_tipGeom->getContext()->get<MechStateTipType>();
-            if (m_constraintSolver)
-            {
-                const auto& lambda =
-                    m_constraintSolver->getLambda()[mstate.get()].read()->getValue();
-                SReal norm{0_sreal};
-                for (const auto& l : lambda) {
-                    norm += l.norm();
-                }
-                if (norm > d_punctureForceThreshold.getValue())
-                {
-                    auto findClosestProxOnShaft =
-                        Operations::FindClosestProximity::Operation::get(l_shaftGeom);
-                    auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
-                    for (const auto& dpair : collisionOutput)
-                    {
-                        // Reproject onto the needle to create an EdgeProximity - the
-                        // EdgeNormalHandler in the Constraint classes will need this
-                        const BaseProximity::SPtr shaftProx = findClosestProxOnShaft(
-                            dpair.second, l_shaftGeom.get(), projectOnShaft, getFilterFunc());
-                        m_couplingPts.push_back(dpair.second);
-                        insertionOutput.add(shaftProx, dpair.second);
-                    }
-                    collisionOutput.clear();
-                    return;
-                }
-            }
-
-            collisionOutput.clear();
-
+            // 1. Puncture algorithm
             auto createTipProximity =
                 Operations::CreateCenterProximity::Operation::get(l_tipGeom->getTypeInfo());
             auto findClosestProxOnSurf =
@@ -162,6 +134,8 @@ class InsertionAlgorithm : public BaseAlgorithm
             auto projectOnSurf = Operations::Project::Operation::get(l_surfGeom);
             auto projectOnTip = Operations::Project::Operation::get(l_tipGeom);
 
+            const bool isProjective = d_projective.getValue();
+            const SReal punctureForceThreshold = d_punctureForceThreshold.getValue();
             for (const auto& itTip : *l_tipGeom)
             {
                 BaseProximity::SPtr tipProx = createTipProximity(itTip.element());
@@ -171,7 +145,27 @@ class InsertionAlgorithm : public BaseAlgorithm
                 if (surfProx)
                 {
                     surfProx->normalize();
-                    if (d_projective.getValue())
+
+                    // 1.1 Check whether puncture is happening - if so, create coupling point
+                    if (m_constraintSolver)
+                    {
+                        const MechStateTipType::SPtr mstate =
+                            l_tipGeom->getContext()->get<MechStateTipType>();
+                        const auto& lambda =
+                            m_constraintSolver->getLambda()[mstate.get()].read()->getValue();
+                        SReal norm{0_sreal};
+                        for (const auto& l : lambda) {
+                            norm += l.norm();
+                        }
+                        if (norm > punctureForceThreshold)
+                        {
+                            m_couplingPts.push_back(surfProx);
+                            continue;
+                        }
+                    }
+
+                    // 1.2 If not, create a proximity pair for the tip-surface collision
+                    if (isProjective)
                     {
                         tipProx = projectOnTip(surfProx->getPosition(), itTip.element()).prox;
                         if (!tipProx) continue;
@@ -183,11 +177,13 @@ class InsertionAlgorithm : public BaseAlgorithm
         }
         else
         {
+            // 2. Needle insertion algorithm
             ElementIterator::SPtr itTip = l_tipGeom->begin();
             auto createTipProximity =
                 Operations::CreateCenterProximity::Operation::get(itTip->getTypeInfo());
             const BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
 
+            // 2.1 Check whether coupling point should be added
             const type::Vec3 tip2Pt = m_couplingPts.back()->getPosition() - tipProx->getPosition();
             if (tip2Pt.norm() > d_tipDistThreshold.getValue())
             {
@@ -204,6 +200,7 @@ class InsertionAlgorithm : public BaseAlgorithm
             }
             else // Don't bother with removing the point that was just added
             {
+                // 2.2. Check whether coupling point should be removed 
                 ElementIterator::SPtr itShaft = l_shaftGeom->begin(l_shaftGeom->getSize() - 2);
                 auto createShaftProximity =
                     Operations::CreateCenterProximity::Operation::get(itShaft->getTypeInfo());
@@ -216,7 +213,11 @@ class InsertionAlgorithm : public BaseAlgorithm
                     m_couplingPts.pop_back();
                 }
             }
+        }
 
+        if (!m_couplingPts.empty())
+        {
+            // 3. Re-project proximities on the shaft geometry
             auto findClosestProxOnShaft =
                 Operations::FindClosestProximity::Operation::get(l_shaftGeom);
             auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
