@@ -235,11 +235,14 @@ class InsertionAlgorithm : public BaseAlgorithm
                     Operations::CreateCenterProximity::Operation::get(itShaft->getTypeInfo());
                 const BaseProximity::SPtr shaftProx = createShaftProximity(itShaft->element());
                 const EdgeProximity::SPtr edgeProx = dynamic_pointer_cast<EdgeProximity>(shaftProx);
-                const type::Vec3 normal = (edgeProx->element()->getP1()->getPosition() -
-                                           edgeProx->element()->getP0()->getPosition())
-                                              .normalized();
-                if (dot(tip2Pt, normal) > 0_sreal) {
-                    m_couplingPts.pop_back();
+                if(edgeProx) 
+                {
+                    const type::Vec3 normal = (edgeProx->element()->getP1()->getPosition() -
+                                               edgeProx->element()->getP0()->getPosition())
+                                                  .normalized();
+                    if (dot(tip2Pt, normal) > 0_sreal) {
+                        m_couplingPts.pop_back();
+                    }
                 }
             }
         }
