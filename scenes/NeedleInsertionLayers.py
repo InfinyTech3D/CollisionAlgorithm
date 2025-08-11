@@ -1,8 +1,9 @@
+from re import I
 import Sofa
 
-g_needleLength=0.400 #(m)
-g_needleNumberOfElems=40 #(# of edges)
-g_needleBaseOffset=[0.04,0.25,-0.2]
+g_needleLength=0.200 #(m)
+g_needleNumberOfElems=20 #(# of edges)
+g_needleBaseOffset=[0.04,0.15,-0.2]
 g_needleRadius = 0.001 #(m)
 g_needleMechanicalParameters = {
     "radius":g_needleRadius,
@@ -15,12 +16,12 @@ g_gelRegularGridParameters = [
 {
     "n":[6, 4, 4],
     "min":[-0.150, -0.050, -0.250],
-    "max":[0.150, 0.0499, -0.100]
+    "max":[0.150, 0.0099, -0.100]
 },
 {
     "n":[6, 4, 4],
-    "min":[-0.150, 0.0501, -0.250],
-    "max":[0.150, 0.150, -0.100]
+    "min":[-0.150, 0.0101, -0.250],
+    "max":[0.150, 0.060, -0.100]
 }
 ] #Again all in mm
 g_gelMechanicalParameters = {
@@ -31,7 +32,7 @@ g_gelMechanicalParameters = {
 g_gelTotalMass = 1
 g_cubeColor=[[0.8, 0.34, 0.34, 0.3],[0.6, 0.6, 0, 0.3]]
 g_wireColor=[[0.8, 0.34, 0.34, 1],[0.6, 0.6, 0, 1]]
-g_gelFixedBoxROI=[[-0.155, -0.055, -0.255, -0.145, 0.155, -0.095 ], [0.155, -0.055, -0.255, 0.145, 0.155, -0.095 ]]
+g_gelFixedBoxROI=[[-0.155, -0.055, -0.255, -0.145, 0.065, -0.095 ], [0.155, -0.055, -0.255, 0.145, 0.065, -0.095 ]]
 
 # Function called when the scene graph is being created
 def createScene(root):
@@ -78,12 +79,12 @@ def createScene(root):
 
     needleBaseMaster = root.addChild("NeedleBaseMaster")
     needleBaseMaster.addObject("MechanicalObject", name="mstate_baseMaster", position=[0.04,0.25,-0.2, 0, 0, 0, 1], template="Rigid3d", showObjectScale=0.002, showObject=False, drawMode=1)
-    needleBaseMaster.addObject("LinearMovementProjectiveConstraint",indices=[0], keyTimes=[0,0.5,1,7,12],movements=
-        [ [0.04, 0.25,-0.2,0,0,0]
-        , [0.04, 0.60,-0.2,0,0,0]
-        , [0.04, 0.60,-0.2,0,0,-3.14/2]
-        , [0.04, 0.40,-0.2,0,0,-3.14/2]
-        , [0.05, 0.40,-0.2,0,0,-3.14/2 + 3.14/16]
+    needleBaseMaster.addObject("LinearMovementProjectiveConstraint",indices=[0], keyTimes=[0,0.5,1,7,8],movements=
+        [ [0.04, 0.15,-0.2,0,0,0]
+        , [0.04, 0.30,-0.2,0,0,0]
+        , [0.04, 0.30,-0.2,0,0,-3.14/2]
+        , [0.04, 0.14,-0.2,0,0,-3.14/2]
+        , [0.03, 0.14,-0.2,0,0,-3.14/2 + 3.14/16]
     ],relativeMovements=False)
 
 
@@ -145,7 +146,7 @@ def createScene(root):
 
 
 
-    for i in range(1,2):
+    for i in range(0,2):
         gelGridTopoName = "GelGridTopo" + str(i)
         gelTopo = root.addChild(gelGridTopoName)
         gelTopo.addObject("RegularGridTopology", name="HexaTop", **g_gelRegularGridParameters[i])
@@ -206,19 +207,23 @@ def createScene(root):
     #               object1="@Layer0/mstate_gel", object2="@Layer1/mstate_gel")
 
 
-    root.addObject("InsertionAlgorithm", name="InsertionAlgo", 
-        tipGeom="@Needle/tipCollision/geom_tip", 
-        surfGeom="@Layer1/collision/geom_tri", 
-        shaftGeom="@Needle/bodyCollision/geom_body", 
-        volGeom="@Layer1/geom_tetra", 
-        punctureForceThreshold=0.8, 
-        tipDistThreshold=0.005,
-        drawcollision=True,
-        drawPointsScale=0.0001
-    )
-    root.addObject("DistanceFilter",algo="@InsertionAlgo",distance=0.01)
-    root.addObject("SecondDirection",name="punctureDirection",handler="@Layer1/collision/SurfaceTriangles")
-    root.addObject("ConstraintUnilateral",input="@InsertionAlgo.collisionOutput",directions="@punctureDirection",draw_scale=0.001)
+    for i in range(0,2):
+        algo = root.addChild("algo"+str(i))
+        algo.addObject("InsertionAlgorithm", name="InsertionAlgo"+str(i), 
+            tipGeom="@/Needle/tipCollision/geom_tip", 
+            surfGeom="@/Layer"+str(i)+"/collision/geom_tri", 
+            shaftGeom="@/Needle/bodyCollision/geom_body", 
+            volGeom="@/Layer"+str(i)+"/geom_tetra", 
+            punctureForceThreshold=1.5,
+            tipDistThreshold=0.005,
+            drawcollision=True,
+            drawPointsScale=0.0001
+        )
+        algo.addObject("DistanceFilter", algo="@InsertionAlgo"+str(i), distance=0.01)
+        algo.addObject("SecondDirection", name="punctureDirection"+str(i), handler="@../Layer"+str(i)+"/collision/SurfaceTriangles")
+        algo.addObject("ConstraintUnilateral", name="cs_Uni"+str(i), input="@InsertionAlgo"+str(i)+".collisionOutput", directions="@punctureDirection"+str(i),draw_scale=0.001)
+        algo.addObject("FirstDirection", name="bindDirection"+str(i), handler="@../Needle/bodyCollision/NeedleBeams")
+        algo.addObject("ConstraintInsertion", name="cs_Ins"+str(i), input="@InsertionAlgo"+str(i)+".insertionOutput", directions="@bindDirection"+str(i), draw_scale=0.002, frictionCoeff=0.00)
 
-    root.addObject("FirstDirection",name="bindDirection", handler="@Needle/bodyCollision/NeedleBeams")
-    root.addObject("ConstraintInsertion",input="@InsertionAlgo.insertionOutput", directions="@bindDirection",draw_scale=0.002, frictionCoeff=0.00)
+    #algo.addObject("SecondDirection",name="punctureDirectionInv",handler="@Layer1/collisionInvert/SurfaceTriangles")
+    #algo.addObject("ConstraintUnilateral", name="invCnstr", input="@InsertionAlgo.collisionOutput",directions="@punctureDirectionInv",draw_scale=0.001,mu=0.1)
