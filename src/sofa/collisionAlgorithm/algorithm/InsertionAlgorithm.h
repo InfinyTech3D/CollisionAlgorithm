@@ -7,6 +7,7 @@
 #include <sofa/collisionAlgorithm/operations/FindClosestProximity.h>
 #include <sofa/collisionAlgorithm/operations/Project.h>
 #include <sofa/collisionAlgorithm/proximity/EdgeProximity.h>
+#include <sofa/collisionAlgorithm/proximity/TetrahedronProximity.h>
 #include <sofa/component/constraint/lagrangian/solver/ConstraintSolverImpl.h>
 #include <sofa/component/statecontainer/MechanicalObject.h>
 
@@ -222,8 +223,18 @@ class InsertionAlgorithm : public BaseAlgorithm
                     findClosestProxOnVol(tipProx, l_volGeom.get(), projectOnVol, getFilterFunc());
                 if (volProx)
                 {
-                    volProx->normalize();
-                    m_couplingPts.push_back(volProx);
+                    TetrahedronProximity::SPtr tetProx =
+                        dynamic_pointer_cast<TetrahedronProximity>(volProx);
+                    double f0(tetProx->f0()), f1(tetProx->f1()), f2(tetProx->f2()),
+                        f3(tetProx->f3());
+                    bool isInTetra = toolbox::TetrahedronToolBox::isInTetra(
+                        tipProx->getPosition(), tetProx->element()->getTetrahedronInfo(), f0, f1,
+                        f2, f3);
+                    if(isInTetra)
+                    {
+                        volProx->normalize();
+                        m_couplingPts.push_back(volProx);
+                    }
                 }
             }
             else // Don't bother with removing the point that was just added
