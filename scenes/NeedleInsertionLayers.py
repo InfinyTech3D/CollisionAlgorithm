@@ -200,11 +200,11 @@ def createScene(root):
                             color=g_wireColor[i],name="volume_visu",template="Vec3d")
         volumeVisuWire.addObject("IdentityMapping")
 
-    #root.addObject("NearestPointROI", template="Vec3d", name="attachROI", radius=0.0025,
-    #               object1="@Layer0/mstate_gel", object2="@Layer1/mstate_gel")
-    #root.addObject("BilateralLagrangianConstraint", name="layerAttachment", 
-    #               first_point="@attachROI.indices1", second_point="@attachROI.indices2",
-    #               object1="@Layer0/mstate_gel", object2="@Layer1/mstate_gel")
+    root.addObject("NearestPointROI", template="Vec3d", name="attachROI", radius=0.0025,
+                   object1="@Layer0/mstate_gel", object2="@Layer1/mstate_gel")
+    root.addObject("BilateralLagrangianConstraint", name="layerAttachment", 
+                   first_point="@attachROI.indices1", second_point="@attachROI.indices2",
+                   object1="@Layer0/mstate_gel", object2="@Layer1/mstate_gel")
 
 
     for i in range(0,2):
