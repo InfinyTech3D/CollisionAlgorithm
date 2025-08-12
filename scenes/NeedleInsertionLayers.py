@@ -7,10 +7,10 @@ g_needleBaseOffset=[0.04,0.15,-0.2]
 g_needleRadius = 0.001 #(m)
 g_needleMechanicalParameters = {
     "radius":g_needleRadius,
-    "youngModulus":4e12,
+    "youngModulus":4e14,
     "poissonRatio":0.3
 }
-g_needleTotalMass=0.04
+g_needleTotalMass=1.0
 
 g_gelRegularGridParameters = [
     {
@@ -30,11 +30,11 @@ g_gelRegularGridParameters = [
     }
 ] #Again all in mm
 g_gelMechanicalParameters = {
-    "youngModulus":8e5,
+    "youngModulus":4e7,
     "poissonRatio":0.45,
     "method":"large"
 }
-g_gelTotalMass = 1
+g_gelTotalMass = 0.1
 g_cubeColor=[[0.8, 0.34, 0.34, 0.3],[0.6, 0.6, 0, 0.3],[1, 1, 1, 0.3]]
 g_wireColor=[[0.8, 0.34, 0.34, 1],[0.6, 0.6, 0, 1],[1, 1, 1, 1]]
 g_gelFixedBoxROI=[[-0.155, -0.055, -0.255, -0.145, 0.065, -0.095 ], [0.155, -0.055, -0.255, 0.145, 0.065, -0.095 ]]
@@ -42,7 +42,7 @@ g_gelFixedBoxROI=[[-0.155, -0.055, -0.255, -0.145, 0.065, -0.095 ], [0.155, -0.0
 # Function called when the scene graph is being created
 def createScene(root):
     root.gravity=[0,0,0]
-    root.dt = 0.01
+    root.dt = 0.005
 
     root.addObject("RequiredPlugin",pluginName=['Sofa.Component.AnimationLoop',
                                                 'Sofa.Component.Constraint.Lagrangian.Solver',
@@ -76,15 +76,33 @@ def createScene(root):
     root.addObject("GenericConstraintSolver", tolerance=1e-5, maxIt=5000, regularizationTerm=1e-5)
     root.addObject("CollisionLoop")
 
-    needleBaseMaster = root.addChild("NeedleBaseMaster")
-    needleBaseMaster.addObject("MechanicalObject", name="mstate_baseMaster", position=[0.04,0.15,-0.2, 0, 0, 0, 1], template="Rigid3d", showObjectScale=0.002, showObject=False, drawMode=1)
-    needleBaseMaster.addObject("LinearMovementProjectiveConstraint",indices=[0], keyTimes=[0,1,7,8],movements=
-        [ [0.04, 0.15, 0.2, 0, 0, 0]
-        , [0.04, 0.30, -0.2, -3.14/2, 0, 0]
-        , [0.04, 0.145, -0.2, -3.14/2, 0, 0]
-        , [0.03, 0.145, -0.2, -3.14/2 + 3.14/16, 0, 0]
-    ],relativeMovements=False)
+    #needleBaseMaster = root.addChild("NeedleBaseMaster")
+    #needleBaseMaster.addObject("MechanicalObject", name="mstate_baseMaster", position=[0.04,0.15,-0.2, 0, 0, 0, 1], template="Rigid3d", showObjectScale=0.002, showObject=False, drawMode=1)
+    #needleBaseMaster.addObject("LinearMovementProjectiveConstraint",indices=[0], keyTimes=[0,1,7,8],movements=
+    #    [ [0.04, 0.15, 0.2, 0, 0, 0]
+    #    , [0.04, 0.30, -0.2, -3.14/2, 0, 0]
+    #    , [0.04, 0.145, -0.2, -3.14/2, 0, 0]
+    #    , [0.03, 0.145, -0.2, -3.14/2 + 3.14/16, 0, 0]
+    #],relativeMovements=False)
 
+    toolController = root.addChild("ToolController")
+    toolController.addObject("GeomagicDriver"
+        , name='GeomagicDevice' 
+        , deviceName='Default Device' 
+        , scale=0.02 
+        , drawDeviceFrame=False 
+        , drawDevice=False 
+        , manualStart=False
+        , positionBase=[0.12, 0, 0] 
+        , orientationBase=[0, 0.174, 0, -0.985] 
+    )
+    toolController.addObject("MechanicalObject", name="mstate_baseMaster"
+        , position="@GeomagicDevice.positionDevice"
+        , template="Rigid3d"
+        , showObjectScale=0.01
+        , showObject=False
+        , drawMode=1
+    )
 
     needle = root.addChild("Needle")
     needle.addObject("EulerImplicitSolver", firstOrder=True)
@@ -99,11 +117,12 @@ def createScene(root):
     needle.addObject("UniformMass", totalMass=g_needleTotalMass)
     needle.addObject("BeamFEMForceField", name="FEM", **g_needleMechanicalParameters)
     needle.addObject("LinearSolverConstraintCorrection", printLog=False, linearSolver="@LinearSolver")
+    needle.addObject("RestShapeSpringsForceField",points=[0], stiffness=1e8, angularStiffness=1e8, external_points=[0], external_rest_shape="@/ToolController/mstate_baseMaster")
 
     needleBase = needle.addChild("needleBase")
     needleBase.addObject("PointSetTopologyContainer", name="Container_base", position=[0, 0, 0])
     needleBase.addObject("MechanicalObject",name="mstate_base", template="Rigid3d",)
-    needleBase.addObject("RestShapeSpringsForceField",points=[0],stiffness=1e8, angularStiffness=1e8,external_points=[0],external_rest_shape="@/NeedleBaseMaster/mstate_baseMaster")
+    #needleBase.addObject("RestShapeSpringsForceField",points=[0],stiffness=1e8, angularStiffness=1e8,external_points=[0],external_rest_shape="@/NeedleBaseMaster/mstate_baseMaster")
     needleBase.addObject("SubsetMapping", indices="0")
 
     needleBodyCollision = needle.addChild("bodyCollision")
@@ -136,7 +155,18 @@ def createScene(root):
                            name="visualOgl")
     needleOGL.addObject("IdentityMapping")
 
-
+    FF = root.addChild("ForceFeedback")
+    FF.addObject("MechanicalObject", name="mstate_lcp", template="Rigid3d"
+        , showObject=False, src="@../Needle/needleBase/mstate_base")
+    FF.addObject("LCPForceFeedback", name="lcp_ff", activate=1, forceCoef=0.0015)
+    FFBody = FF.addChild("Body")
+    FFBody.addObject("EdgeSetTopologyContainer", name="Container", src="@../../Needle/bodyCollision/Container_body")
+    FFBody.addObject("MechanicalObject", name="mstate_coli", constraint="@../../Needle/bodyCollision/mstate_body.constraint")
+    FFBody.addObject("RigidMapping")
+    FFTip = FF.addChild("Tip")
+    FFTip.addObject("PointSetTopologyContainer", name="Container", src="@../../Needle/tipCollision/Container_tip")
+    FFTip.addObject("MechanicalObject", name="mstate_coli", constraint="@../../Needle/tipCollision/mstate_tip.constraint")
+    FFTip.addObject("RigidMapping")
 
     for i in range(0,3):
         gelGridTopoName = "GelGridTopo" + str(i)
@@ -201,7 +231,7 @@ def createScene(root):
 
     for i in range(0,3):
         algo = root.addChild("algo"+str(i))
-        punctureForce = 1.5 if i < 2 else 2000
+        punctureForce = 500 if i < 2 else 2000
         algo.addObject("InsertionAlgorithm", name="InsertionAlgo"+str(i), 
             tipGeom="@/Needle/tipCollision/geom_tip", 
             surfGeom="@/Layer"+str(i)+"/collision/geom_tri", 
