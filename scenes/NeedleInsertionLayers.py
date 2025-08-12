@@ -24,7 +24,7 @@ g_gelRegularGridParameters = [
         "max":[0.150, 0.060, -0.100]
     },
     {
-        "n":[12, 4, 8],
+        "n":[6, 4, 4],
         "min":[-0.150, -0.080, -0.250],
         "max":[0.150, -0.0501, -0.100]
     }
@@ -73,7 +73,7 @@ def createScene(root):
     root.addObject("ConstraintAttachButtonSetting")
     root.addObject("VisualStyle", displayFlags="showVisualModels hideBehaviorModels showCollisionModels hideMappings hideForceFields showWireframe showInteractionForceFields")
     root.addObject("FreeMotionAnimationLoop")
-    root.addObject("GenericConstraintSolver", tolerance=0.00001, maxIt=5000, regularizationTerm=0.001)
+    root.addObject("GenericConstraintSolver", tolerance=1e-5, maxIt=5000, regularizationTerm=1e-5)
     root.addObject("CollisionLoop")
 
     needleBaseMaster = root.addChild("NeedleBaseMaster")
@@ -138,7 +138,7 @@ def createScene(root):
 
 
 
-    for i in range(0,2):
+    for i in range(0,3):
         gelGridTopoName = "GelGridTopo" + str(i)
         gelTopo = root.addChild(gelGridTopoName)
         gelTopo.addObject("RegularGridTopology", name="HexaTop", **g_gelRegularGridParameters[i])
@@ -186,14 +186,20 @@ def createScene(root):
                             color=g_wireColor[i],name="volume_visu",template="Vec3d")
         volumeVisuWire.addObject("IdentityMapping")
 
-    root.addObject("NearestPointROI", template="Vec3d", name="attachROI", radius=0.0025,
+    root.addObject("NearestPointROI", template="Vec3d", name="RedYellow", radius=0.0025,
                    object1="@Layer0/mstate_gel", object2="@Layer1/mstate_gel")
-    root.addObject("BilateralLagrangianConstraint", name="layerAttachment", 
-                   first_point="@attachROI.indices1", second_point="@attachROI.indices2",
+    root.addObject("BilateralLagrangianConstraint", name="RedYellowAttachment", 
+                   first_point="@RedYellow.indices1", second_point="@RedYellow.indices2",
                    object1="@Layer0/mstate_gel", object2="@Layer1/mstate_gel")
 
+    root.addObject("NearestPointROI", template="Vec3d", name="RedWhite", radius=0.0025,
+                   object1="@Layer0/mstate_gel", object2="@Layer2/mstate_gel")
+    root.addObject("BilateralLagrangianConstraint", name="RedWhiteAttachment", 
+                   first_point="@RedWhite.indices1", second_point="@RedWhite.indices2",
+                   object1="@Layer0/mstate_gel", object2="@Layer2/mstate_gel")
 
-    for i in range(0,2):
+
+    for i in range(0,3):
         algo = root.addChild("algo"+str(i))
         punctureForce = 1.5 if i < 2 else 2000
         algo.addObject("InsertionAlgorithm", name="InsertionAlgo"+str(i), 
@@ -202,7 +208,7 @@ def createScene(root):
             shaftGeom="@/Needle/bodyCollision/geom_body", 
             volGeom="@/Layer"+str(i)+"/geom_tetra", 
             punctureForceThreshold=punctureForce,
-            tipDistThreshold=0.005,
+            tipDistThreshold=0.009,
             drawcollision=True,
             drawPointsScale=0.0001
         )
