@@ -26,6 +26,14 @@ jobs:
         with:
           path: ${{ env.WORKSPACE_SRC_PATH }}        
       
+      - name: Print workspace variables
+        shell: bash
+        run: |
+            echo "WORKSPACE_BUILD_PATH: $WORKSPACE_BUILD_PATH"
+            echo "WORKSPACE_INSTALL_PATH: $WORKSPACE_INSTALL_PATH"
+            echo "SOFA_ROOT: $SOFA_ROOT"
+            echo "PWD: $(pwd)"
+
       - name: Build and install
         id: build-install
         shell: bash
