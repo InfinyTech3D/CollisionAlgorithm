@@ -50,7 +50,7 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 ## Install rules for the library and headers; CMake package configurations files
-set(${PROJECT_NAME}_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src")
-target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${${PROJECT_NAME}_INCLUDE_DIRS}>")
-target_include_directories(${PROJECT_NAME} PUBLIC "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>")
+set(${PROJECT_NAME}_INCLUDE_DIRS "include/${PROJECT_NAME}")
+target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>")
+target_include_directories(${PROJECT_NAME} PUBLIC "$<INSTALL_INTERFACE:${${PROJECT_NAME}_INCLUDE_DIRS}>")
 sofa_create_package_with_targets(PACKAGE_NAME ${PROJECT_NAME} PACKAGE_VERSION 0.1 TARGETS ${PROJECT_NAME} INCLUDE_INSTALL_DIR ${${PROJECT_NAME}_INCLUDE_DIRS})
