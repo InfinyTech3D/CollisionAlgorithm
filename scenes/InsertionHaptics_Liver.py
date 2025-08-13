@@ -55,7 +55,8 @@ def createScene(root):
                                                 'ConstraintGeometry',
                                                 'Geomagic',
                                                 'Sofa.Component.Haptics',
-                                                'Sofa.Component.IO.Mesh'
+                                                'Sofa.Component.IO.Mesh',
+                                                'Sofa.Component.Playback'
                                                 ])
 
 
@@ -77,12 +78,16 @@ def createScene(root):
         , orientationBase=[0, 0.174, 0, -0.985] 
     )
     toolController.addObject("MechanicalObject", name="mstate_baseMaster"
-        , position="@GeomagicDevice.positionDevice"
+        #, position="@GeomagicDevice.positionDevice"
+        , position="@reader.position"
         , template="Rigid3d"
         , showObjectScale=0.01
         , showObject=False
         , drawMode=1
     )
+    #toolController.addObject("WriteState", name="writer", filename="RecordState/Haptics_Liver.txt"
+    #    , period=0.01, writeX=True, writeV=True, time=0)
+    toolController.addObject("ReadState", name="reader", filename="RecordState/Haptics_Liver.txt")
 
     needle = root.addChild("Needle")
     needle.addObject("EulerImplicitSolver", firstOrder=True)
