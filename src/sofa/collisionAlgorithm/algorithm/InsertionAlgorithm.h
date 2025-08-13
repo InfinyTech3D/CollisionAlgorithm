@@ -16,7 +16,7 @@ namespace sofa::collisionAlgorithm
 
 class InsertionAlgorithm : public BaseAlgorithm
 {
-   public:
+    public:
     SOFA_CLASS(InsertionAlgorithm, BaseAlgorithm);
 
     typedef core::behavior::MechanicalState<defaulttype::Vec3Types> MechStateTipType;
@@ -223,6 +223,8 @@ class InsertionAlgorithm : public BaseAlgorithm
                 auto projectOnVol = Operations::Project::Operation::get(l_volGeom);
                 const BaseProximity::SPtr volProx =
                     findClosestProxOnVol(tipProx, l_volGeom.get(), projectOnVol, getFilterFunc());
+                // Proximity can be detected before the tip enters the tetra (e.g. near a boundary face)
+                // Only accept proximities if the tip is inside the tetra during insertion
                 if (volProx)
                 {
                     TetrahedronProximity::SPtr tetProx =
@@ -253,6 +255,8 @@ class InsertionAlgorithm : public BaseAlgorithm
                 const type::Vec3 normal = (edgeProx->element()->getP1()->getPosition() -
                                            edgeProx->element()->getP0()->getPosition())
                                               .normalized();
+                // If the coupling point lies ahead of the tip (positive dot product), 
+                // the needle is retreating. The last coupling point is removed
                 if (dot(tip2Pt, normal) > 0_sreal)
                 {
                     m_couplingPts.pop_back();
