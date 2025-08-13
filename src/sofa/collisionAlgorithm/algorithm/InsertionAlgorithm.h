@@ -296,6 +296,11 @@ class InsertionAlgorithm : public BaseAlgorithm
                 shaftProx->normalize();
                 insertionOutput.add(shaftProx, m_couplingPts[i]);
             }
+            // This is a final-frontier check: If there are coupling points stored, but the
+            // findClosestProxOnShaf operation yields no proximities on the shaft, it could be
+            // because the needle has exited abruptly. Thus, we clear the coupling points.
+            if (insertionOutput.size() == 0)
+                m_couplingPts.clear();
         }
 
         d_collisionOutput.endEdit();
