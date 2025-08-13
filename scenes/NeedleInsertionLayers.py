@@ -2,7 +2,7 @@ from re import I
 import Sofa
 
 g_needleLength=0.200 #(m)
-g_needleNumberOfElems=20 #(# of edges)
+g_needleNumberOfElems=12 #(# of edges)
 g_needleBaseOffset=[0.04,0.15,-0.2]
 g_needleRadius = 0.001 #(m)
 g_needleMechanicalParameters = {
@@ -64,6 +64,9 @@ def createScene(root):
                                                 'Sofa.GL.Component.Rendering3D',
                                                 'Sofa.GUI.Component',
                                                 'Sofa.Component.Engine.Select',
+                                                'Sofa.Component.Playback',
+                                                'Geomagic',
+                                                'Sofa.Component.Haptics',
                                                 'MultiThreading',
                                                 'CollisionAlgorithm',
                                                 'ConstraintGeometry'
@@ -97,12 +100,16 @@ def createScene(root):
         , orientationBase=[0, 0.174, 0, -0.985] 
     )
     toolController.addObject("MechanicalObject", name="mstate_baseMaster"
-        , position="@GeomagicDevice.positionDevice"
+        #, position="@GeomagicDevice.positionDevice"
+        , position="@reader.position"
         , template="Rigid3d"
         , showObjectScale=0.01
         , showObject=False
         , drawMode=1
     )
+    #toolController.addObject("WriteState", name="writer", filename="RecordState/NeedleInsertionLayers.txt"
+    #    , period=0.005, writeX=True, writeV=True, time=0)
+    toolController.addObject("ReadState", name="reader", filename="RecordState/NeedleInsertionLayers.txt")
 
     needle = root.addChild("Needle")
     needle.addObject("EulerImplicitSolver", firstOrder=True)
@@ -158,7 +165,7 @@ def createScene(root):
     FF = root.addChild("ForceFeedback")
     FF.addObject("MechanicalObject", name="mstate_lcp", template="Rigid3d"
         , showObject=False, src="@../Needle/needleBase/mstate_base")
-    FF.addObject("LCPForceFeedback", name="lcp_ff", activate=1, forceCoef=0.0015)
+    FF.addObject("LCPForceFeedback", name="lcp_ff", activate=1, forceCoef=0.0012)
     FFBody = FF.addChild("Body")
     FFBody.addObject("EdgeSetTopologyContainer", name="Container", src="@../../Needle/bodyCollision/Container_body")
     FFBody.addObject("MechanicalObject", name="mstate_coli", constraint="@../../Needle/bodyCollision/mstate_body.constraint")
@@ -231,7 +238,7 @@ def createScene(root):
 
     for i in range(0,3):
         algo = root.addChild("algo"+str(i))
-        punctureForce = 500 if i < 2 else 2000
+        punctureForce = 400 if i < 2 else 2000
         algo.addObject("InsertionAlgorithm", name="InsertionAlgo"+str(i), 
             tipGeom="@/Needle/tipCollision/geom_tip", 
             surfGeom="@/Layer"+str(i)+"/collision/geom_tri", 
