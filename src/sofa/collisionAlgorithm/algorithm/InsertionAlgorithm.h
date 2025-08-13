@@ -7,6 +7,7 @@
 #include <sofa/collisionAlgorithm/operations/FindClosestProximity.h>
 #include <sofa/collisionAlgorithm/operations/Project.h>
 #include <sofa/collisionAlgorithm/proximity/EdgeProximity.h>
+#include <sofa/collisionAlgorithm/proximity/TetrahedronProximity.h>
 #include <sofa/component/constraint/lagrangian/solver/ConstraintSolverImpl.h>
 #include <sofa/component/statecontainer/MechanicalObject.h>
 
@@ -15,7 +16,7 @@ namespace sofa::collisionAlgorithm
 
 class InsertionAlgorithm : public BaseAlgorithm
 {
-   public:
+    public:
     SOFA_CLASS(InsertionAlgorithm, BaseAlgorithm);
 
     typedef core::behavior::MechanicalState<defaulttype::Vec3Types> MechStateTipType;
@@ -154,7 +155,8 @@ class InsertionAlgorithm : public BaseAlgorithm
                         const auto& lambda =
                             m_constraintSolver->getLambda()[mstate.get()].read()->getValue();
                         SReal norm{0_sreal};
-                        for (const auto& l : lambda) {
+                        for (const auto& l : lambda)
+                        {
                             norm += l.norm();
                         }
                         if (norm > punctureForceThreshold)
@@ -178,9 +180,9 @@ class InsertionAlgorithm : public BaseAlgorithm
             // 1.3 Collision with the shaft geometry
             if (collisionOutput.size())
             {
-            auto createShaftProximity =
-                Operations::CreateCenterProximity::Operation::get(l_shaftGeom->getTypeInfo());
-            auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
+                auto createShaftProximity =
+                    Operations::CreateCenterProximity::Operation::get(l_shaftGeom->getTypeInfo());
+                auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
                 for (auto itShaft = l_shaftGeom->begin(); itShaft != l_shaftGeom->end(); itShaft++)
                 {
                     BaseProximity::SPtr shaftProx = createShaftProximity(itShaft->element());
@@ -190,11 +192,12 @@ class InsertionAlgorithm : public BaseAlgorithm
                     if (surfProx)
                     {
                         surfProx->normalize();
-    
+
                         // 1.2 If not, create a proximity pair for the tip-surface collision
                         if (d_projective.getValue())
                         {
-                            shaftProx = projectOnShaft(surfProx->getPosition(), itShaft->element()).prox;
+                            shaftProx =
+                                projectOnShaft(surfProx->getPosition(), itShaft->element()).prox;
                             if (!shaftProx) continue;
                             shaftProx->normalize();
                         }
@@ -220,15 +223,30 @@ class InsertionAlgorithm : public BaseAlgorithm
                 auto projectOnVol = Operations::Project::Operation::get(l_volGeom);
                 const BaseProximity::SPtr volProx =
                     findClosestProxOnVol(tipProx, l_volGeom.get(), projectOnVol, getFilterFunc());
+                // Proximity can be detected before the tip enters the tetra (e.g. near a boundary face)
+                // Only accept proximities if the tip is inside the tetra during insertion
                 if (volProx)
                 {
-                    volProx->normalize();
-                    m_couplingPts.push_back(volProx);
+                    TetrahedronProximity::SPtr tetProx =
+                        dynamic_pointer_cast<TetrahedronProximity>(volProx);
+                    if (tetProx)
+                    {
+                        double f0(tetProx->f0()), f1(tetProx->f1()), f2(tetProx->f2()),
+                            f3(tetProx->f3());
+                        bool isInTetra = toolbox::TetrahedronToolBox::isInTetra(
+                            tipProx->getPosition(), tetProx->element()->getTetrahedronInfo(), f0,
+                            f1, f2, f3);
+                        if (isInTetra)
+                        {
+                            volProx->normalize();
+                            m_couplingPts.push_back(volProx);
+                        }
+                    }
                 }
             }
-            else // Don't bother with removing the point that was just added
+            else  // Don't bother with removing the point that was just added
             {
-                // 2.2. Check whether coupling point should be removed 
+                // 2.2. Check whether coupling point should be removed
                 ElementIterator::SPtr itShaft = l_shaftGeom->begin(l_shaftGeom->getSize() - 2);
                 auto createShaftProximity =
                     Operations::CreateCenterProximity::Operation::get(itShaft->getTypeInfo());
@@ -237,7 +255,10 @@ class InsertionAlgorithm : public BaseAlgorithm
                 const type::Vec3 normal = (edgeProx->element()->getP1()->getPosition() -
                                            edgeProx->element()->getP0()->getPosition())
                                               .normalized();
-                if (dot(tip2Pt, normal) > 0_sreal) {
+                // If the coupling point lies ahead of the tip (positive dot product), 
+                // the needle is retreating. The last coupling point is removed
+                if (dot(tip2Pt, normal) > 0_sreal)
+                {
                     m_couplingPts.pop_back();
                 }
             }
