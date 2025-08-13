@@ -154,7 +154,8 @@ class InsertionAlgorithm : public BaseAlgorithm
                         const auto& lambda =
                             m_constraintSolver->getLambda()[mstate.get()].read()->getValue();
                         SReal norm{0_sreal};
-                        for (const auto& l : lambda) {
+                        for (const auto& l : lambda)
+                        {
                             norm += l.norm();
                         }
                         if (norm > punctureForceThreshold)
@@ -178,9 +179,9 @@ class InsertionAlgorithm : public BaseAlgorithm
             // 1.3 Collision with the shaft geometry
             if (collisionOutput.size())
             {
-            auto createShaftProximity =
-                Operations::CreateCenterProximity::Operation::get(l_shaftGeom->getTypeInfo());
-            auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
+                auto createShaftProximity =
+                    Operations::CreateCenterProximity::Operation::get(l_shaftGeom->getTypeInfo());
+                auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
                 for (auto itShaft = l_shaftGeom->begin(); itShaft != l_shaftGeom->end(); itShaft++)
                 {
                     BaseProximity::SPtr shaftProx = createShaftProximity(itShaft->element());
@@ -190,11 +191,12 @@ class InsertionAlgorithm : public BaseAlgorithm
                     if (surfProx)
                     {
                         surfProx->normalize();
-    
+
                         // 1.2 If not, create a proximity pair for the tip-surface collision
                         if (d_projective.getValue())
                         {
-                            shaftProx = projectOnShaft(surfProx->getPosition(), itShaft->element()).prox;
+                            shaftProx =
+                                projectOnShaft(surfProx->getPosition(), itShaft->element()).prox;
                             if (!shaftProx) continue;
                             shaftProx->normalize();
                         }
@@ -210,7 +212,7 @@ class InsertionAlgorithm : public BaseAlgorithm
             auto createTipProximity =
                 Operations::CreateCenterProximity::Operation::get(itTip->getTypeInfo());
             const BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
-            if(!tipProx) return;
+            if (!tipProx) return;
 
             // 2.1 Check whether coupling point should be added
             const type::Vec3 tip2Pt = m_couplingPts.back()->getPosition() - tipProx->getPosition();
@@ -227,22 +229,37 @@ class InsertionAlgorithm : public BaseAlgorithm
                     m_couplingPts.push_back(volProx);
                 }
             }
-            else // Don't bother with removing the point that was just added
+            else  // Don't bother with removing the point that was just added
             {
-                // 2.2. Check whether coupling point should be removed 
+                // 2.2. Check whether coupling point should be removed
                 ElementIterator::SPtr itShaft = l_shaftGeom->begin(l_shaftGeom->getSize() - 2);
                 auto createShaftProximity =
                     Operations::CreateCenterProximity::Operation::get(itShaft->getTypeInfo());
                 const BaseProximity::SPtr shaftProx = createShaftProximity(itShaft->element());
-                const EdgeProximity::SPtr edgeProx = dynamic_pointer_cast<EdgeProximity>(shaftProx);
-                if(edgeProx) 
+                if (shaftProx)
                 {
-                    const type::Vec3 normal = (edgeProx->element()->getP1()->getPosition() -
-                                               edgeProx->element()->getP0()->getPosition())
-                                                  .normalized();
-                    if (dot(tip2Pt, normal) > 0_sreal) {
-                        m_couplingPts.pop_back();
+                    const EdgeProximity::SPtr edgeProx =
+                        dynamic_pointer_cast<EdgeProximity>(shaftProx);
+                    if (edgeProx)
+                    {
+                        const type::Vec3 normal = (edgeProx->element()->getP1()->getPosition() -
+                                                   edgeProx->element()->getP0()->getPosition())
+                                                      .normalized();
+                        if (dot(tip2Pt, normal) > 0_sreal)
+                        {
+                            m_couplingPts.pop_back();
+                        }
                     }
+                    else
+                    {
+                        msg_warning() << "shaftGeom: " << l_shaftGeom->getName()
+                                      << " is not an EdgeGeometry. Point removal is disabled";
+                    }
+                }
+                else
+                {
+                    msg_warning() << "Cannot create proximity from shaftGeom: "
+                                  << l_shaftGeom->getName() << " - point removal is disabled";
                 }
             }
         }
@@ -257,7 +274,8 @@ class InsertionAlgorithm : public BaseAlgorithm
             {
                 const BaseProximity::SPtr shaftProx = findClosestProxOnShaft(
                     m_couplingPts[i], l_shaftGeom.get(), projectOnShaft, getFilterFunc());
-                if(shaftProx) {
+                if (shaftProx)
+                {
                     shaftProx->normalize();
                     insertionOutput.add(shaftProx, m_couplingPts[i]);
                 }
