@@ -136,9 +136,9 @@ class InsertionAlgorithm : public BaseAlgorithm
 
             const bool isProjective = d_projective.getValue();
             const SReal punctureForceThreshold = d_punctureForceThreshold.getValue();
-            for (const auto& itTip : *l_tipGeom)
+            for (auto itTip = l_tipGeom->begin(); itTip != l_tipGeom->end(); itTip++)
             {
-                BaseProximity::SPtr tipProx = createTipProximity(itTip.element());
+                BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
                 if (!tipProx) continue;
                 const BaseProximity::SPtr surfProx = findClosestProxOnSurf(
                     tipProx, l_surfGeom.get(), projectOnSurf, getFilterFunc());
@@ -167,7 +167,7 @@ class InsertionAlgorithm : public BaseAlgorithm
                     // 1.2 If not, create a proximity pair for the tip-surface collision
                     if (isProjective)
                     {
-                        tipProx = projectOnTip(surfProx->getPosition(), itTip.element()).prox;
+                        tipProx = projectOnTip(surfProx->getPosition(), itTip->element()).prox;
                         if (!tipProx) continue;
                         tipProx->normalize();
                     }
@@ -181,9 +181,9 @@ class InsertionAlgorithm : public BaseAlgorithm
             auto createShaftProximity =
                 Operations::CreateCenterProximity::Operation::get(l_shaftGeom->getTypeInfo());
             auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
-                for (const auto& itShaft : *l_shaftGeom)
+                for (auto itShaft = l_shaftGeom->begin(); itShaft != l_shaftGeom->end(); itShaft++)
                 {
-                    BaseProximity::SPtr shaftProx = createShaftProximity(itShaft.element());
+                    BaseProximity::SPtr shaftProx = createShaftProximity(itShaft->element());
                     if (!shaftProx) continue;
                     const BaseProximity::SPtr surfProx = findClosestProxOnSurf(
                         shaftProx, l_surfGeom.get(), projectOnSurf, getFilterFunc());
@@ -194,7 +194,7 @@ class InsertionAlgorithm : public BaseAlgorithm
                         // 1.2 If not, create a proximity pair for the tip-surface collision
                         if (d_projective.getValue())
                         {
-                            shaftProx = projectOnShaft(surfProx->getPosition(), itShaft.element()).prox;
+                            shaftProx = projectOnShaft(surfProx->getPosition(), itShaft->element()).prox;
                             if (!shaftProx) continue;
                             shaftProx->normalize();
                         }
