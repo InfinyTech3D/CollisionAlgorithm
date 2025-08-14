@@ -213,6 +213,7 @@ class InsertionAlgorithm : public BaseAlgorithm
             auto createTipProximity =
                 Operations::CreateCenterProximity::Operation::get(itTip->getTypeInfo());
             const BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
+            if (!tipProx) return;
 
             // 2.1 Check whether coupling point should be added
             const type::Vec3 tip2Pt = m_couplingPts.back()->getPosition() - tipProx->getPosition();
@@ -251,15 +252,32 @@ class InsertionAlgorithm : public BaseAlgorithm
                 auto createShaftProximity =
                     Operations::CreateCenterProximity::Operation::get(itShaft->getTypeInfo());
                 const BaseProximity::SPtr shaftProx = createShaftProximity(itShaft->element());
-                const EdgeProximity::SPtr edgeProx = dynamic_pointer_cast<EdgeProximity>(shaftProx);
-                const type::Vec3 normal = (edgeProx->element()->getP1()->getPosition() -
-                                           edgeProx->element()->getP0()->getPosition())
-                                              .normalized();
-                // If the coupling point lies ahead of the tip (positive dot product), 
-                // the needle is retreating. The last coupling point is removed
-                if (dot(tip2Pt, normal) > 0_sreal)
+                if (shaftProx)
                 {
-                    m_couplingPts.pop_back();
+                    const EdgeProximity::SPtr edgeProx =
+                        dynamic_pointer_cast<EdgeProximity>(shaftProx);
+                    if (edgeProx)
+                    {
+                        const type::Vec3 normal = (edgeProx->element()->getP1()->getPosition() -
+                                                   edgeProx->element()->getP0()->getPosition())
+                                                      .normalized();
+                        // If the (last) coupling point lies ahead of the tip (positive dot product), 
+                        // the needle is retreating. Thus, that point is removed.
+                        if (dot(tip2Pt, normal) > 0_sreal)
+                        {
+                            m_couplingPts.pop_back();
+                        }
+                    }
+                    else
+                    {
+                        msg_warning() << "shaftGeom: " << l_shaftGeom->getName()
+                                      << " is not an EdgeGeometry. Point removal is disabled";
+                    }
+                }
+                else
+                {
+                    msg_warning() << "Cannot create proximity from shaftGeom: "
+                                  << l_shaftGeom->getName() << " - point removal is disabled";
                 }
             }
         }
@@ -274,8 +292,15 @@ class InsertionAlgorithm : public BaseAlgorithm
             {
                 const BaseProximity::SPtr shaftProx = findClosestProxOnShaft(
                     m_couplingPts[i], l_shaftGeom.get(), projectOnShaft, getFilterFunc());
+                if (!shaftProx) continue;
+                shaftProx->normalize();
                 insertionOutput.add(shaftProx, m_couplingPts[i]);
             }
+            // This is a final-frontier check: If there are coupling points stored, but the
+            // findClosestProxOnShaf operation yields no proximities on the shaft, it could be
+            // because the needle has exited abruptly. Thus, we clear the coupling points.
+            if (insertionOutput.size() == 0)
+                m_couplingPts.clear();
         }
 
         d_collisionOutput.endEdit();
