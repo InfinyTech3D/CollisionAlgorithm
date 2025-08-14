@@ -50,6 +50,7 @@ def createScene(root):
                                                 'Sofa.GL.Component.Rendering3D',
                                                 'Sofa.GUI.Component',
                                                 'Sofa.Component.Engine.Select',
+                                                'Sofa.Component.Playback',
                                                 'MultiThreading',
                                                 'CollisionAlgorithm',
                                                 'ConstraintGeometry'
@@ -63,29 +64,34 @@ def createScene(root):
     root.addObject("CollisionLoop")
 
     needleBaseMaster = root.addChild("NeedleBaseMaster")
-    needleBaseMaster.addObject("MechanicalObject", name="mstate_baseMaster", position=[0.04, 0.04, 0, 0, 0, 0, 1], template="Rigid3d", showObjectScale=0.002, showObject=True, drawMode=1)
-    needleBaseMaster.addObject("LinearMovementProjectiveConstraint",indices=[0], 
-        keyTimes=[
-            0, 1, 4, 4.5, 5, 8
-            ,8.5,9,12,12.5,13,16
-        ],
-        movements=[
-            [0.04, 0.04,0,0,0,0],
-            [0.04, 0.04,0.05,0,3.14/2,0],
-            [0.04, 0.04,-0.07,0,3.14/2,0],
-            [0.05, 0.04,-0.07,0,3.14/2 + 3.14/16,0],
-            [0.04, 0.04,-0.07,0,3.14/2,0],
-            [0.04, 0.04,0.005,0,3.14/2,0],
-            # Change to insertion at an angle
-            [0.06, 0.04,0.005,0,3.14/2,0],
-            [0.06, 0.04,0.005,0,3.14/2 + 3.14/8,0],
-            [0.030866, 0.04,-0.04119,0,3.14/2 + 3.14/8,0],
-            [0.030866, 0.04,-0.04119,0,3.14/2,0],
-            [0.030866, 0.04,-0.04119,0,3.14/2 + 3.14/8,0],
-            [0.06, 0.04,0.005,0,3.14/2 + 3.14/8,0]
-        ]
-        ,relativeMovements=False
-    )
+    needleBaseMaster.addObject("MechanicalObject", name="mstate_baseMaster", template="Rigid3d", showObjectScale=0.002, showObject=True, drawMode=1
+        #, position=[0.04, 0.04, 0, 0, 0, 0, 1])
+        , position="@reader.position")
+    #needleBaseMaster.addObject("LinearMovementProjectiveConstraint",indices=[0], 
+    #    keyTimes=[
+    #        0, 1, 4, 4.5, 5, 8
+    #        ,8.5,9,12,12.5,13,16
+    #    ],
+    #    movements=[
+    #        [0.04, 0.04,0,0,0,0],
+    #        [0.04, 0.04,0.05,0,3.14/2,0],
+    #        [0.04, 0.04,-0.07,0,3.14/2,0],
+    #        [0.05, 0.04,-0.07,0,3.14/2 + 3.14/16,0],
+    #        [0.04, 0.04,-0.07,0,3.14/2,0],
+    #        [0.04, 0.04,0.005,0,3.14/2,0],
+    #        # Change to insertion at an angle
+    #        [0.06, 0.04,0.005,0,3.14/2,0],
+    #        [0.06, 0.04,0.005,0,3.14/2 + 3.14/8,0],
+    #        [0.030866, 0.04,-0.04119,0,3.14/2 + 3.14/8,0],
+    #        [0.030866, 0.04,-0.04119,0,3.14/2,0],
+    #        [0.030866, 0.04,-0.04119,0,3.14/2 + 3.14/8,0],
+    #        [0.06, 0.04,0.005,0,3.14/2 + 3.14/8,0]
+    #    ]
+    #    ,relativeMovements=False
+    #)
+    #needleBaseMaster.addObject("WriteState", name="writer", filename="RecordState/NeedleInsertionCycles.txt"
+    #    , period=0.01, writeX=True, writeV=True, time=0)
+    needleBaseMaster.addObject("ReadState", name="reader", filename="RecordState/NeedleInsertionCycles.txt")
 
 
     needle = root.addChild("Needle")
