@@ -50,6 +50,7 @@ def createScene(root):
                                                 'Sofa.GL.Component.Rendering3D',
                                                 'Sofa.GUI.Component',
                                                 'Sofa.Component.Engine.Select',
+                                                'Sofa.Component.Playback',
                                                 'MultiThreading',
                                                 'CollisionAlgorithm',
                                                 'ConstraintGeometry'
@@ -63,13 +64,18 @@ def createScene(root):
     root.addObject("CollisionLoop")
 
     needleBaseMaster = root.addChild("NeedleBaseMaster")
-    needleBaseMaster.addObject("MechanicalObject", name="mstate_baseMaster", position=[0.04, 0.04, 0, 0, 0, 0, 1], template="Rigid3d", showObjectScale=0.002, showObject=False, drawMode=1)
-    needleBaseMaster.addObject("LinearMovementProjectiveConstraint",indices=[0], keyTimes=[0,1,7,9],movements=
-        [ [0.04, 0.04,0,0,0,0]
-        , [0.04, 0.04,0.05,0,3.14/2,0]
-        , [0.04, 0.04,-0.07,0,3.14/2,0]
-        , [0.05, 0.04,-0.07,0,3.14/2 + 3.14/16,0]
-    ],relativeMovements=False)
+    needleBaseMaster.addObject("MechanicalObject", name="mstate_baseMaster", template="Rigid3d", showObjectScale=0.002, showObject=False, drawMode=1
+        #, position=[0.04, 0.04, 0, 0, 0, 0, 1])
+        , position="@reader.position")
+    #needleBaseMaster.addObject("LinearMovementProjectiveConstraint",indices=[0], keyTimes=[0,1,7,9],movements=
+    #    [ [0.04, 0.04,0,0,0,0]
+    #    , [0.04, 0.04,0.05,0,3.14/2,0]
+    #    , [0.04, 0.04,-0.07,0,3.14/2,0]
+    #    , [0.05, 0.04,-0.07,0,3.14/2 + 3.14/16,0]
+    #],relativeMovements=False)
+    #needleBaseMaster.addObject("WriteState", name="writer", filename="RecordState/NeedleInsertion.txt"
+    #    , period=0.01, writeX=True, writeV=True, time=0)
+    needleBaseMaster.addObject("ReadState", name="reader", filename="RecordState/NeedleInsertion.txt")
 
 
 
