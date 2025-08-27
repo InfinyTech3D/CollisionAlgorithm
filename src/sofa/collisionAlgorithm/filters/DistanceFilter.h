@@ -10,7 +10,7 @@ namespace sofa::collisionAlgorithm {
  */
 class DistanceFilter : public BaseAlgorithm::BaseFilter {
 public:
-    SOFA_ABSTRACT_CLASS(BaseFilter, BaseFilter);
+    SOFA_CLASS(DistanceFilter, BaseFilter);
 
     Data<double> d_distance;
 
