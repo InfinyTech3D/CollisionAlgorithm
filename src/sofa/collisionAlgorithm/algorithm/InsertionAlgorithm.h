@@ -178,7 +178,7 @@ class InsertionAlgorithm : public BaseAlgorithm
             }
 
             // 1.3 Collision with the shaft geometry
-            if (collisionOutput.size())
+            if (m_couplingPts.empty())
             {
                 auto createShaftProximity =
                     Operations::CreateCenterProximity::Operation::get(l_shaftGeom->getTypeInfo());
