@@ -67,7 +67,10 @@ public:
 
 
             if (d_projective.getValue()) {
-                auto pfromProj = projectFromOp(pdest->getPosition(),itfrom->element()).prox;
+                //auto pfromProj = projectFromOp(pdest->getPosition(),itfrom->element()).prox;
+                auto projectOnShaft = Operations::Project::Operation::get(l_from);
+                auto findClosestProxOnShaft = Operations::FindClosestProximity::Operation::get(l_from);
+                auto pfromProj = findClosestProxOnShaft(pdest, l_from, projectOnShaft, getFilterFunc());
                 if (pfromProj == nullptr) continue;
                 pfromProj->normalize();
 
