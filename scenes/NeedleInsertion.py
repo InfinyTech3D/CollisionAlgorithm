@@ -6,7 +6,7 @@ g_needleBaseOffset=[0.04,0.04,0]
 g_needleRadius = 0.001 #(m)
 g_needleMechanicalParameters = {
     "radius":g_needleRadius,
-    "youngModulus":1e11,
+    "youngModulus":1e12,
     "poissonRatio":0.3
 }
 g_needleTotalMass=0.01
@@ -17,7 +17,7 @@ g_gelRegularGridParameters = {
     "max":[0.125, 0.125, -0.100]
 } #Again all in mm
 g_gelMechanicalParameters = {
-    "youngModulus":8e5,
+    "youngModulus":1e6,
     "poissonRatio":0.45,
     "method":"large"
 }
@@ -60,7 +60,7 @@ def createScene(root):
     root.addObject("ConstraintAttachButtonSetting")
     root.addObject("VisualStyle", displayFlags="showVisualModels hideBehaviorModels showCollisionModels hideMappings hideForceFields showWireframe showInteractionForceFields" )
     root.addObject("FreeMotionAnimationLoop")
-    root.addObject("GenericConstraintSolver", tolerance=0.00001, maxIt=5000)
+    root.addObject("GenericConstraintSolver", tolerance=1e-3, maxIt=5000)
     root.addObject("CollisionLoop")
 
     needleBaseMaster = root.addChild("NeedleBaseMaster")
@@ -189,7 +189,7 @@ def createScene(root):
         surfGeom="@Volume/collision/geom_tri", 
         shaftGeom="@Needle/bodyCollision/geom_body", 
         volGeom="@Volume/geom_tetra", 
-        punctureForceThreshold=2., 
+        punctureForceThreshold=20, 
         tipDistThreshold=0.003,
         drawcollision=True,
         drawPointsScale=0.0001
