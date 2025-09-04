@@ -190,7 +190,7 @@ def createScene(root):
         shaftGeom="@Needle/bodyCollision/geom_body", 
         volGeom="@Volume/geom_tetra", 
         punctureForceThreshold=20, 
-        tipDistThreshold=0.003,
+        tipDistThreshold=0.005,
         drawcollision=True,
         drawPointsScale=0.0001
     )
