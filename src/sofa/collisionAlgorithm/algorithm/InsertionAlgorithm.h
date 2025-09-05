@@ -249,41 +249,47 @@ class InsertionAlgorithm : public BaseAlgorithm
                     // Skip if last CP lies after edge end point
                     if (dot(shaftEdgeDir, lastCPToP1) < 0_sreal) continue;
 
-                    // Candidate coupling point along shaft segment
-                    const type::Vec3 candidateCP = lastCP + tipDistThreshold * shaftEdgeDir;
+                    const int numCPs = floor(lastCPToP1.norm() / tipDistThreshold);
 
-                    // Project candidate CP onto the edge element and compute scalar coordinate
-                    // along segment
-                    const SReal edgeSegmentLength = (p1 - p0).norm();
-                    const type::Vec3 p0ToCandidateCP = candidateCP - p0;
-                    const SReal projPtOnEdge = dot(p0ToCandidateCP, shaftEdgeDir);
-
-                    // Skip if candidate CP is outside current edge segment
-                    if (projPtOnEdge < 0_sreal || projPtOnEdge > edgeSegmentLength) continue;
-
-                    // Project candidate CP onto shaft geometry and then find nearest volume
-                    // proximity
-                    shaftProx = projectOnShaft(candidateCP, itShaft->element()).prox;
-                    const BaseProximity::SPtr volProx = findClosestProxOnVol(
-                        shaftProx, l_volGeom.get(), projectOnVol, getFilterFunc());
-                    if (!volProx) continue;
-
-                    TetrahedronProximity::SPtr tetProx =
-                        dynamic_pointer_cast<TetrahedronProximity>(volProx);
-                    if (!tetProx) continue;
-
-                    double f0(tetProx->f0()), f1(tetProx->f1()), f2(tetProx->f2()),
-                        f3(tetProx->f3());
-                    bool isInTetra = toolbox::TetrahedronToolBox::isInTetra(
-                        shaftProx->getPosition(), tetProx->element()->getTetrahedronInfo(), f0, f1,
-                        f2, f3);
-
-                    // Ensure candidate CP lies inside tetrahedron
-                    if (isInTetra)
+                    for(int idCP = 0 ; idCP < numCPs ; idCP++)
                     {
-                        volProx->normalize();
-                        m_CPs.push_back(volProx);
-                        lastCP = volProx->getPosition();
+                        // Candidate coupling point along shaft segment
+                        const type::Vec3 candidateCP = lastCP + tipDistThreshold * shaftEdgeDir;
+
+                        // Project candidate CP onto the edge element and compute scalar coordinate
+                        // along segment
+                        const SReal edgeSegmentLength = (p1 - p0).norm();
+                        const type::Vec3 p0ToCandidateCP = candidateCP - p0;
+                        const SReal projPtOnEdge = dot(p0ToCandidateCP, shaftEdgeDir);
+
+                        // Skip if candidate CP is outside current edge segment
+                        if (projPtOnEdge < 0_sreal || projPtOnEdge > edgeSegmentLength) break;
+
+                        // Project candidate CP onto shaft geometry and then find nearest volume
+                        // proximity
+                        shaftProx = projectOnShaft(candidateCP, itShaft->element()).prox;
+                        if (!shaftProx) continue;
+                        const BaseProximity::SPtr volProx = findClosestProxOnVol(
+                            shaftProx, l_volGeom.get(), projectOnVol, getFilterFunc());
+                        if (!volProx) continue;
+
+                        TetrahedronProximity::SPtr tetProx =
+                            dynamic_pointer_cast<TetrahedronProximity>(volProx);
+                        if (!tetProx) continue;
+
+                        double f0(tetProx->f0()), f1(tetProx->f1()), f2(tetProx->f2()),
+                            f3(tetProx->f3());
+                        bool isInTetra = toolbox::TetrahedronToolBox::isInTetra(
+                            shaftProx->getPosition(), tetProx->element()->getTetrahedronInfo(), f0,
+                            f1, f2, f3);
+
+                        // Ensure candidate CP lies inside tetrahedron
+                        if (isInTetra)
+                        {
+                            volProx->normalize();
+                            m_CPs.push_back(volProx);
+                            lastCP = volProx->getPosition();
+                        }
                     }
                 }
             }
