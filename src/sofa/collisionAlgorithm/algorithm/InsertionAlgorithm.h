@@ -243,17 +243,17 @@ class InsertionAlgorithm : public BaseAlgorithm
 
                     const type::Vec3 p0 = edgeProx->element()->getP0()->getPosition();
                     const type::Vec3 p1 = edgeProx->element()->getP1()->getPosition();
+                    const type::Vec3 shaftEdgeDir = (p1 - p0).normalized();
+                    const type::Vec3 lastCPToP1 = p1 - lastCP;
+
+                    // Skip if last CP lies after edge end point
+                    if (dot(shaftEdgeDir, lastCPToP1) < 0_sreal) continue;
 
                     // Candidate coupling point along shaft segment
-                    const type::Vec3 candidateCP =
-                        lastCP + tipDistThreshold * (p1 - lastCP).normalized();
-
-                    // Skip if candidate CP lies before the last CP
-                    if (dot(tipToLastCP, (candidateCP - lastCP)) > 0_sreal) continue;
+                    const type::Vec3 candidateCP = lastCP + tipDistThreshold * shaftEdgeDir;
 
                     // Project candidate CP onto the edge element and compute scalar coordinate
                     // along segment
-                    const type::Vec3 shaftEdgeDir = (p1 - p0).normalized();
                     const SReal edgeSegmentLength = (p1 - p0).norm();
                     const type::Vec3 p0ToCandidateCP = candidateCP - p0;
                     const SReal projPtOnEdge = dot(p0ToCandidateCP, shaftEdgeDir);
