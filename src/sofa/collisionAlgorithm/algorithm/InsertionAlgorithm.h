@@ -216,10 +216,10 @@ class InsertionAlgorithm : public BaseAlgorithm
             if (!tipProx) return;
 
             // 2.1 Check whether coupling point should be added
-            type::Vec3 lastCouplingPt = m_couplingPts.back()->getPosition();
+            type::Vec3 lastCP = m_couplingPts.back()->getPosition();
             const SReal tipDistThreshold = this->d_tipDistThreshold.getValue();
-            const type::Vec3 tipToLastCouplingPt = lastCouplingPt - tipProx->getPosition();
-            if (tipToLastCouplingPt.norm() > tipDistThreshold)
+            const type::Vec3 tipToLastCP = lastCP - tipProx->getPosition();
+            if (tipToLastCP.norm() > tipDistThreshold)
             {
                 // find our current segment:
                 auto createShaftProximity =
@@ -239,15 +239,15 @@ class InsertionAlgorithm : public BaseAlgorithm
                         {
                             const type::Vec3 p0 = edgeProx->element()->getP0()->getPosition();
                             const type::Vec3 p1 = edgeProx->element()->getP1()->getPosition();
-                            const type::Vec3 candidateCouplingPt = lastCouplingPt + tipDistThreshold * (p1 - lastCouplingPt).normalized();
-                            if(dot(tipToLastCouplingPt, (candidateCouplingPt - lastCouplingPt)) > 0_sreal) continue;
+                            const type::Vec3 candidateCP = lastCP + tipDistThreshold * (p1 - lastCP).normalized();
+                            if(dot(tipToLastCP, (candidateCP - lastCP)) > 0_sreal) continue;
                             const type::Vec3 edgeNormal = (p1 - p0).normalized();
                             const SReal edgeSegmentLength = (p1 - p0).norm();
-                            const type::Vec3 p0ToCandidatePt = candidateCouplingPt - p0;
-                            const SReal dotProd = dot(edgeNormal, p0ToCandidatePt);
+                            const type::Vec3 p0ToCandidateCP = candidateCP - p0;
+                            const SReal dotProd = dot(edgeNormal, p0ToCandidateCP);
                             if (dotProd < 0_sreal || dotProd > edgeSegmentLength) continue;
     
-                            shaftProx = projectOnShaft(candidateCouplingPt, itShaft->element()).prox;
+                            shaftProx = projectOnShaft(candidateCP, itShaft->element()).prox;
                             const BaseProximity::SPtr volProx =
                                 findClosestProxOnVol(shaftProx, l_volGeom.get(), projectOnVol, getFilterFunc());
                             if (volProx)
@@ -265,7 +265,7 @@ class InsertionAlgorithm : public BaseAlgorithm
                                     {
                                         volProx->normalize();
                                         m_couplingPts.push_back(volProx);
-                                        lastCouplingPt = volProx->getPosition();
+                                        lastCP = volProx->getPosition();
                                     }
                                 }
                             }
@@ -282,8 +282,8 @@ class InsertionAlgorithm : public BaseAlgorithm
             //if (!tipProx) return;
             //
             //// 2.1 Check whether coupling point should be added
-            //const type::Vec3 tipToLastCouplingPt = m_couplingPts.back()->getPosition() - tipProx->getPosition();
-            //if (tipToLastCouplingPt.norm() > d_tipDistThreshold.getValue())
+            //const type::Vec3 tipToLastCP = m_couplingPts.back()->getPosition() - tipProx->getPosition();
+            //if (tipToLastCP.norm() > d_tipDistThreshold.getValue())
             //{
             //    auto findClosestProxOnVol =
             //        Operations::FindClosestProximity::Operation::get(l_volGeom);
@@ -329,7 +329,7 @@ class InsertionAlgorithm : public BaseAlgorithm
                                                       .normalized();
                         // If the (last) coupling point lies ahead of the tip (positive dot
                         // product), the needle is retreating. Thus, that point is removed.
-                        if (dot(tipToLastCouplingPt, normal) > 0_sreal)
+                        if (dot(tipToLastCP, normal) > 0_sreal)
                         {
                             m_couplingPts.pop_back();
                         }
