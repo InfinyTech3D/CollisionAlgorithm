@@ -241,11 +241,11 @@ class InsertionAlgorithm : public BaseAlgorithm
                             const type::Vec3 p1 = edgeProx->element()->getP1()->getPosition();
                             const type::Vec3 candidateCP = lastCP + tipDistThreshold * (p1 - lastCP).normalized();
                             if(dot(tipToLastCP, (candidateCP - lastCP)) > 0_sreal) continue;
-                            const type::Vec3 shaftEdgeDirection = (p1 - p0).normalized();
+                            const type::Vec3 shaftEdgeDir = (p1 - p0).normalized();
                             const SReal edgeSegmentLength = (p1 - p0).norm();
                             const type::Vec3 p0ToCandidateCP = candidateCP - p0;
-                            const SReal dotProd = dot(shaftEdgeDirection, p0ToCandidateCP);
-                            if (dotProd < 0_sreal || dotProd > edgeSegmentLength) continue;
+                            const SReal projPtOnEdge = dot(p0ToCandidateCP, shaftEdgeDir);
+                            if (projPtOnEdge < 0_sreal || projPtOnEdge > edgeSegmentLength) continue;
     
                             shaftProx = projectOnShaft(candidateCP, itShaft->element()).prox;
                             const BaseProximity::SPtr volProx =
