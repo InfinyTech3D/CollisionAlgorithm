@@ -216,9 +216,9 @@ class InsertionAlgorithm : public BaseAlgorithm
             if (!tipProx) return;
 
             // 2.1 Check whether coupling point should be added
-            type::Vec3 lastCp = m_couplingPts.back()->getPosition();
+            type::Vec3 lastCouplingPt = m_couplingPts.back()->getPosition();
             const SReal tipDistThreshold = this->d_tipDistThreshold.getValue();
-            const type::Vec3 tip2Pt = lastCp - tipProx->getPosition();
+            const type::Vec3 tip2Pt = lastCouplingPt - tipProx->getPosition();
             if (tip2Pt.norm() > tipDistThreshold)
             {
                 // find our current segment:
@@ -239,8 +239,8 @@ class InsertionAlgorithm : public BaseAlgorithm
                         {
                             const type::Vec3 p0 = edgeProx->element()->getP0()->getPosition();
                             const type::Vec3 p1 = edgeProx->element()->getP1()->getPosition();
-                            const type::Vec3 newCp = lastCp + tipDistThreshold * (p1 - lastCp).normalized();
-                            if(dot(tip2Pt, (newCp - lastCp)) > 0_sreal) continue;
+                            const type::Vec3 newCp = lastCouplingPt + tipDistThreshold * (p1 - lastCouplingPt).normalized();
+                            if(dot(tip2Pt, (newCp - lastCouplingPt)) > 0_sreal) continue;
                             const type::Vec3 edgeNormal = (p1 - p0).normalized();
                             const SReal edgeSegmentLength = (p1 - p0).norm();
                             const type::Vec3 p0toCp = newCp - p0;
@@ -265,7 +265,7 @@ class InsertionAlgorithm : public BaseAlgorithm
                                     {
                                         volProx->normalize();
                                         m_couplingPts.push_back(volProx);
-                                        lastCp = volProx->getPosition();
+                                        lastCouplingPt = volProx->getPosition();
                                     }
                                 }
                             }
