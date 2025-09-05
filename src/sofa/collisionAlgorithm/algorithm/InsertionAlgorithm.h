@@ -243,8 +243,8 @@ class InsertionAlgorithm : public BaseAlgorithm
                             if(dot(tipToLastCouplingPt, (candidateCouplingPt - lastCouplingPt)) > 0_sreal) continue;
                             const type::Vec3 edgeNormal = (p1 - p0).normalized();
                             const SReal edgeSegmentLength = (p1 - p0).norm();
-                            const type::Vec3 p0toCp = candidateCouplingPt - p0;
-                            const SReal dotProd = dot(edgeNormal, p0toCp);
+                            const type::Vec3 p0ToCandidatePt = candidateCouplingPt - p0;
+                            const SReal dotProd = dot(edgeNormal, p0ToCandidatePt);
                             if (dotProd < 0_sreal || dotProd > edgeSegmentLength) continue;
     
                             shaftProx = projectOnShaft(candidateCouplingPt, itShaft->element()).prox;
