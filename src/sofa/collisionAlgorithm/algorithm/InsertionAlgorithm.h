@@ -31,7 +31,7 @@ class InsertionAlgorithm : public BaseAlgorithm
     Data<bool> d_projective;
     Data<SReal> d_punctureForceThreshold, d_tipDistThreshold;
     ConstraintSolver::SPtr m_constraintSolver;
-    std::vector<BaseProximity::SPtr> m_CPs;
+    std::vector<BaseProximity::SPtr> m_couplingPts;
     Data<bool> d_drawCollision, d_drawPoints;
     Data<SReal> d_drawPointsScale;
 
@@ -58,7 +58,7 @@ class InsertionAlgorithm : public BaseAlgorithm
                                       "the last proximity detection. Once exceeded, a new "
                                       "proximity pair is added for the needle-volume coupling.")),
           m_constraintSolver(nullptr),
-          m_CPs(),
+          m_couplingPts(),
           d_drawCollision(initData(&d_drawCollision, false, "drawcollision", "Draw collision.")),
           d_drawPoints(initData(&d_drawPoints, false, "drawPoints", "Draw detection outputs.")),
           d_drawPointsScale(initData(&d_drawPointsScale, 0.0005, "drawPointsScale",
@@ -125,7 +125,7 @@ class InsertionAlgorithm : public BaseAlgorithm
         insertionOutput.clear();
         collisionOutput.clear();
 
-        if (m_CPs.empty())
+        if (m_couplingPts.empty())
         {
             // 1. Puncture algorithm
             auto createTipProximity =
@@ -161,7 +161,7 @@ class InsertionAlgorithm : public BaseAlgorithm
                         }
                         if (norm > punctureForceThreshold)
                         {
-                            m_CPs.push_back(surfProx);
+                            m_couplingPts.push_back(surfProx);
                             continue;
                         }
                     }
@@ -178,7 +178,7 @@ class InsertionAlgorithm : public BaseAlgorithm
             }
 
             // 1.3 Collision with the shaft geometry
-            if (m_CPs.empty())
+            if (m_couplingPts.empty())
             {
                 auto createShaftProximity =
                     Operations::CreateCenterProximity::Operation::get(l_shaftGeom->getTypeInfo());
@@ -215,7 +215,7 @@ class InsertionAlgorithm : public BaseAlgorithm
             const BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
             if (!tipProx) return;
 
-            type::Vec3 lastCP = m_CPs.back()->getPosition();
+            type::Vec3 lastCP = m_couplingPts.back()->getPosition();
             const SReal tipDistThreshold = this->d_tipDistThreshold.getValue();
 
             // Vector from tip to last coupling point; used for distance and directional checks
@@ -287,7 +287,7 @@ class InsertionAlgorithm : public BaseAlgorithm
                         if (isInTetra)
                         {
                             volProx->normalize();
-                            m_CPs.push_back(volProx);
+                            m_couplingPts.push_back(volProx);
                             lastCP = volProx->getPosition();
                         }
                     }
@@ -313,7 +313,7 @@ class InsertionAlgorithm : public BaseAlgorithm
                         // product), the needle is retreating. Thus, that point is removed.
                         if (dot(tipToLastCP, normal) > 0_sreal)
                         {
-                            m_CPs.pop_back();
+                            m_couplingPts.pop_back();
                         }
                     }
                     else
@@ -330,24 +330,24 @@ class InsertionAlgorithm : public BaseAlgorithm
             }
         }
 
-        if (!m_CPs.empty())
+        if (!m_couplingPts.empty())
         {
             // 3. Re-project proximities on the shaft geometry
             auto findClosestProxOnShaft =
                 Operations::FindClosestProximity::Operation::get(l_shaftGeom);
             auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
-            for (int i = 0; i < m_CPs.size(); i++)
+            for (int i = 0; i < m_couplingPts.size(); i++)
             {
                 const BaseProximity::SPtr shaftProx = findClosestProxOnShaft(
-                    m_CPs[i], l_shaftGeom.get(), projectOnShaft, getFilterFunc());
+                    m_couplingPts[i], l_shaftGeom.get(), projectOnShaft, getFilterFunc());
                 if (!shaftProx) continue;
                 shaftProx->normalize();
-                insertionOutput.add(shaftProx, m_CPs[i]);
+                insertionOutput.add(shaftProx, m_couplingPts[i]);
             }
             // This is a final-frontier check: If there are coupling points stored, but the
             // findClosestProxOnShaf operation yields no proximities on the shaft, it could be
             // because the needle has exited abruptly. Thus, we clear the coupling points.
-            if (insertionOutput.size() == 0) m_CPs.clear();
+            if (insertionOutput.size() == 0) m_couplingPts.clear();
         }
 
         d_collisionOutput.endEdit();
