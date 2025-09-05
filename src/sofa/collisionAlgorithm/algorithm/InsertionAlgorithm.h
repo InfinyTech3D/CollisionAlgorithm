@@ -218,8 +218,8 @@ class InsertionAlgorithm : public BaseAlgorithm
             // 2.1 Check whether coupling point should be added
             type::Vec3 lastCouplingPt = m_couplingPts.back()->getPosition();
             const SReal tipDistThreshold = this->d_tipDistThreshold.getValue();
-            const type::Vec3 tip2Pt = lastCouplingPt - tipProx->getPosition();
-            if (tip2Pt.norm() > tipDistThreshold)
+            const type::Vec3 tipToLastCouplingPt = lastCouplingPt - tipProx->getPosition();
+            if (tipToLastCouplingPt.norm() > tipDistThreshold)
             {
                 // find our current segment:
                 auto createShaftProximity =
@@ -240,7 +240,7 @@ class InsertionAlgorithm : public BaseAlgorithm
                             const type::Vec3 p0 = edgeProx->element()->getP0()->getPosition();
                             const type::Vec3 p1 = edgeProx->element()->getP1()->getPosition();
                             const type::Vec3 newCp = lastCouplingPt + tipDistThreshold * (p1 - lastCouplingPt).normalized();
-                            if(dot(tip2Pt, (newCp - lastCouplingPt)) > 0_sreal) continue;
+                            if(dot(tipToLastCouplingPt, (newCp - lastCouplingPt)) > 0_sreal) continue;
                             const type::Vec3 edgeNormal = (p1 - p0).normalized();
                             const SReal edgeSegmentLength = (p1 - p0).norm();
                             const type::Vec3 p0toCp = newCp - p0;
@@ -282,8 +282,8 @@ class InsertionAlgorithm : public BaseAlgorithm
             //if (!tipProx) return;
             //
             //// 2.1 Check whether coupling point should be added
-            //const type::Vec3 tip2Pt = m_couplingPts.back()->getPosition() - tipProx->getPosition();
-            //if (tip2Pt.norm() > d_tipDistThreshold.getValue())
+            //const type::Vec3 tipToLastCouplingPt = m_couplingPts.back()->getPosition() - tipProx->getPosition();
+            //if (tipToLastCouplingPt.norm() > d_tipDistThreshold.getValue())
             //{
             //    auto findClosestProxOnVol =
             //        Operations::FindClosestProximity::Operation::get(l_volGeom);
@@ -329,7 +329,7 @@ class InsertionAlgorithm : public BaseAlgorithm
                                                       .normalized();
                         // If the (last) coupling point lies ahead of the tip (positive dot
                         // product), the needle is retreating. Thus, that point is removed.
-                        if (dot(tip2Pt, normal) > 0_sreal)
+                        if (dot(tipToLastCouplingPt, normal) > 0_sreal)
                         {
                             m_couplingPts.pop_back();
                         }
