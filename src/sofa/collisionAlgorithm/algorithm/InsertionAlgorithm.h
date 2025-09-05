@@ -239,15 +239,15 @@ class InsertionAlgorithm : public BaseAlgorithm
                         {
                             const type::Vec3 p0 = edgeProx->element()->getP0()->getPosition();
                             const type::Vec3 p1 = edgeProx->element()->getP1()->getPosition();
-                            const type::Vec3 newCp = lastCouplingPt + tipDistThreshold * (p1 - lastCouplingPt).normalized();
-                            if(dot(tipToLastCouplingPt, (newCp - lastCouplingPt)) > 0_sreal) continue;
+                            const type::Vec3 candidateCouplingPt = lastCouplingPt + tipDistThreshold * (p1 - lastCouplingPt).normalized();
+                            if(dot(tipToLastCouplingPt, (candidateCouplingPt - lastCouplingPt)) > 0_sreal) continue;
                             const type::Vec3 edgeNormal = (p1 - p0).normalized();
                             const SReal edgeSegmentLength = (p1 - p0).norm();
-                            const type::Vec3 p0toCp = newCp - p0;
+                            const type::Vec3 p0toCp = candidateCouplingPt - p0;
                             const SReal dotProd = dot(edgeNormal, p0toCp);
                             if (dotProd < 0_sreal || dotProd > edgeSegmentLength) continue;
     
-                            shaftProx = projectOnShaft(newCp, itShaft->element()).prox;
+                            shaftProx = projectOnShaft(candidateCouplingPt, itShaft->element()).prox;
                             const BaseProximity::SPtr volProx =
                                 findClosestProxOnVol(shaftProx, l_volGeom.get(), projectOnVol, getFilterFunc());
                             if (volProx)
