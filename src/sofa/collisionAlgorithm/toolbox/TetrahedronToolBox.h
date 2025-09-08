@@ -12,6 +12,8 @@ public:
 
     static Operations::CreateCenterProximity::Result createCenterProximity(const TetrahedronElement::SPtr & tetra);
 
+    static Operations::ContainsPointInElement::Result containsPoint(const type::Vec3 & P, const TetrahedronElement::SPtr & tetra);
+
     static Operations::Project::Result project(const type::Vec3 & P, const TetrahedronElement::SPtr & tetra);
 
     static void projectOnTetra(const type::Vec3d projectP, const TetrahedronElement::TetraInfo & teinfo, double & fact_u, double & fact_v, double & fact_w,double & fact_x);

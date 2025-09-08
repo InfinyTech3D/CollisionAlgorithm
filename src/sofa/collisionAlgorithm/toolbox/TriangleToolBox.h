@@ -12,6 +12,8 @@ public:
 
     static Operations::CreateCenterProximity::Result createCenterProximity(const TriangleElement::SPtr & tri);
 
+    static Operations::ContainsPointInElement::Result containsPoint(const type::Vec3 & P, const TriangleElement::SPtr & tri);
+
     static Operations::Project::Result project(const type::Vec3 & P, const TriangleElement::SPtr & tri);
 
     static void computeTriangleBaryCoords(const type::Vec3d & proj_P, const TriangleElement::TriangleInfo & tinfo, double & fact_u, double & fact_v, double & fact_w);
