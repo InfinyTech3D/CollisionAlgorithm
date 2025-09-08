@@ -4,6 +4,7 @@
 #include <sofa/collisionAlgorithm/elements/TriangleElement.h>
 #include <sofa/collisionAlgorithm/operations/Project.h>
 #include <sofa/collisionAlgorithm/operations/CreateCenterProximity.h>
+#include <sofa/collisionAlgorithm/operations/ContainsPoint.h>
 
 namespace sofa::collisionAlgorithm::toolbox {
 
