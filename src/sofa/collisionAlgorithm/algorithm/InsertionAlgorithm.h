@@ -6,6 +6,7 @@
 #include <sofa/collisionAlgorithm/operations/CreateCenterProximity.h>
 #include <sofa/collisionAlgorithm/operations/FindClosestProximity.h>
 #include <sofa/collisionAlgorithm/operations/Project.h>
+#include <sofa/colliisonAlgorithm/operations/ContainsPoint.h>
 #include <sofa/collisionAlgorithm/proximity/EdgeProximity.h>
 #include <sofa/collisionAlgorithm/proximity/TetrahedronProximity.h>
 #include <sofa/component/constraint/lagrangian/solver/ConstraintSolverImpl.h>
@@ -230,6 +231,8 @@ class InsertionAlgorithm : public BaseAlgorithm
                 auto findClosestProxOnVol =
                     Operations::FindClosestProximity::Operation::get(l_volGeom);
                 auto projectOnVol = Operations::Project::Operation::get(l_volGeom);
+                auto containsPointInVol =
+                    Operations::ContainsPointInProximity::Operation::get(l_volGeom);
 
                 // Iterate over shaft segments to find which one contains the next candidate CP
                 for (auto itShaft = l_shaftGeom->begin(); itShaft != l_shaftGeom->end(); itShaft++)
@@ -269,22 +272,12 @@ class InsertionAlgorithm : public BaseAlgorithm
                         // proximity
                         shaftProx = projectOnShaft(candidateCP, itShaft->element()).prox;
                         if (!shaftProx) continue;
+
                         const BaseProximity::SPtr volProx = findClosestProxOnVol(
                             shaftProx, l_volGeom.get(), projectOnVol, getFilterFunc());
                         if (!volProx) continue;
 
-                        TetrahedronProximity::SPtr tetProx =
-                            dynamic_pointer_cast<TetrahedronProximity>(volProx);
-                        if (!tetProx) continue;
-
-                        double f0(tetProx->f0()), f1(tetProx->f1()), f2(tetProx->f2()),
-                            f3(tetProx->f3());
-                        bool isInTetra = toolbox::TetrahedronToolBox::isInTetra(
-                            shaftProx->getPosition(), tetProx->element()->getTetrahedronInfo(), f0,
-                            f1, f2, f3);
-
-                        // Ensure candidate CP lies inside tetrahedron
-                        if (isInTetra)
+                        if (containsPointInVol(shaftProx->getPosition(), volProx))
                         {
                             volProx->normalize();
                             m_couplingPts.push_back(volProx);
