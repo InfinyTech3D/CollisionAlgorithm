@@ -1,5 +1,7 @@
 import Sofa
 
+GeomagicActive = False
+
 g_needleLength=0.200 #(m)
 g_needleNumberOfElems=40 #(# of edges)
 g_needleBaseOffset=[0.15,0.04,0.04]
@@ -67,27 +69,33 @@ def createScene(root):
     root.addObject("CollisionLoop")
 
     toolController = root.addChild("ToolController")
-    toolController.addObject("GeomagicDriver"
-        , name='GeomagicDevice' 
-        , deviceName='Default Device' 
-        , scale=0.02 
-        , drawDeviceFrame=False 
-        , drawDevice=False 
-        , manualStart=False
-        , positionBase=[0.12, 0, 0] 
-        , orientationBase=[0, 0.174, 0, -0.985] 
-    )
+    controllerPos = ""
+    if (GeomagicActive):
+        controllerPos = "@GeomagicDevice.positionDevice"
+        toolController.addObject("GeomagicDriver"
+            , name='GeomagicDevice' 
+            , deviceName='Default Device' 
+            , scale=0.02 
+            , drawDeviceFrame=False 
+            , drawDevice=False 
+            , manualStart=False
+            , positionBase=[0.12, 0, 0] 
+            , orientationBase=[0, 0.174, 0, -0.985] 
+        )
+        #toolController.addObject("WriteState", name="writer", filename="RecordState/NeedleInsertionHaptics.txt"
+        #    , period=0.01, writeX=True, writeV=True, time=0)
+    else:
+        controllerPos = "@reader.position"
+
     toolController.addObject("MechanicalObject", name="mstate_baseMaster"
-        #, position="@GeomagicDevice.positionDevice"
-        , position="@reader.position"
+        , position=controllerPos
         , template="Rigid3d"
         , showObjectScale=0.01
         , showObject=False
         , drawMode=1
     )
-    #toolController.addObject("WriteState", name="writer", filename="RecordState/Haptics_Liver.txt"
-    #    , period=0.01, writeX=True, writeV=True, time=0)
-    toolController.addObject("ReadState", name="reader", filename="RecordState/Haptics_Liver.txt")
+    if (not GeomagicActive):
+        toolController.addObject("ReadState", name="reader", filename="RecordState/NeedleInsertionHaptics.txt")
 
     needle = root.addChild("Needle")
     needle.addObject("EulerImplicitSolver", firstOrder=True)
@@ -165,8 +173,7 @@ def createScene(root):
     volume.addObject("MechanicalObject", name="mstate_gel", template="Vec3d")
     volume.addObject("TetrahedronGeometry", name="geom_tetra", mstate="@mstate_gel", topology="@TetraContainer", draw=False)
     volume.addObject("PhongTriangleNormalHandler", name="InternalTriangles", geometry="@geom_tetra")
-    volume.addObject("AABBBroadPhase",name="AABBTetra",geometry="@geom_tetra",nbox=[3,3,3],thread=1)
-    volume.addObject("TetrahedronFEMForceField", name="FF",**g_gelMechanicalParameters)
+    volume.addObject("FastTetrahedralCorotationalForceField", name="FF",**g_gelMechanicalParameters)
     volume.addObject("MeshMatrixMass", name="Mass",totalMass=g_gelTotalMass)
 
     volume.addObject("BoxROI",name="BoxROI",box=g_gelFixedBoxROI)
@@ -181,7 +188,7 @@ def createScene(root):
     volumeCollision.addObject("MechanicalObject", name="mstate_gelColi",position="@../TetraContainer.position")
     volumeCollision.addObject("TriangleGeometry", name="geom_tri", mstate="@mstate_gelColi", topology="@TriContainer",draw=False)
     volumeCollision.addObject("PhongTriangleNormalHandler", name="SurfaceTriangles", geometry="@geom_tri")
-    volumeCollision.addObject("AABBBroadPhase",name="AABBTriangles",thread=1,nbox=[2,2,3])
+    volumeCollision.addObject("AABBBroadPhase", name="AABBTriangles", thread=1, nbox=[2,2,3], method=2)
 
     volumeCollision.addObject("IdentityMapping", name="identityMappingToCollision", input="@../mstate_gel", output="@mstate_gelColi", isMechanical=True)
 
