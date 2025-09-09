@@ -85,9 +85,9 @@ def createScene(root):
         , showObject=False
         , drawMode=1
     )
-    #toolController.addObject("WriteState", name="writer", filename="RecordState/Haptics_Liver.txt"
+    #toolController.addObject("WriteState", name="writer", filename="RecordState/NeedleInsertionHaptics.txt"
     #    , period=0.01, writeX=True, writeV=True, time=0)
-    toolController.addObject("ReadState", name="reader", filename="RecordState/Haptics_Liver.txt")
+    toolController.addObject("ReadState", name="reader", filename="RecordState/NeedleInsertionHaptics.txt")
 
     needle = root.addChild("Needle")
     needle.addObject("EulerImplicitSolver", firstOrder=True)
