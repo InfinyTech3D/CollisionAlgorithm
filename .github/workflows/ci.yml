@@ -21,12 +21,13 @@ jobs:
           sofa_root: ${{ github.workspace }}/sofa
           sofa_version: ${{ matrix.sofa_branch }}
           sofa_scope: 'standard'
-      - name: Checkout source code
+
+      - name: Checkout CollisionAlgorithm
         uses: actions/checkout@v2
         with:
           path: ${{ env.WORKSPACE_SRC_PATH }}        
 
-      - name: Build and install
+      - name: Build and install CollisionAlgorithm
         id: build-install
         shell: bash
         run: |
@@ -55,6 +56,35 @@ jobs:
             echo ${CCACHE_BASEDIR}
             ccache -s
           fi
+
+      - name: Checkout ConstraintGeometry
+        uses: actions/checkout@v2
+        with:
+          repository: InfinyTech3D/ConstraintGeometry
+          path: downstream/ConstraintGeometry
+
+      - name: Build ConstraintGeometry
+        shell: bash
+        run: |
+          mkdir -p downstream/ConstraintGeometry/build
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            cmd //c "${{ steps.sofa.outputs.vs_vsdevcmd }} \
+              && cd /d %GITHUB_WORKSPACE%/downstream/ConstraintGeometry/build \
+              && cmake \
+                  -GNinja \
+                  -DCMAKE_PREFIX_PATH=$SOFA_ROOT/lib/cmake;%WORKSPACE_INSTALL_PATH%/lib/cmake \
+                  -DCMAKE_BUILD_TYPE=Release \
+                  .. \
+              && ninja"
+          else
+            cd downstream/ConstraintGeometry/build
+            cmake \
+              -GNinja \
+              -DCMAKE_PREFIX_PATH="$SOFA_ROOT/lib/cmake;$WORKSPACE_INSTALL_PATH/lib/cmake" \
+              -DCMAKE_BUILD_TYPE=Release \
+              ..
+            ninja
+          fi
           
       - name: Sanitize artifact name
         id: sanitize
@@ -81,7 +111,16 @@ jobs:
         with:
           name: ${{ steps.sanitize.outputs.artifact_name }}
           path: ${{ env.WORKSPACE_ARTIFACT_PATH }}
-      
+
+      - name: Debug install tree
+        if: runner.os == 'Linux'
+        run: |
+          echo "=== Listing Workspace ==="
+          find $GITHUB_WORKSPACE -maxdepth 3 -not -path '*/.*' -type d -print 
+          echo "=== Listing cmake files ==="
+          find $GITHUB_WORKSPACE -name "*Config.cmake" -print
+
+
       - name: Set env vars for tests
         shell: bash
         run: |
