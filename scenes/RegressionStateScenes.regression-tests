@@ -17,4 +17,4 @@
 ### Regression Scenes ###
 NeedleInsertion.py 700 1e-7 1 1
 NeedleInsertionCycles.py 900 1e-7 1 1
-#NeedleInsertionHaptics.py 5000 1e-7 1 1
+NeedleInsertionHaptics.py 5000 1e-7 1 1
