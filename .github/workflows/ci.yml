@@ -112,15 +112,6 @@ jobs:
           name: ${{ steps.sanitize.outputs.artifact_name }}
           path: ${{ env.WORKSPACE_ARTIFACT_PATH }}
 
-      - name: Debug install tree
-        if: runner.os == 'Linux'
-        run: |
-          echo "=== Listing Workspace ==="
-          find $GITHUB_WORKSPACE -maxdepth 3 -not -path '*/.*' -type d -print 
-          echo "=== Listing cmake files ==="
-          find $GITHUB_WORKSPACE -name "*Config.cmake" -print
-
-
       - name: Set env vars for tests
         shell: bash
         run: |
