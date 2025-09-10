@@ -37,10 +37,9 @@ target_link_libraries(${PROJECT_NAME}
 set(${PROJECT_NAME}_INCLUDE_DIRS "include/${PROJECT_NAME}")
 
 target_include_directories(${PROJECT_NAME} PUBLIC 
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>")
-
-target_include_directories(${PROJECT_NAME} PUBLIC 
-    "$<INSTALL_INTERFACE:${${PROJECT_NAME}_INCLUDE_DIRS}>")
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
+    "$<INSTALL_INTERFACE:${${PROJECT_NAME}_INCLUDE_DIRS}>"
+)
 
 sofa_create_package_with_targets(
     PACKAGE_NAME ${PROJECT_NAME} 
