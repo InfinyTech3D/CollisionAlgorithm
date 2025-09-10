@@ -32,7 +32,7 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 ## Install rules for the library and headers; CMake package configurations files
-set(${PROJECT_NAME}_INCLUDE_DIRS "include/${PROJECT_NAME}")
+#set(${PROJECT_NAME}_INCLUDE_DIRS "include/${PROJECT_NAME}")
 
 target_include_directories(${PROJECT_NAME} PUBLIC 
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
@@ -42,7 +42,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 sofa_create_package_with_targets(
     PACKAGE_NAME ${PROJECT_NAME} 
     PACKAGE_VERSION ${PROJECT_VERSION}
-    TARGETS ${PROJECT_NAME} 
+    TARGETS ${PROJECT_NAME} AUTO_SET_TARGET_PROPERTIES
     INCLUDE_SOURCE_DIR "src"
     INCLUDE_INSTALL_DIR ${PROJECT_NAME}
     EXAMPLE_INSTALL_DIR "scenes"
