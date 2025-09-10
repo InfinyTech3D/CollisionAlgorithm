@@ -14,7 +14,7 @@ find_package(Sofa.Component.StateContainer REQUIRED)
 find_package(Sofa.Component.Constraint.Lagrangian.Solver REQUIRED)
 find_package(Sofa.GL REQUIRED)
 
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/ignored")
+#include_directories("${CMAKE_CURRENT_SOURCE_DIR}/ignored")
 #include_directories("${CMAKE_CURRENT_SOURCE_DIR}/deprecated")
 
 set_source_files_properties(${IGNORED_FILES} PROPERTIES HEADER_FILE_ONLY TRUE)
