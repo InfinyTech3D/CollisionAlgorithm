@@ -43,7 +43,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 sofa_create_package_with_targets(
     PACKAGE_NAME ${PROJECT_NAME} 
-    PACKAGE_VERSION 0.1 
+    PACKAGE_VERSION ${PROJECT_VERSION}
     TARGETS ${PROJECT_NAME} 
     INCLUDE_INSTALL_DIR ${${PROJECT_NAME}_INCLUDE_DIRS}
 )
