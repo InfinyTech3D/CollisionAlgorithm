@@ -21,22 +21,11 @@ set_source_files_properties(${IGNORED_FILES} PROPERTIES HEADER_FILE_ONLY TRUE)
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES} ${README_FILES})
 
-set_target_properties(${PROJECT_NAME} PROPERTIES 
-    COMPILE_FLAGS "-DPLUGIN_DATA_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/\"")
-
 target_link_libraries(${PROJECT_NAME}
     Sofa.Simulation.Core
     Sofa.Component.StateContainer
     Sofa.Component.Constraint.Lagrangian.Solver
     Sofa.GL
-)
-
-## Install rules for the library and headers; CMake package configurations files
-#set(${PROJECT_NAME}_INCLUDE_DIRS "include/${PROJECT_NAME}")
-
-target_include_directories(${PROJECT_NAME} PUBLIC 
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
-    "$<INSTALL_INTERFACE:${${PROJECT_NAME}_INCLUDE_DIRS}>"
 )
 
 sofa_create_package_with_targets(
