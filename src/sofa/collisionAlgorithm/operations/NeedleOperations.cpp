@@ -1,8 +1,23 @@
 #include <sofa/collisionAlgorithm/operations/NeedleOperations.h>
 
-namespace sofa::collisionAlgorithm::Operations::Needle {
+namespace sofa::collisionAlgorithm::Operations::Needle
+{
 
-//int register_Project_Edge = Operation::register_func<EdgeProximity>(&toolbox::EdgeToolBox::project);
+bool prunePointsUsingEdges(std::vector<BaseProximity::SPtr>& couplingPts,
+                           const EdgeElement::SPtr& edge)
+{
+    const type::Vec3 edgeBase(edge->getP0()->getPosition());
+    const type::Vec3 tip(edge->getP1()->getPosition());
 
+    const type::Vec3 edgeDirection = tip - edgeBase;
+    const type::Vec3 tip2Pt = couplingPts.back()->getPosition() - tip;
+
+    // Positive dot product means the point is ahead of the tip
+    if (dot(tip2Pt, edgeDirection) > 0_sreal) couplingPts.pop_back();
+
+    return true;
 }
 
+int register_PrunePointsAheadOfTip_Edge =
+    PrunePointsAheadOfTip::register_func<EdgeElement>(&prunePointsUsingEdges);
+}  // namespace sofa::collisionAlgorithm::Operations::Needle
