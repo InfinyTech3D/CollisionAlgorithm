@@ -18,8 +18,9 @@ class Operation : public GenericOperation<Operation,  // Type of the operation
 
     void notFound(const std::type_info& id) const override
     {
-        std::cerr << "ERROR the operation ContainsPointOperation is not registered with for type = "
-                  << sofa::helper::NameDecoder::decodeFullName(id) << std::endl;
+        msg_error("ContainsPointInElement")
+            << "The operation ContainsPointInElementOperation is not registered with for type = "
+            << sofa::helper::NameDecoder::decodeFullName(id);
     }
 };
 
@@ -46,9 +47,9 @@ class Operation
 
     void notFound(const std::type_info& id) const override
     {
-        std::cerr << "ERROR the operation ContainsPointProximityOperation is not registered with "
-                     "for type = "
-                  << sofa::helper::NameDecoder::decodeFullName(id) << std::endl;
+        msg_error("ContainsPointInProximity")
+            << "The operation ContainsPointInProximityOperation is not registered with for type = "
+            << sofa::helper::NameDecoder::decodeFullName(id);
     }
 };
 
