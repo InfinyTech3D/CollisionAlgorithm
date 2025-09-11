@@ -6,6 +6,7 @@
 #include <sofa/collisionAlgorithm/operations/CreateCenterProximity.h>
 #include <sofa/collisionAlgorithm/operations/FindClosestProximity.h>
 #include <sofa/collisionAlgorithm/operations/Project.h>
+#include <sofa/collisionAlgorithm/operations/NeedleOperations.h>
 #include <sofa/collisionAlgorithm/proximity/EdgeProximity.h>
 #include <sofa/collisionAlgorithm/proximity/TetrahedronProximity.h>
 #include <sofa/component/constraint/lagrangian/solver/ConstraintSolverImpl.h>
@@ -247,38 +248,11 @@ class InsertionAlgorithm : public BaseAlgorithm
             }
             else  // Don't bother with removing the point that was just added
             {
-                // 2.2. Check whether coupling point should be removed
+                // Remove coupling points that are ahead of the tip in the insertion direction
                 ElementIterator::SPtr itShaft = l_shaftGeom->begin(l_shaftGeom->getSize() - 2);
-                auto createShaftProximity =
-                    Operations::CreateCenterProximity::Operation::get(itShaft->getTypeInfo());
-                const BaseProximity::SPtr shaftProx = createShaftProximity(itShaft->element());
-                if (shaftProx)
-                {
-                    const EdgeProximity::SPtr edgeProx =
-                        dynamic_pointer_cast<EdgeProximity>(shaftProx);
-                    if (edgeProx)
-                    {
-                        const type::Vec3 normal = (edgeProx->element()->getP1()->getPosition() -
-                                                   edgeProx->element()->getP0()->getPosition())
-                                                      .normalized();
-                        // If the (last) coupling point lies ahead of the tip (positive dot product), 
-                        // the needle is retreating. Thus, that point is removed.
-                        if (dot(tip2Pt, normal) > 0_sreal)
-                        {
-                            m_couplingPts.pop_back();
-                        }
-                    }
-                    else
-                    {
-                        msg_warning() << "shaftGeom: " << l_shaftGeom->getName()
-                                      << " is not an EdgeGeometry. Point removal is disabled";
-                    }
-                }
-                else
-                {
-                    msg_warning() << "Cannot create proximity from shaftGeom: "
-                                  << l_shaftGeom->getName() << " - point removal is disabled";
-                }
+                auto prunePointsAheadOfTip = 
+                    Operations::Needle::PrunePointsAheadOfTip::get(itShaft->getTypeInfo());
+                prunePointsAheadOfTip(m_couplingPts, itShaft->element());
             }
         }
 
