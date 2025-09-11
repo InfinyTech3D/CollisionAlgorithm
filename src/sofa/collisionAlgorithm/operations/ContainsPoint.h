@@ -56,6 +56,13 @@ class Operation
 template <typename PROX>
 Result containsPoint(const type::Vec3& P, const typename std::shared_ptr<PROX>& prox)
 {
+    if (!prox)
+    {
+        msg_warning("ContainsPointInProximity") << "Null proximity pointer in containsPoint"
+            << "Operation is disabled; returning false"; 
+        return false;
+    }
+
     auto elem = prox->element();
     auto containsPointInElem =
         sofa::collisionAlgorithm::Operations::ContainsPointInElement::Operation::get(elem);
