@@ -6,10 +6,18 @@ namespace sofa::collisionAlgorithm::Operations::Needle
 bool prunePointsUsingEdges(std::vector<BaseProximity::SPtr>& couplingPts,
                            const EdgeElement::SPtr& edge)
 {
+    if (!edge) 
+    {
+        msg_warning("Needle::PrunePointsAheadOfTip")
+            << "Null element pointer in prunePointsUsingEdges; returning false";
+        return false;
+    }
     const type::Vec3 edgeBase(edge->getP0()->getPosition());
     const type::Vec3 tip(edge->getP1()->getPosition());
 
     const type::Vec3 edgeDirection = tip - edgeBase;
+
+    if (couplingPts.empty()) return true;
     const type::Vec3 tip2Pt = couplingPts.back()->getPosition() - tip;
 
     // Positive dot product means the point is ahead of the tip
