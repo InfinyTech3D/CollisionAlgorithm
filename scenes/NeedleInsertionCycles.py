@@ -65,27 +65,27 @@ def createScene(root):
 
     needleBaseMaster = root.addChild("NeedleBaseMaster")
     needleBaseMaster.addObject("MechanicalObject", name="mstate_baseMaster", template="Rigid3d", showObjectScale=0.002, showObject=True, drawMode=1
-        #, position=[0.04, 0.04, 0, 0, 0, 0, 1])
         , position="@reader.position")
+    #    , position=[0.04, 0.04, 0, 0, 0, 0, 1])
     #needleBaseMaster.addObject("LinearMovementProjectiveConstraint",indices=[0], 
     #    keyTimes=[
-    #        0, 1, 4, 4.5, 5, 8
-    #        ,8.5,9,12,12.5,13,16
+    #        0, 0.04, 0.25, 0.3, 0.35, 0.55
+    #        ,0.6, 0.65, 0.7, 0.75, 0.8, 0.9
     #    ],
     #    movements=[
-    #        [0.04, 0.04,0,0,0,0],
-    #        [0.04, 0.04,0.05,0,3.14/2,0],
-    #        [0.04, 0.04,-0.07,0,3.14/2,0],
-    #        [0.05, 0.04,-0.07,0,3.14/2 + 3.14/16,0],
-    #        [0.04, 0.04,-0.07,0,3.14/2,0],
-    #        [0.04, 0.04,0.005,0,3.14/2,0],
+    #        [0.04, 0.04,  0, 0, 0, 0],
+    #        [0.04, 0.04,  0.02, 0, 3.14/2, 0],
+    #        [0.04, 0.04, -0.07, 0, 3.14/2, 0],
+    #        [0.05, 0.04, -0.07, 0, 3.14/2 + 3.14/16, 0],
+    #        [0.04, 0.04, -0.07, 0, 3.14/2, 0],
+    #        [0.04, 0.04,  0.005,0, 3.14/2, 0],
     #        # Change to insertion at an angle
-    #        [0.06, 0.04,0.005,0,3.14/2,0],
-    #        [0.06, 0.04,0.005,0,3.14/2 + 3.14/8,0],
-    #        [0.030866, 0.04,-0.04119,0,3.14/2 + 3.14/8,0],
-    #        [0.030866, 0.04,-0.04119,0,3.14/2,0],
-    #        [0.030866, 0.04,-0.04119,0,3.14/2 + 3.14/8,0],
-    #        [0.06, 0.04,0.005,0,3.14/2 + 3.14/8,0]
+    #        [0.06, 0.04,  0.005, 0, 3.14/2, 0],
+    #        [0.06, 0.04,  0.005, 0, 3.14/2 + 3.14/8, 0],
+    #        [0.030866, 0.04, -0.04119, 0, 3.14/2 + 3.14/8, 0],
+    #        [0.030866, 0.04, -0.04119, 0, 3.14/2, 0],
+    #        [0.030866, 0.04, -0.04119, 0, 3.14/2 + 3.14/8, 0],
+    #        [0.06, 0.04, 0.005, 0, 3.14/2 + 3.14/8, 0]
     #    ]
     #    ,relativeMovements=False
     #)
@@ -215,4 +215,4 @@ def createScene(root):
     root.addObject("ConstraintUnilateral",input="@InsertionAlgo.collisionOutput",directions="@punctureDirection",draw_scale=0.001, mu=0.001)
 
     root.addObject("FirstDirection",name="bindDirection", handler="@Needle/bodyCollision/NeedleBeams")
-    root.addObject("ConstraintInsertion",input="@InsertionAlgo.insertionOutput", directions="@bindDirection",draw_scale=0.002, frictionCoeff=0.0023)
+    root.addObject("ConstraintInsertion",input="@InsertionAlgo.insertionOutput", directions="@bindDirection",draw_scale=0.002, frictionCoeff=0.00)#23)

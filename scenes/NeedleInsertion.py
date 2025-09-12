@@ -6,7 +6,7 @@ g_needleBaseOffset=[0.04,0.04,0]
 g_needleRadius = 0.001 #(m)
 g_needleMechanicalParameters = {
     "radius":g_needleRadius,
-    "youngModulus":1e11,
+    "youngModulus":1e12,
     "poissonRatio":0.3
 }
 g_needleTotalMass=0.01
@@ -17,7 +17,7 @@ g_gelRegularGridParameters = {
     "max":[0.125, 0.125, -0.100]
 } #Again all in mm
 g_gelMechanicalParameters = {
-    "youngModulus":8e5,
+    "youngModulus":1e6,
     "poissonRatio":0.45,
     "method":"large"
 }
@@ -65,13 +65,12 @@ def createScene(root):
 
     needleBaseMaster = root.addChild("NeedleBaseMaster")
     needleBaseMaster.addObject("MechanicalObject", name="mstate_baseMaster", template="Rigid3d", showObjectScale=0.002, showObject=False, drawMode=1
-        #, position=[0.04, 0.04, 0, 0, 0, 0, 1])
         , position="@reader.position")
-    #needleBaseMaster.addObject("LinearMovementProjectiveConstraint",indices=[0], keyTimes=[0,1,7,9],movements=
-    #    [ [0.04, 0.04,0,0,0,0]
-    #    , [0.04, 0.04,0.05,0,3.14/2,0]
-    #    , [0.04, 0.04,-0.07,0,3.14/2,0]
-    #    , [0.05, 0.04,-0.07,0,3.14/2 + 3.14/16,0]
+    #    , position=[0.04, 0.04, 0, 0, 0, 0, 1])
+    #needleBaseMaster.addObject("LinearMovementProjectiveConstraint",indices=[0], keyTimes=[0,0.5,0.7],movements=
+    #    [ [0.04, 0.04,  0.05, 0, 3.14/2, 0]
+    #    , [0.04, 0.04, -0.04, 0, 3.14/2, 0]
+    #    , [0.05, 0.04, -0.04, 0, 3.14/2 + 3.14/16, 0]
     #],relativeMovements=False)
     #needleBaseMaster.addObject("WriteState", name="writer", filename="RecordState/NeedleInsertion.txt"
     #    , period=0.01, writeX=True, writeV=True, time=0)
@@ -189,7 +188,7 @@ def createScene(root):
         surfGeom="@Volume/collision/geom_tri", 
         shaftGeom="@Needle/bodyCollision/geom_body", 
         volGeom="@Volume/geom_tetra", 
-        punctureForceThreshold=2., 
+        punctureForceThreshold=16, 
         tipDistThreshold=0.003,
         drawcollision=True,
         drawPointsScale=0.0001
@@ -199,4 +198,4 @@ def createScene(root):
     root.addObject("ConstraintUnilateral",input="@InsertionAlgo.collisionOutput",directions="@punctureDirection",draw_scale=0.001)
 
     root.addObject("FirstDirection",name="bindDirection", handler="@Needle/bodyCollision/NeedleBeams")
-    root.addObject("ConstraintInsertion",input="@InsertionAlgo.insertionOutput", directions="@bindDirection",draw_scale=0.002, frictionCoeff=0.05)
+    root.addObject("ConstraintInsertion",input="@InsertionAlgo.insertionOutput", directions="@bindDirection",draw_scale=0.002, frictionCoeff=0.002)
