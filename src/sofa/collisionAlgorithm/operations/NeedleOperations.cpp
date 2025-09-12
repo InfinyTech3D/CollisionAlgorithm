@@ -14,16 +14,19 @@ bool prunePointsUsingEdges(std::vector<BaseProximity::SPtr>& couplingPts,
     }
     const type::Vec3 edgeBase(edge->getP0()->getPosition());
     const type::Vec3 tip(edge->getP1()->getPosition());
-
     const type::Vec3 edgeDirection = tip - edgeBase;
 
-    if (couplingPts.empty()) return true;
-    const type::Vec3 tip2Pt = couplingPts.back()->getPosition() - tip;
+    const int initSize = couplingPts.size();
 
-    // Positive dot product means the point is ahead of the tip
-    if (dot(tip2Pt, edgeDirection) > 0_sreal) couplingPts.pop_back();
+    while(!couplingPts.empty())
+    {
+        const type::Vec3 tip2Pt = couplingPts.back()->getPosition() - tip;
 
-    return true;
+        // Negative dot product means the point is behind the tip
+        if(dot(tip2Pt, edgeDirection) < 0_sreal) break;
+        couplingPts.pop_back();
+    }
+    return (initSize == couplingPts.size());
 }
 
 int register_PrunePointsAheadOfTip_Edge =

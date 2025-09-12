@@ -217,6 +217,14 @@ class InsertionAlgorithm : public BaseAlgorithm
             const BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
             if (!tipProx) return;
 
+            // Remove coupling points that are ahead of the tip in the insertion direction
+            ElementIterator::SPtr itShaft = l_shaftGeom->begin(l_shaftGeom->getSize() - 2);
+            auto prunePointsAheadOfTip = 
+                Operations::Needle::PrunePointsAheadOfTip::get(itShaft->getTypeInfo());
+            prunePointsAheadOfTip(m_couplingPts, itShaft->element());
+
+            if (m_couplingPts.empty()) return;
+
             // 2.1 Check whether coupling point should be added
             const type::Vec3 tip2Pt = m_couplingPts.back()->getPosition() - tipProx->getPosition();
             if (tip2Pt.norm() > d_tipDistThreshold.getValue())
@@ -239,14 +247,6 @@ class InsertionAlgorithm : public BaseAlgorithm
                         m_couplingPts.push_back(volProx);
                     }
                 }
-            }
-            else  // Don't bother with removing the point that was just added
-            {
-                // Remove coupling points that are ahead of the tip in the insertion direction
-                ElementIterator::SPtr itShaft = l_shaftGeom->begin(l_shaftGeom->getSize() - 2);
-                auto prunePointsAheadOfTip = 
-                    Operations::Needle::PrunePointsAheadOfTip::get(itShaft->getTypeInfo());
-                prunePointsAheadOfTip(m_couplingPts, itShaft->element());
             }
         }
 
