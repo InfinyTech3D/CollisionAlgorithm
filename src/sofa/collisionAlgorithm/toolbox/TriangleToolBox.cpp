@@ -8,6 +8,12 @@ Operations::CreateCenterProximity::Result TriangleToolBox::createCenterProximity
     return TriangleProximity::create(tri, 1.0/3.0,1.0/3.0,1.0/3.0);
 }
 
+Operations::ContainsPointInElement::Result TriangleToolBox::containsPoint(const type::Vec3 & P, const TriangleElement::SPtr & tri) {
+    TriangleProximity::SPtr prox = TriangleProximity::create(tri, 1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0);
+    double f0(prox->f0()), f1(prox->f1()), f2(prox->f2());
+    return isInTriangle(P,tri->getTriangleInfo(),f0,f1,f1);
+}
+
 //Barycentric coordinates are computed according to
 //http://gamedev.stackexchange.com/questions/23743/whats-the-most-efficient-way-to-find-barycentric-coordinates
 Operations::Project::Result TriangleToolBox::project(const type::Vec3 & P, const TriangleElement::SPtr & tri) {

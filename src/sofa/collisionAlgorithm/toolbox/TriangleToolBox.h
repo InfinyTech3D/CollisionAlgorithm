@@ -4,6 +4,7 @@
 #include <sofa/collisionAlgorithm/elements/TriangleElement.h>
 #include <sofa/collisionAlgorithm/operations/Project.h>
 #include <sofa/collisionAlgorithm/operations/CreateCenterProximity.h>
+#include <sofa/collisionAlgorithm/operations/ContainsPoint.h>
 
 namespace sofa::collisionAlgorithm::toolbox {
 
@@ -11,6 +12,8 @@ class TriangleToolBox {
 public:
 
     static Operations::CreateCenterProximity::Result createCenterProximity(const TriangleElement::SPtr & tri);
+
+    static Operations::ContainsPointInElement::Result containsPoint(const type::Vec3 & P, const TriangleElement::SPtr & tri);
 
     static Operations::Project::Result project(const type::Vec3 & P, const TriangleElement::SPtr & tri);
 
