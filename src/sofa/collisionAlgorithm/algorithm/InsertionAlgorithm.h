@@ -18,7 +18,7 @@ namespace sofa::collisionAlgorithm
 
 class InsertionAlgorithm : public BaseAlgorithm
 {
-    public:
+   public:
     SOFA_CLASS(InsertionAlgorithm, BaseAlgorithm);
 
     typedef core::behavior::MechanicalState<defaulttype::Vec3Types> MechStateTipType;
@@ -217,26 +217,77 @@ class InsertionAlgorithm : public BaseAlgorithm
             const BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
             if (!tipProx) return;
 
-            // 2.1 Check whether coupling point should be added
-            const type::Vec3 tip2Pt = m_couplingPts.back()->getPosition() - tipProx->getPosition();
-            if (tip2Pt.norm() > d_tipDistThreshold.getValue())
+            type::Vec3 lastCP = m_couplingPts.back()->getPosition();
+            const SReal tipDistThreshold = this->d_tipDistThreshold.getValue();
+
+            // Vector from tip to last coupling point; used for distance and directional checks
+            const type::Vec3 tipToLastCP = lastCP - tipProx->getPosition();
+
+            // Only add a new coupling point if the needle tip has advanced far enough
+            if (tipToLastCP.norm() > tipDistThreshold)
             {
+                // Prepare the operations before entering the loop
+                auto createShaftProximity =
+                    Operations::CreateCenterProximity::Operation::get(l_shaftGeom->getTypeInfo());
+                auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
                 auto findClosestProxOnVol =
                     Operations::FindClosestProximity::Operation::get(l_volGeom);
                 auto projectOnVol = Operations::Project::Operation::get(l_volGeom);
-                const BaseProximity::SPtr volProx =
-                    findClosestProxOnVol(tipProx, l_volGeom.get(), projectOnVol, getFilterFunc());
+                auto containsPointInVol =
+                    Operations::ContainsPointInProximity::Operation::get(l_volGeom);
 
-                // Proximity can be detected before the tip enters the tetra (e.g. near a boundary face)
-                // Only accept proximities if the tip is inside the tetra during insertion
-                if (volProx)
+                // Iterate over shaft segments to find which one contains the next candidate CP
+                for (auto itShaft = l_shaftGeom->begin(); itShaft != l_shaftGeom->end(); itShaft++)
                 {
-                    auto containsPointInVol = Operations::ContainsPointInProximity::Operation::get(
-                        l_volGeom->getTypeInfo());
-                    if(containsPointInVol(tipProx->getPosition(), volProx))
+                    BaseProximity::SPtr shaftProx = createShaftProximity(itShaft->element());
+                    if (!shaftProx) continue;
+
+                    const EdgeProximity::SPtr edgeProx =
+                        dynamic_pointer_cast<EdgeProximity>(shaftProx);
+                    if (!edgeProx) continue;
+
+                    const type::Vec3 p0 = edgeProx->element()->getP0()->getPosition();
+                    const type::Vec3 p1 = edgeProx->element()->getP1()->getPosition();
+                    const type::Vec3 shaftEdgeDir = (p1 - p0).normalized();
+                    const type::Vec3 lastCPToP1 = p1 - lastCP;
+
+                    // Skip if last CP lies after edge end point
+                    if (dot(shaftEdgeDir, lastCPToP1) < 0_sreal) continue;
+
+                    const int numCPs = floor(lastCPToP1.norm() / tipDistThreshold);
+
+                    for(int idCP = 0 ; idCP < numCPs ; idCP++)
                     {
-                        volProx->normalize();
-                        m_couplingPts.push_back(volProx);
+                        // Candidate coupling point along shaft segment
+                        const type::Vec3 candidateCP = lastCP + tipDistThreshold * shaftEdgeDir;
+
+                        // Project candidate CP onto the edge element and compute scalar coordinate
+                        // along segment
+                        const SReal edgeSegmentLength = (p1 - p0).norm();
+                        const type::Vec3 p0ToCandidateCP = candidateCP - p0;
+                        const SReal projPtOnEdge = dot(p0ToCandidateCP, shaftEdgeDir);
+
+                        // Skip if candidate CP is outside current edge segment
+                        if (projPtOnEdge < 0_sreal || projPtOnEdge > edgeSegmentLength) break;
+
+                        // Project candidate CP onto shaft geometry ... 
+                        shaftProx = projectOnShaft(candidateCP, itShaft->element()).prox;
+                        if (!shaftProx) continue;
+
+                        // ... then find nearest volume proximity
+                        const BaseProximity::SPtr volProx = findClosestProxOnVol(
+                            shaftProx, l_volGeom.get(), projectOnVol, getFilterFunc());
+                        if (!volProx) continue;
+
+                        // Proximity can be detected before the tip enters the tetra (e.g. near a 
+                        // boundary face) Only accept proximities if the tip is inside the tetra 
+                        // during insertion
+                        if (containsPointInVol(shaftProx->getPosition(), volProx))
+                        {
+                            volProx->normalize();
+                            m_couplingPts.push_back(volProx);
+                            lastCP = volProx->getPosition();
+                        }
                     }
                 }
             }
@@ -267,8 +318,7 @@ class InsertionAlgorithm : public BaseAlgorithm
             // This is a final-frontier check: If there are coupling points stored, but the
             // findClosestProxOnShaf operation yields no proximities on the shaft, it could be
             // because the needle has exited abruptly. Thus, we clear the coupling points.
-            if (insertionOutput.size() == 0)
-                m_couplingPts.clear();
+            if (insertionOutput.size() == 0) m_couplingPts.clear();
         }
 
         d_collisionOutput.endEdit();
