@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 project(CollisionAlgorithm VERSION 0.1 LANGUAGES CXX)
 
-set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-
 find_package(Sofa.Simulation.Core REQUIRED)
 find_package(Sofa.Component.StateContainer REQUIRED)
 find_package(Sofa.Component.Constraint.Lagrangian.Solver REQUIRED)
@@ -11,6 +9,9 @@ find_package(Sofa.GL REQUIRED)
 set(COLLISIONALGORITHM_SRC "src/${PROJECT_NAME}")
 
 set(HEADER_FILES 
+    ${COLLISIONALGORITHM_SRC}/config.h.in
+    ${COLLISIONALGORITHM_SRC}/initCollisionAlgorithm.h
+
     ${COLLISIONALGORITHM_SRC}/BaseAABBBroadPhase.h
     ${COLLISIONALGORITHM_SRC}/BaseAlgorithm.h
     ${COLLISIONALGORITHM_SRC}/BaseElement.h
@@ -61,7 +62,7 @@ set(HEADER_FILES
 )
 
 set(SOURCE_FILES
-    ${COLLISIONALGORITHM_SRC}/initPlugin.cpp
+    ${COLLISIONALGORITHM_SRC}/initCollisionAlgorithm.cpp
 
     ${COLLISIONALGORITHM_SRC}/CollisionPipeline.cpp
     

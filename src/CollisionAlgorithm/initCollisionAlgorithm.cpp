@@ -1,3 +1,5 @@
+#include <CollisionAlgorithm/initCollisionAlgorithm.h>
+
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/helper/system/FileRepository.h>
 #include <sofa/helper/system/PluginManager.h>
@@ -34,21 +36,15 @@ extern void registerPointGeometry(sofa::core::ObjectFactory* factory);
 extern void registerEdgeGeometry(sofa::core::ObjectFactory* factory);
 extern void registerTriangleGeometry(sofa::core::ObjectFactory* factory);
 extern void registerTetrahedronGeometry(sofa::core::ObjectFactory* factory);
-}  // namespace sofa::collisionalgorithm
-
-namespace sofa::component
-{
-
-// Here are just several convenient functions to help user to know what contains the plugin
 
 extern "C"
 {
-    void initExternalModule();
-    const char* getModuleName();
-    const char* getModuleVersion();
-    const char* getModuleLicense();
-    const char* getModuleDescription();
-    void registerObjects(sofa::core::ObjectFactory* factory);
+    SOFA_COLLISIONALGORITHM_API void initExternalModule();
+    SOFA_COLLISIONALGORITHM_API const char* getModuleName();
+    SOFA_COLLISIONALGORITHM_API const char* getModuleVersion();
+    SOFA_COLLISIONALGORITHM_API const char* getModuleLicense();
+    SOFA_COLLISIONALGORITHM_API const char* getModuleDescription();
+    SOFA_COLLISIONALGORITHM_API void registerObjects(sofa::core::ObjectFactory* factory);
 }
 
 void initCollisionAlgorithm() 
@@ -56,6 +52,9 @@ void initCollisionAlgorithm()
     static bool first = true;
     if (first)
     {
+        // make sure that this plugin is registered into the PluginManager
+        sofa::helper::system::PluginManager::getInstance().registerPlugin(MODULE_NAME);
+
         first = false;
 #ifdef PLUGIN_DATA_DIR
         sofa::helper::system::DataRepository.addLastPath(std::string(QUOTE(PLUGIN_DATA_DIR)));
@@ -70,7 +69,7 @@ void initExternalModule()
     initCollisionAlgorithm();
 }
 
-const char* getModuleName() { return "CollisionAlgorithm"; }
+const char* getModuleName() { return MODULE_NAME; }
 
 const char* getModuleVersion()
 {
@@ -87,7 +86,6 @@ const char* getModuleDescription() { return "Plugin for collision detection"; }
 
 void registerObjects(sofa::core::ObjectFactory* factory)
 {
-    using namespace sofa::collisionalgorithm;
     // Register CollisionPipeline
     registerCollisionLoop(factory);
     // Register Algorithms
@@ -107,4 +105,4 @@ void registerObjects(sofa::core::ObjectFactory* factory)
     registerTetrahedronGeometry(factory);
 }
 
-}  // namespace sofa::component
+}  // namespace collisionalgorithm

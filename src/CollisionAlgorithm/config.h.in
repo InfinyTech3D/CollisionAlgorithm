@@ -1,0 +1,19 @@
+#pragma once
+
+#include <sofa/config.h>
+#include <sofa/config/sharedlibrary_defines.h>
+
+#define COLLISIONALGORITHM_VERSION @PROJECT_VERSION@
+
+#ifdef SOFA_BUILD_COLLISIONALGORITHM
+#  define SOFA_TARGET @PROJECT_NAME@
+#  define SOFA_COLLISIONALGORITHM_API SOFA_EXPORT_DYNAMIC_LIBRARY
+#else
+#  define SOFA_COLLISIONALGORITHM_API SOFA_IMPORT_DYNAMIC_LIBRARY
+#endif
+
+namespace sofa::collisionalgorithm
+{
+    constexpr const char* MODULE_NAME = "@PROJECT_NAME@";
+    constexpr const char* MODULE_VERSION = "@PROJECT_VERSION@";
+}
