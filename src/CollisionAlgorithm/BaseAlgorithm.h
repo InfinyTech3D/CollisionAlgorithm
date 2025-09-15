@@ -5,7 +5,7 @@
 #include <CollisionAlgorithm/DataDetectionOutput.h>
 #include <CollisionAlgorithm/CollisionPipeline.h>
 
-namespace sofa::collisionAlgorithm {
+namespace sofa::collisionalgorithm {
 
 /*!
  * \class BaseAlgorithm

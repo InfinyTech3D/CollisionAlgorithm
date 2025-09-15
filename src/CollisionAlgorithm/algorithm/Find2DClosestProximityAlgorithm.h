@@ -7,7 +7,7 @@
 #include <CollisionAlgorithm/operations/Project.h>
 #include <CollisionAlgorithm/operations/FindClosestProximity.h>
 
-namespace sofa::collisionAlgorithm {
+namespace sofa::collisionalgorithm {
 
 class Find2DClosestProximityAlgorithm : public BaseAlgorithm {
 public:

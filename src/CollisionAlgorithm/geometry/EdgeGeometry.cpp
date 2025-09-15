@@ -1,7 +1,7 @@
 #include <CollisionAlgorithm/geometry/EdgeGeometry.h>
 #include <sofa/core/ObjectFactory.h>
 
-namespace sofa::collisionAlgorithm
+namespace sofa::collisionalgorithm
 {
 void registerEdgeGeometry(sofa::core::ObjectFactory* factory)
 {
@@ -10,4 +10,4 @@ void registerEdgeGeometry(sofa::core::ObjectFactory* factory)
             "A class bridging edge topological information with the proximity detection algorithm")
             .add<EdgeGeometry<sofa::defaulttype::Vec3dTypes> >());
 }
-}  // namespace sofa::collisionAlgorithm
+}  // namespace sofa::collisionalgorithm

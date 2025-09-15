@@ -3,7 +3,7 @@
 #include <CollisionAlgorithm/BaseProximity.h>
 #include <sofa/core/visual/VisualParams.h>
 
-namespace sofa::collisionAlgorithm {
+namespace sofa::collisionalgorithm {
 
 class PointElement;
 class EdgeElement;

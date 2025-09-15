@@ -3,7 +3,7 @@
 #include <CollisionAlgorithm/BaseProximity.h>
 #include <CollisionAlgorithm/elements/EdgeElement.h>
 
-namespace sofa::collisionAlgorithm {
+namespace sofa::collisionalgorithm {
 
 class EdgeProximity : public BaseProximity {
 public:

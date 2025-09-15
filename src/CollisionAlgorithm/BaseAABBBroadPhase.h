@@ -7,7 +7,7 @@
 #include <CollisionAlgorithm/BaseElement.h>
 #include <thread>
 
-namespace sofa::collisionAlgorithm {
+namespace sofa::collisionalgorithm {
 
 class BaseAABBBroadPhase : public BaseGeometry::BroadPhase {
 public:

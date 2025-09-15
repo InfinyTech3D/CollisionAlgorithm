@@ -3,7 +3,7 @@
 #include <CollisionAlgorithm/BaseElement.h>
 #include <CollisionAlgorithm/elements/TriangleElement.h>
 
-namespace sofa::collisionAlgorithm {
+namespace sofa::collisionalgorithm {
 
 class TetrahedronElement : public BaseElement {
 public:

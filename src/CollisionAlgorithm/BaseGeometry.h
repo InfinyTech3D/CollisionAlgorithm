@@ -13,7 +13,7 @@
 #include <CollisionAlgorithm/InternalData.h>
 
 
-namespace sofa ::collisionAlgorithm {
+namespace sofa ::collisionalgorithm {
 
 
 /*!

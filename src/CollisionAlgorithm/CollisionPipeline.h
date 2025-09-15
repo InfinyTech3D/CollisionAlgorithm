@@ -15,7 +15,7 @@
 #include <sofa/simulation/Node.h>
 #include <sofa/helper/AdvancedTimer.h>
 
-namespace sofa ::collisionAlgorithm {
+namespace sofa ::collisionalgorithm {
 
 class CollisionComponent : public core::objectmodel::BaseObject {
 public:

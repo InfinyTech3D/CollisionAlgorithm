@@ -8,7 +8,7 @@
 
 namespace sofa {
 
-namespace collisionAlgorithm {
+namespace collisionalgorithm {
 
 template<class DataTypes>
 class PointGeometry : public TBaseGeometry<DataTypes> {

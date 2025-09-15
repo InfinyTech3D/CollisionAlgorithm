@@ -2,7 +2,7 @@
 #include <CollisionAlgorithm/toolbox/EdgeToolBox.h>
 #include <CollisionAlgorithm/proximity/TriangleProximity.h>
 
-namespace sofa::collisionAlgorithm::toolbox {
+namespace sofa::collisionalgorithm::toolbox {
 
 Operations::CreateCenterProximity::Result TriangleToolBox::createCenterProximity(const TriangleElement::SPtr & tri) {
     return TriangleProximity::create(tri, 1.0/3.0,1.0/3.0,1.0/3.0);

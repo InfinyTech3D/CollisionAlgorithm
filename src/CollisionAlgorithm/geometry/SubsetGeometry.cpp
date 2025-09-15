@@ -1,7 +1,7 @@
 #include <CollisionAlgorithm/geometry/SubsetGeometry.h>
 #include <sofa/core/ObjectFactory.h>
 
-namespace sofa::collisionAlgorithm
+namespace sofa::collisionalgorithm
 {
 void registerSubsetGeometry(sofa::core::ObjectFactory* factory)
 {
@@ -9,4 +9,4 @@ void registerSubsetGeometry(sofa::core::ObjectFactory* factory)
         sofa::core::ObjectRegistrationData("")
             .add<SubsetGeometry<sofa::defaulttype::Vec3dTypes> >());
 }
-}  // namespace sofa::collisionAlgorithm
+}  // namespace sofa::collisionalgorithm

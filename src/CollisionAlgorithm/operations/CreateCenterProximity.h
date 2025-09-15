@@ -5,7 +5,7 @@
 #include <CollisionAlgorithm/elements/EdgeElement.h>
 #include <CollisionAlgorithm/proximity/MultiProximity.h>
 
-namespace sofa::collisionAlgorithm::Operations::CreateCenterProximity {
+namespace sofa::collisionalgorithm::Operations::CreateCenterProximity {
 
 typedef BaseProximity::SPtr Result;
 

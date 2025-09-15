@@ -1,7 +1,7 @@
 #include <CollisionAlgorithm/algorithm/InsertionAlgorithm.h>
 #include <sofa/core/ObjectFactory.h>
 
-namespace sofa::collisionAlgorithm
+namespace sofa::collisionalgorithm
 {
 void registerInsertionAlgorithm(sofa::core::ObjectFactory* factory)
 {
@@ -9,4 +9,4 @@ void registerInsertionAlgorithm(sofa::core::ObjectFactory* factory)
                                  "A class implementing a customized needle insertion algorithm")
                                  .add<InsertionAlgorithm>());
 }
-}  // namespace sofa::collisionAlgorithm
+}  // namespace sofa::collisionalgorithm

@@ -5,7 +5,7 @@
 #include <CollisionAlgorithm/proximity/TetrahedronProximity.h>
 #include <sofa/core/topology/BaseMeshTopology.h>
 
-namespace sofa::collisionAlgorithm {
+namespace sofa::collisionalgorithm {
 
 template<class DataTypes>
 class TetrahedronGeometry : public TriangleGeometry<DataTypes> {

@@ -8,7 +8,7 @@
 #include <sofa/core/topology/Topology.h>
 #include <sofa/type/Vec.h>
 
-namespace sofa::collisionAlgorithm {
+namespace sofa::collisionalgorithm {
 
 /*!
  * \brief The BaseProximity class is the basic abstract proximity class

@@ -2,12 +2,12 @@
 
 #include <CollisionAlgorithm/BaseProximity.h>
 
-namespace sofa::collisionAlgorithm {
+namespace sofa::collisionalgorithm {
 
 class FixedProximity : public BaseProximity{
 public:
   typedef std::shared_ptr<FixedProximity> SPtr;
-  typedef typename collisionAlgorithm::BaseProximity Inherits;
+  typedef typename collisionalgorithm::BaseProximity Inherits;
   typedef type::Vec3d Vec3d;
 
   FixedProximity(Vec3d P ) : m_position(P) { m_normal = Vec3d(); }

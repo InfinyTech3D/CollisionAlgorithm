@@ -11,7 +11,7 @@
 #include <CollisionAlgorithm/elements/TriangleElement.h>
 #include <CollisionAlgorithm/elements/TetrahedronElement.h>
 
-namespace sofa ::collisionAlgorithm {
+namespace sofa ::collisionalgorithm {
 
 
 class InternalDataContainer {

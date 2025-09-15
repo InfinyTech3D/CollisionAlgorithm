@@ -5,7 +5,7 @@
 #include <CollisionAlgorithm/elements/TriangleElement.h>
 #include <CollisionAlgorithm/toolbox/TriangleToolBox.h>
 
-namespace sofa::collisionAlgorithm {
+namespace sofa::collisionalgorithm {
 
 template<class DataTypes>
 class TriangleGeometry : public EdgeGeometry<DataTypes> {

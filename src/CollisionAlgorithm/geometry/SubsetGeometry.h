@@ -4,7 +4,7 @@
 #include <CollisionAlgorithm/proximity/PointProximity.h>
 #include <CollisionAlgorithm/toolbox/PointToolBox.h>
 
-namespace sofa::collisionAlgorithm {
+namespace sofa::collisionalgorithm {
 
 template<class DataTypes>
 class SubsetGeometry : public TBaseGeometry<DataTypes> {

@@ -4,7 +4,7 @@
 #include <CollisionAlgorithm/toolbox/TriangleToolBox.h>
 #include <CollisionAlgorithm/toolbox/TetrahedronToolBox.h>
 
-namespace sofa::collisionAlgorithm::Operations::Project {
+namespace sofa::collisionalgorithm::Operations::Project {
 
 int register_Project_Point = Operation::register_func<PointElement>(&toolbox::PointToolBox::project);
 

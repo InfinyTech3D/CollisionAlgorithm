@@ -5,7 +5,7 @@
 namespace sofa
 {
 
-namespace collisionAlgorithm
+namespace collisionalgorithm
 {
 
 template<class FIRST = BaseProximity,class SECOND = BaseProximity>
@@ -130,7 +130,7 @@ struct DetectionOutputTypeInfo
 };
 
 template<>
-struct DataTypeInfo< collisionAlgorithm::DetectionOutput<collisionAlgorithm::BaseProximity::SPtr, collisionAlgorithm::BaseProximity::SPtr> > : public DetectionOutputTypeInfo< collisionAlgorithm::DetectionOutput<collisionAlgorithm::BaseProximity::SPtr, collisionAlgorithm::BaseProximity::SPtr> >
+struct DataTypeInfo< collisionalgorithm::DetectionOutput<collisionalgorithm::BaseProximity::SPtr, collisionalgorithm::BaseProximity::SPtr> > : public DetectionOutputTypeInfo< collisionalgorithm::DetectionOutput<collisionalgorithm::BaseProximity::SPtr, collisionalgorithm::BaseProximity::SPtr> >
 {
     static std::string name() { std::ostringstream o; o << "DetectionOutput"; return o.str(); }
 };

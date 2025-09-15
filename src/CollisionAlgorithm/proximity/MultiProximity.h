@@ -2,7 +2,7 @@
 
 #include <CollisionAlgorithm/BaseProximity.h>
 
-namespace sofa::collisionAlgorithm {
+namespace sofa::collisionalgorithm {
 
 class MultiProximity : public BaseProximity {
 public:

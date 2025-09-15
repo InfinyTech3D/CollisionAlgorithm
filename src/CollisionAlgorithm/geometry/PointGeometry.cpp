@@ -1,7 +1,7 @@
 #include <CollisionAlgorithm/geometry/PointGeometry.h>
 #include <sofa/core/ObjectFactory.h>
 
-namespace sofa::collisionAlgorithm
+namespace sofa::collisionalgorithm
 {
 void registerPointGeometry(sofa::core::ObjectFactory* factory)
 {
@@ -10,4 +10,4 @@ void registerPointGeometry(sofa::core::ObjectFactory* factory)
             "A class bridging point topological information with the proximity detection algorithm")
             .add<PointGeometry<sofa::defaulttype::Vec3dTypes> >());
 }
-}  // namespace sofa::collisionAlgorithm
+}  // namespace sofa::collisionalgorithm

@@ -11,7 +11,7 @@
 #include <sofa/component/constraint/lagrangian/solver/ConstraintSolverImpl.h>
 #include <sofa/component/statecontainer/MechanicalObject.h>
 
-namespace sofa::collisionAlgorithm
+namespace sofa::collisionalgorithm
 {
 
 class InsertionAlgorithm : public BaseAlgorithm
@@ -308,4 +308,4 @@ class InsertionAlgorithm : public BaseAlgorithm
     }
 };
 
-}  // namespace sofa::collisionAlgorithm
+}  // namespace sofa::collisionalgorithm

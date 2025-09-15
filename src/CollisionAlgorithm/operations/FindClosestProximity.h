@@ -5,7 +5,7 @@
 #include <limits.h>
 #include <CollisionAlgorithm/operations/Project.h>
 
-namespace sofa::collisionAlgorithm::Operations::FindClosestProximity {
+namespace sofa::collisionalgorithm::Operations::FindClosestProximity {
 
 typedef BaseProximity::SPtr Result;
 typedef std::function<bool(const BaseProximity::SPtr&,const BaseProximity::SPtr&)> FilterFUNC;

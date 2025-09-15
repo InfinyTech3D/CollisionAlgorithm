@@ -5,7 +5,7 @@
 #include <CollisionAlgorithm/operations/Project.h>
 #include <CollisionAlgorithm/operations/CreateCenterProximity.h>
 
-namespace sofa::collisionAlgorithm::toolbox {
+namespace sofa::collisionalgorithm::toolbox {
 
 class EdgeToolBox {
 public:

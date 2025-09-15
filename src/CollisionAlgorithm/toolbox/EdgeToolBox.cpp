@@ -1,7 +1,7 @@
 #include <CollisionAlgorithm/toolbox/EdgeToolBox.h>
 #include <CollisionAlgorithm/proximity/EdgeProximity.h>
 
-namespace sofa::collisionAlgorithm::toolbox {
+namespace sofa::collisionalgorithm::toolbox {
 
 Operations::CreateCenterProximity::Result EdgeToolBox::createCenterProximity(const EdgeElement::SPtr & edge) {
     return EdgeProximity::create(edge,0.5,0.5);

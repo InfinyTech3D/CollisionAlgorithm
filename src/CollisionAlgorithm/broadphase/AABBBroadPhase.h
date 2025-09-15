@@ -5,7 +5,7 @@
 #include <CollisionAlgorithm/BaseAlgorithm.h>
 #include <CollisionAlgorithm/BaseElement.h>
 
-namespace sofa::collisionAlgorithm {
+namespace sofa::collisionalgorithm {
 
 /**
  * @brief A class for broad-phase collision detection using Axis-Aligned Bounding Boxes (AABB).
@@ -170,4 +170,4 @@ protected:
     type::Vec<2, size_t> m_offset;
 };
 
-}  // namespace sofa::collisionAlgorithm
+}  // namespace sofa::collisionalgorithm

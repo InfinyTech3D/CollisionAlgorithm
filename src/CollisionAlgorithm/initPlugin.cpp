@@ -10,7 +10,7 @@
 #define Q(x) #x
 #define QUOTE(x) Q(x)
 
-namespace sofa::collisionAlgorithm
+namespace sofa::collisionalgorithm
 {
 
 // CollisionPipeline
@@ -34,7 +34,7 @@ extern void registerPointGeometry(sofa::core::ObjectFactory* factory);
 extern void registerEdgeGeometry(sofa::core::ObjectFactory* factory);
 extern void registerTriangleGeometry(sofa::core::ObjectFactory* factory);
 extern void registerTetrahedronGeometry(sofa::core::ObjectFactory* factory);
-}  // namespace sofa::collisionAlgorithm
+}  // namespace sofa::collisionalgorithm
 
 namespace sofa::component
 {
@@ -87,7 +87,7 @@ const char* getModuleDescription() { return "Plugin for collision detection"; }
 
 void registerObjects(sofa::core::ObjectFactory* factory)
 {
-    using namespace sofa::collisionAlgorithm;
+    using namespace sofa::collisionalgorithm;
     // Register CollisionPipeline
     registerCollisionLoop(factory);
     // Register Algorithms

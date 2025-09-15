@@ -4,7 +4,7 @@
 #include <CollisionAlgorithm/elements/TriangleElement.h>
 #include <CollisionAlgorithm/toolbox/TriangleToolBox.h>
 
-namespace sofa::collisionAlgorithm {
+namespace sofa::collisionalgorithm {
 
 class TriangleProximity : public BaseProximity {
 public:

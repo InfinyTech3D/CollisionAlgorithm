@@ -1,7 +1,7 @@
 #include <CollisionAlgorithm/geometry/TriangleGeometry.h>
 #include <sofa/core/ObjectFactory.h>
 
-namespace sofa::collisionAlgorithm
+namespace sofa::collisionalgorithm
 {
 void registerTriangleGeometry(sofa::core::ObjectFactory* factory)
 {
@@ -10,4 +10,4 @@ void registerTriangleGeometry(sofa::core::ObjectFactory* factory)
                                            "the proximity detection algorithm")
             .add<TriangleGeometry<sofa::defaulttype::Vec3dTypes> >());
 }
-}  // namespace sofa::collisionAlgorithm
+}  // namespace sofa::collisionalgorithm

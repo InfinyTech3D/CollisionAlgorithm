@@ -4,7 +4,7 @@
 #include <CollisionAlgorithm/toolbox/TriangleToolBox.h>
 #include <CollisionAlgorithm/toolbox/TetrahedronToolBox.h>
 
-namespace sofa::collisionAlgorithm::Operations {
+namespace sofa::collisionalgorithm::Operations {
 
 }
 

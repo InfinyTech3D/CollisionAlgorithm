@@ -5,7 +5,7 @@
 #include <CollisionAlgorithm/elements/PointElement.h>
 #include <limits.h>
 
-namespace sofa::collisionAlgorithm::Operations::Project {
+namespace sofa::collisionalgorithm::Operations::Project {
 
 struct Result {
     Result() {}

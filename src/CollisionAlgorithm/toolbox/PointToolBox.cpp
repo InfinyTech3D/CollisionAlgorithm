@@ -1,7 +1,7 @@
 #include <CollisionAlgorithm/toolbox/PointToolBox.h>
 #include <CollisionAlgorithm/proximity/PointProximity.h>
 
-namespace sofa::collisionAlgorithm::toolbox {
+namespace sofa::collisionalgorithm::toolbox {
 
 Operations::CreateCenterProximity::Result PointToolBox::createCenterProximity(const PointElement::SPtr & point) {
     return point->getP0();

@@ -4,7 +4,7 @@
 #include <CollisionAlgorithm/elements/TetrahedronElement.h>
 #include <CollisionAlgorithm/proximity/TetrahedronProximity.h>
 
-namespace sofa::collisionAlgorithm {
+namespace sofa::collisionalgorithm {
 
 TetrahedronElement::SPtr TetrahedronElement::create(PointElement::SPtr p0,PointElement::SPtr p1,PointElement::SPtr p2,PointElement::SPtr p3,
                                                     EdgeElement::SPtr e0, EdgeElement::SPtr e1, EdgeElement::SPtr e2, EdgeElement::SPtr e3,EdgeElement::SPtr e4,EdgeElement::SPtr e5,

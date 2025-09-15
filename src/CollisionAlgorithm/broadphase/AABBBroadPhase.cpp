@@ -1,7 +1,7 @@
 #include <CollisionAlgorithm/broadphase/AABBBroadPhase.h>
 #include <sofa/core/ObjectFactory.h>
 
-namespace sofa::collisionAlgorithm
+namespace sofa::collisionalgorithm
 {
 void registerAABBBroadPhase(sofa::core::ObjectFactory* factory)
 {
@@ -15,4 +15,4 @@ void registerAABBBroadPhase(sofa::core::ObjectFactory* factory)
         )")
                                  .add<AABBBroadPhase>());
 }
-}  // namespace sofa::collisionAlgorithm
+}  // namespace sofa::collisionalgorithm

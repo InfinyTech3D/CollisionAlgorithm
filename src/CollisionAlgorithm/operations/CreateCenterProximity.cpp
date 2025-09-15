@@ -4,7 +4,7 @@
 #include <CollisionAlgorithm/toolbox/TriangleToolBox.h>
 #include <CollisionAlgorithm/toolbox/TetrahedronToolBox.h>
 
-namespace sofa::collisionAlgorithm::Operations::CreateCenterProximity {
+namespace sofa::collisionalgorithm::Operations::CreateCenterProximity {
 
 int register_CenterProximity_Point = Operation::register_func<PointElement>(&toolbox::PointToolBox::createCenterProximity);
 

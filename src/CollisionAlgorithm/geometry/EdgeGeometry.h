@@ -4,7 +4,7 @@
 #include <CollisionAlgorithm/toolbox/EdgeToolBox.h>
 #include <CollisionAlgorithm/proximity/EdgeProximity.h>
 
-namespace sofa::collisionAlgorithm {
+namespace sofa::collisionalgorithm {
 
 template<class DataTypes>
 class EdgeGeometry : public PointGeometry<DataTypes> {

@@ -1,7 +1,7 @@
 #include <CollisionAlgorithm/geometry/TetrahedronGeometry.h>
 #include <sofa/core/ObjectFactory.h>
 
-namespace sofa::collisionAlgorithm
+namespace sofa::collisionalgorithm
 {
 void registerTetrahedronGeometry(sofa::core::ObjectFactory* factory)
 {
@@ -10,4 +10,4 @@ void registerTetrahedronGeometry(sofa::core::ObjectFactory* factory)
                                  "the proximity detection algorithm")
                                  .add<TetrahedronGeometry<sofa::defaulttype::Vec3dTypes> >());
 }
-}  // namespace sofa::collisionAlgorithm
+}  // namespace sofa::collisionalgorithm

@@ -4,7 +4,7 @@
 #include <CollisionAlgorithm/operations/Project.h>
 #include <CollisionAlgorithm/operations/CreateCenterProximity.h>
 
-namespace sofa::collisionAlgorithm::toolbox {
+namespace sofa::collisionalgorithm::toolbox {
 
 Operations::CreateCenterProximity::Result TetrahedronToolBox::createCenterProximity(const TetrahedronElement::SPtr & tetra) {
     return TetrahedronProximity::create(tetra, 1.0/4.0,1.0/4.0,1.0/4.0,1.0/4.0);

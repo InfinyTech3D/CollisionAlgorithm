@@ -4,7 +4,7 @@
 #include <CollisionAlgorithm/toolbox/TriangleToolBox.h>
 #include <CollisionAlgorithm/toolbox/TetrahedronToolBox.h>
 
-namespace sofa::collisionAlgorithm {
+namespace sofa::collisionalgorithm {
 
 class TetrahedronProximity : public BaseProximity {
 public:

@@ -4,7 +4,7 @@
 #include <sofa/helper/NameDecoder.h>
 #include <memory>
 
-namespace sofa::collisionAlgorithm::Operations {
+namespace sofa::collisionalgorithm::Operations {
 
 template<class A,class B>
 class REAL_TYPE_CHECK {

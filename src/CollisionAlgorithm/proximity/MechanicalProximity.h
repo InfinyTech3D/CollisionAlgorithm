@@ -3,7 +3,7 @@
 #include <CollisionAlgorithm/BaseProximity.h>
 #include <CollisionAlgorithm/BaseGeometry.h>
 
-namespace sofa::collisionAlgorithm {
+namespace sofa::collisionalgorithm {
 
 template<class DataTypes>
 class MechanicalProximity : public BaseProximity {

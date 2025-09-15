@@ -2,7 +2,7 @@
 
 #include <CollisionAlgorithm/BaseAlgorithm.h>
 
-namespace sofa::collisionAlgorithm {
+namespace sofa::collisionalgorithm {
 
 /*!
  * \brief The DistanceFilter class

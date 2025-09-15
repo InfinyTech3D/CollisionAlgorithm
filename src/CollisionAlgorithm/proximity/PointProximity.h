@@ -2,7 +2,7 @@
 
 #include <CollisionAlgorithm/elements/PointElement.h>
 
-namespace sofa::collisionAlgorithm {
+namespace sofa::collisionalgorithm {
 
 class PointProximity : public BaseProximity {
 public:

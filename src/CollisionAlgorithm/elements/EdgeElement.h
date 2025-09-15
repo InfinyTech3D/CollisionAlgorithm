@@ -3,7 +3,7 @@
 #include <CollisionAlgorithm/BaseElement.h>
 #include <CollisionAlgorithm/elements/PointElement.h>
 
-namespace sofa::collisionAlgorithm {
+namespace sofa::collisionalgorithm {
 
 class EdgeElement : public BaseElement {
 public:
