@@ -10,6 +10,12 @@ Operations::CreateCenterProximity::Result TetrahedronToolBox::createCenterProxim
     return TetrahedronProximity::create(tetra, 1.0/4.0,1.0/4.0,1.0/4.0,1.0/4.0);
 }
 
+Operations::ContainsPointInElement::Result TetrahedronToolBox::containsPoint(const type::Vec3 & P, const TetrahedronElement::SPtr & tetra) {
+    TetrahedronProximity::SPtr prox = TetrahedronProximity::create(tetra, 1.0/4.0,1.0/4.0,1.0/4.0,1.0/4.0);
+    double f0(prox->f0()), f1(prox->f1()), f2(prox->f2()), f3(prox->f3());
+    return isInTetra(P,tetra->getTetrahedronInfo(),f0,f1,f2,f3);
+}
+
 Operations::Project::Result TetrahedronToolBox::project(const type::Vec3 & P, const TetrahedronElement::SPtr & tetra) {
     double fact[4];
     projectOnTetra(P, tetra->getTetrahedronInfo(),fact[0],fact[1],fact[2],fact[3]);

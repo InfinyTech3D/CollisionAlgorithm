@@ -4,6 +4,7 @@
 #include <CollisionAlgorithm/elements/TetrahedronElement.h>
 #include <CollisionAlgorithm/operations/Project.h>
 #include <CollisionAlgorithm/operations/CreateCenterProximity.h>
+#include <CollisionAlgorithm/operations/ContainsPoint.h>
 
 namespace sofa::collisionalgorithm::toolbox {
 
@@ -11,6 +12,8 @@ class TetrahedronToolBox {
 public:
 
     static Operations::CreateCenterProximity::Result createCenterProximity(const TetrahedronElement::SPtr & tetra);
+
+    static Operations::ContainsPointInElement::Result containsPoint(const type::Vec3 & P, const TetrahedronElement::SPtr & tetra);
 
     static Operations::Project::Result project(const type::Vec3 & P, const TetrahedronElement::SPtr & tetra);
 
@@ -24,7 +27,4 @@ public:
 
 };
 
-
-
 }
-
