@@ -1,5 +1,6 @@
 #pragma once
 
+#include <CollisionAlgorithm/config.h>
 #include <CollisionAlgorithm/BaseGeometry.h>
 #include <sofa/core/collision/Pipeline.h>
 #include <CollisionAlgorithm/DataDetectionOutput.h>
@@ -12,7 +13,7 @@ namespace sofa::collisionalgorithm {
  * \brief The BaseAlgorithm abstract class defines an interface of
  * algorithms to be wrapped in sofa components
  */
-class BaseAlgorithm : public CollisionAlgorithm
+class SOFA_COLLISIONALGORITHM_API BaseAlgorithm : public CollisionAlgorithm
 {
 public :
 

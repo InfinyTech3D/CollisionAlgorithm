@@ -9,7 +9,7 @@
 
 namespace sofa::collisionalgorithm {
 
-class Find2DClosestProximityAlgorithm : public BaseAlgorithm {
+class SOFA_COLLISIONALGORITHM_API Find2DClosestProximityAlgorithm : public BaseAlgorithm {
 public:
     SOFA_CLASS(Find2DClosestProximityAlgorithm, BaseAlgorithm);
 
