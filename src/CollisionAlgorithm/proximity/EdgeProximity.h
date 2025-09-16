@@ -1,11 +1,12 @@
 #pragma once
 
+#include <CollisionAlgorithm/config.h>
 #include <CollisionAlgorithm/BaseProximity.h>
 #include <CollisionAlgorithm/elements/EdgeElement.h>
 
 namespace sofa::collisionalgorithm {
 
-class EdgeProximity : public BaseProximity {
+class SOFA_COLLISIONALGORITHM_API EdgeProximity : public BaseProximity {
 public:
 
     typedef std::shared_ptr<EdgeProximity> SPtr;
