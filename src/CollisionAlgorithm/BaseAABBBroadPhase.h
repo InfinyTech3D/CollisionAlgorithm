@@ -61,7 +61,7 @@ public:
     }
 
     inline void doUpdate() {
-        sofa::helper::AdvancedTimer::stepBegin("========================= AABBBroadPhase do update =========================");
+        sofa::helper::AdvancedTimer::stepBegin("AABBBroadPhase::doUpdate - "+this->getName());
         m_Bmin = l_geometry->getPosition(0);
         m_Bmax = m_Bmin;
 
@@ -116,7 +116,7 @@ public:
         updateElemInBoxes();
 
 //        sofa::helper::AdvancedTimer::stepEnd("========================= Elements rangés dans boites in AABB doUpdate =========================");
-        sofa::helper::AdvancedTimer::stepEnd("========================= AABBBroadPhase do update =========================");
+        sofa::helper::AdvancedTimer::stepEnd("AABBBroadPhase::doUpdate - "+this->getName());
     }
 
 
