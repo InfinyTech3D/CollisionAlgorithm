@@ -1,5 +1,6 @@
 #pragma once
 
+#include <CollisionAlgorithm/config.h>
 #include <CollisionAlgorithm/BaseProximity.h>
 #include <CollisionAlgorithm/elements/TetrahedronElement.h>
 #include <CollisionAlgorithm/operations/Project.h>
@@ -8,7 +9,7 @@
 
 namespace sofa::collisionalgorithm::toolbox {
 
-class TetrahedronToolBox {
+class SOFA_COLLISIONALGORITHM_API TetrahedronToolBox {
 public:
 
     static Operations::CreateCenterProximity::Result createCenterProximity(const TetrahedronElement::SPtr & tetra);
