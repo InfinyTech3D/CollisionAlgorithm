@@ -16,7 +16,7 @@ namespace sofa::collisionalgorithm {
  * The class is part of the broader collision detection system and is used to quickly narrow down
  * potential collisions before more detailed, computationally expensive checks are performed.
  */
-class AABBBroadPhase : public BaseAABBBroadPhase {
+class SOFA_COLLISIONALGORITHM_API AABBBroadPhase : public BaseAABBBroadPhase {
 public:
 
     /**
