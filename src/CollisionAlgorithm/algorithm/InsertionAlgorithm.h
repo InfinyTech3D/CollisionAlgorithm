@@ -128,6 +128,7 @@ class InsertionAlgorithm : public BaseAlgorithm
 
         if (m_couplingPts.empty())
         {
+            sofa::helper::AdvancedTimer::stepBegin("Puncture detection - "+this->getName());
             // 1. Puncture algorithm
             auto createTipProximity =
                 Operations::CreateCenterProximity::Operation::get(l_tipGeom->getTypeInfo());
@@ -177,8 +178,10 @@ class InsertionAlgorithm : public BaseAlgorithm
                     collisionOutput.add(tipProx, surfProx);
                 }
             }
+            sofa::helper::AdvancedTimer::stepEnd("Puncture detection - "+this->getName());
 
             // 1.3 Collision with the shaft geometry
+            sofa::helper::AdvancedTimer::stepBegin("Shaft collision - "+this->getName());
             if (m_couplingPts.empty())
             {
                 auto createShaftProximity =
@@ -206,9 +209,11 @@ class InsertionAlgorithm : public BaseAlgorithm
                     }
                 }
             }
+            sofa::helper::AdvancedTimer::stepEnd("Shaft collision - "+this->getName());
         }
         else
         {
+            sofa::helper::AdvancedTimer::stepBegin("Needle insertion - " + this->getName());
             // 2. Needle insertion algorithm
             ElementIterator::SPtr itTip = l_tipGeom->begin();
             auto createTipProximity =
@@ -298,8 +303,18 @@ class InsertionAlgorithm : public BaseAlgorithm
                     }
                 }
             }
+            else  // Don't bother with removing the point that was just added
+            {
+                // Remove coupling points that are ahead of the tip in the insertion direction
+                ElementIterator::SPtr itShaft = l_shaftGeom->begin(l_shaftGeom->getSize() - 2);
+                auto prunePointsAheadOfTip = 
+                    Operations::Needle::PrunePointsAheadOfTip::get(itShaft->getTypeInfo());
+                prunePointsAheadOfTip(m_couplingPts, itShaft->element());
+            }
+            sofa::helper::AdvancedTimer::stepEnd("Needle insertion - " + this->getName());
         }
 
+        sofa::helper::AdvancedTimer::stepBegin("Reproject coupling points - "+this->getName());
         if (!m_couplingPts.empty())
         {
             // 3. Re-project proximities on the shaft geometry
@@ -319,6 +334,7 @@ class InsertionAlgorithm : public BaseAlgorithm
             // because the needle has exited abruptly. Thus, we clear the coupling points.
             if (insertionOutput.size() == 0) m_couplingPts.clear();
         }
+        sofa::helper::AdvancedTimer::stepEnd("Reproject coupling points - "+this->getName());
 
         d_collisionOutput.endEdit();
         d_insertionOutput.endEdit();
