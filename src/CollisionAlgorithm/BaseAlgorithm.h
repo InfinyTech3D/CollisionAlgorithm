@@ -24,7 +24,7 @@ public :
     /*!
      * \brief The BaseFilter class provides an interface to create proximity filter components
      */
-    class BaseFilter : public sofa::core::objectmodel::BaseObject {
+    class SOFA_COLLISIONALGORITHM_API BaseFilter : public sofa::core::objectmodel::BaseObject {
     public:
         SOFA_ABSTRACT_CLASS(BaseFilter, sofa::core::objectmodel::BaseObject);
 
