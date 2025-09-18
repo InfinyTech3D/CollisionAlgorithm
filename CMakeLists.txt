@@ -46,6 +46,8 @@ set(HEADER_FILES
     ${COLLISIONALGORITHM_SRC}/operations/CreateCenterProximity.h
     ${COLLISIONALGORITHM_SRC}/operations/FindClosestProximity.h
     ${COLLISIONALGORITHM_SRC}/operations/Project.h
+    ${COLLISIONALGORITHM_SRC}/operations/ContainsPoint.h
+    ${COLLISIONALGORITHM_SRC}/operations/NeedleOperations.h
 
     ${COLLISIONALGORITHM_SRC}/proximity/EdgeProximity.h
     ${COLLISIONALGORITHM_SRC}/proximity/FixedProximity.h
@@ -89,6 +91,8 @@ set(SOURCE_FILES
     ${COLLISIONALGORITHM_SRC}/operations/CreateCenterProximity.cpp
     ${COLLISIONALGORITHM_SRC}/operations/FindClosestProximity.cpp
     ${COLLISIONALGORITHM_SRC}/operations/Project.cpp
+    ${COLLISIONALGORITHM_SRC}/operations/ContainsPoint.cpp
+    ${COLLISIONALGORITHM_SRC}/operations/NeedleOperations.cpp
 
     ${COLLISIONALGORITHM_SRC}/toolbox/EdgeToolBox.cpp
     ${COLLISIONALGORITHM_SRC}/toolbox/PointToolBox.cpp
