@@ -29,7 +29,7 @@ class InsertionAlgorithm : public BaseAlgorithm
 
     GeomLink l_tipGeom, l_surfGeom, l_shaftGeom, l_volGeom;
     Data<AlgorithmOutput> d_collisionOutput, d_insertionOutput;
-    Data<bool> d_projective, d_enablePuncture, d_enableInsertion;
+    Data<bool> d_projective, d_enablePuncture, d_enableInsertion, d_enableShaftCollision;
     Data<SReal> d_punctureForceThreshold, d_tipDistThreshold;
     ConstraintSolver::SPtr m_constraintSolver;
     std::vector<BaseProximity::SPtr> m_couplingPts;
@@ -54,6 +54,8 @@ class InsertionAlgorithm : public BaseAlgorithm
               initData(&d_enablePuncture, true, "enablePuncture", "Enable puncture algorithm.")),
           d_enableInsertion(
               initData(&d_enableInsertion, true, "enableInsertion", "Enable insertion algorithm.")),
+          d_enableShaftCollision(initData(&d_enableShaftCollision, true, "enableShaftCollision",
+                                          "Enable shaft-surface collision.")),
           d_punctureForceThreshold(initData(&d_punctureForceThreshold, -1_sreal,
                                             "punctureForceThreshold",
                                             "Threshold for the force applied to the needle tip. "
@@ -181,7 +183,7 @@ class InsertionAlgorithm : public BaseAlgorithm
             }
 
             // Shaft collision sequence - Disable if coupling points have been added
-            if (m_couplingPts.empty())
+            if (d_enableShaftCollision.getValue() && m_couplingPts.empty())
             {
                 auto createShaftProximity =
                     Operations::CreateCenterProximity::Operation::get(l_shaftGeom->getTypeInfo());
