@@ -128,12 +128,14 @@ class InsertionAlgorithm : public BaseAlgorithm
 
         if (m_couplingPts.empty())
         {
-            // Puncture sequence
-            auto createTipProximity =
-                Operations::CreateCenterProximity::Operation::get(l_tipGeom->getTypeInfo());
+            // Operations on surface geometry
             auto findClosestProxOnSurf =
                 Operations::FindClosestProximity::Operation::get(l_surfGeom);
             auto projectOnSurf = Operations::Project::Operation::get(l_surfGeom);
+
+            // Puncture sequence
+            auto createTipProximity =
+                Operations::CreateCenterProximity::Operation::get(l_tipGeom->getTypeInfo());
             auto projectOnTip = Operations::Project::Operation::get(l_tipGeom);
 
             const SReal punctureForceThreshold = d_punctureForceThreshold.getValue();
