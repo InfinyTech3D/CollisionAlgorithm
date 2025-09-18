@@ -29,7 +29,7 @@ class InsertionAlgorithm : public BaseAlgorithm
 
     GeomLink l_tipGeom, l_surfGeom, l_shaftGeom, l_volGeom;
     Data<AlgorithmOutput> d_collisionOutput, d_insertionOutput;
-    Data<bool> d_projective;
+    Data<bool> d_projective, d_enablePuncture;
     Data<SReal> d_punctureForceThreshold, d_tipDistThreshold;
     ConstraintSolver::SPtr m_constraintSolver;
     std::vector<BaseProximity::SPtr> m_couplingPts;
@@ -50,6 +50,8 @@ class InsertionAlgorithm : public BaseAlgorithm
           d_projective(initData(
               &d_projective, false, "projective",
               "Projection of closest detected proximity back onto the needle tip element.")),
+          d_enablePuncture(
+              initData(&d_enablePuncture, true, "enablePuncture", "Enable puncture algorithm.")),
           d_punctureForceThreshold(initData(&d_punctureForceThreshold, -1_sreal,
                                             "punctureForceThreshold",
                                             "Threshold for the force applied to the needle tip. "
@@ -134,42 +136,45 @@ class InsertionAlgorithm : public BaseAlgorithm
             auto projectOnSurf = Operations::Project::Operation::get(l_surfGeom);
 
             // Puncture sequence
-            auto createTipProximity =
-                Operations::CreateCenterProximity::Operation::get(l_tipGeom->getTypeInfo());
-            auto projectOnTip = Operations::Project::Operation::get(l_tipGeom);
-
-            const SReal punctureForceThreshold = d_punctureForceThreshold.getValue();
-            for (auto itTip = l_tipGeom->begin(); itTip != l_tipGeom->end(); itTip++)
+            if (d_enablePuncture.getValue())
             {
-                BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
-                if (!tipProx) continue;
-                const BaseProximity::SPtr surfProx = findClosestProxOnSurf(
-                    tipProx, l_surfGeom.get(), projectOnSurf, getFilterFunc());
-                if (surfProx)
+                auto createTipProximity =
+                    Operations::CreateCenterProximity::Operation::get(l_tipGeom->getTypeInfo());
+                auto projectOnTip = Operations::Project::Operation::get(l_tipGeom);
+    
+                const SReal punctureForceThreshold = d_punctureForceThreshold.getValue();
+                for (auto itTip = l_tipGeom->begin(); itTip != l_tipGeom->end(); itTip++)
                 {
-                    surfProx->normalize();
-
-                    // Check whether puncture is happening - if so, create coupling point ...
-                    if (m_constraintSolver)
+                    BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
+                    if (!tipProx) continue;
+                    const BaseProximity::SPtr surfProx = findClosestProxOnSurf(
+                        tipProx, l_surfGeom.get(), projectOnSurf, getFilterFunc());
+                    if (surfProx)
                     {
-                        const MechStateTipType::SPtr mstate =
-                            l_tipGeom->getContext()->get<MechStateTipType>();
-                        const auto& lambda =
-                            m_constraintSolver->getLambda()[mstate.get()].read()->getValue();
-                        SReal norm{0_sreal};
-                        for (const auto& l : lambda)
+                        surfProx->normalize();
+    
+                        // Check whether puncture is happening - if so, create coupling point ...
+                        if (m_constraintSolver)
                         {
-                            norm += l.norm();
+                            const MechStateTipType::SPtr mstate =
+                                l_tipGeom->getContext()->get<MechStateTipType>();
+                            const auto& lambda =
+                                m_constraintSolver->getLambda()[mstate.get()].read()->getValue();
+                            SReal norm{0_sreal};
+                            for (const auto& l : lambda)
+                            {
+                                norm += l.norm();
+                            }
+                            if (norm > punctureForceThreshold)
+                            {
+                                m_couplingPts.push_back(surfProx);
+                                continue;
+                            }
                         }
-                        if (norm > punctureForceThreshold)
-                        {
-                            m_couplingPts.push_back(surfProx);
-                            continue;
-                        }
+    
+                        // ... if not, create a proximity pair for the tip-surface collision
+                        collisionOutput.add(tipProx, surfProx);
                     }
-
-                    // ... if not, create a proximity pair for the tip-surface collision
-                    collisionOutput.add(tipProx, surfProx);
                 }
             }
 
