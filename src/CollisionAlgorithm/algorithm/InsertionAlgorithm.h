@@ -256,7 +256,7 @@ class InsertionAlgorithm : public BaseAlgorithm
 
                     const int numCPs = floor(lastCPToP1.norm() / tipDistThreshold);
 
-                    for(int idCP = 0 ; idCP < numCPs ; idCP++)
+                    for (int idCP = 0; idCP < numCPs; idCP++)
                     {
                         // Candidate coupling point along shaft segment
                         const type::Vec3 candidateCP = lastCP + tipDistThreshold * shaftEdgeDir;
@@ -270,7 +270,7 @@ class InsertionAlgorithm : public BaseAlgorithm
                         // Skip if candidate CP is outside current edge segment
                         if (projPtOnEdge < 0_sreal || projPtOnEdge > edgeSegmentLength) break;
 
-                        // Project candidate CP onto shaft geometry ... 
+                        // Project candidate CP onto shaft geometry ...
                         shaftProx = projectOnShaft(candidateCP, itShaft->element()).prox;
                         if (!shaftProx) continue;
 
@@ -279,8 +279,8 @@ class InsertionAlgorithm : public BaseAlgorithm
                             shaftProx, l_volGeom.get(), projectOnVol, getFilterFunc());
                         if (!volProx) continue;
 
-                        // Proximity can be detected before the tip enters the tetra (e.g. near a 
-                        // boundary face) Only accept proximities if the tip is inside the tetra 
+                        // Proximity can be detected before the tip enters the tetra (e.g. near a
+                        // boundary face) Only accept proximities if the tip is inside the tetra
                         // during insertion
                         if (containsPointInVol(shaftProx->getPosition(), volProx))
                         {
@@ -290,6 +290,14 @@ class InsertionAlgorithm : public BaseAlgorithm
                         }
                     }
                 }
+            }
+            else  // Don't bother with removing the point that was just added
+            {
+                // Remove coupling points that are ahead of the tip in the insertion direction
+                ElementIterator::SPtr itShaft = l_shaftGeom->begin(l_shaftGeom->getSize() - 2);
+                auto prunePointsAheadOfTip =
+                    Operations::Needle::PrunePointsAheadOfTip::get(itShaft->getTypeInfo());
+                prunePointsAheadOfTip(m_couplingPts, itShaft->element());
             }
         }
 
