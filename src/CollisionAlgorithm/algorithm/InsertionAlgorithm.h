@@ -205,6 +205,16 @@ class InsertionAlgorithm : public BaseAlgorithm
                             if (!shaftProx) continue;
                             shaftProx->normalize();
                         }
+                        // Experimental
+                        //else
+                        //{
+                        //    auto findClosestProxOnShaft =
+                        //        Operations::FindClosestProximity::Operation::get(l_shaftGeom);
+                        //    shaftProx = findClosestProxOnShaft(surfProx, l_shaftGeom,
+                        //                                       projectOnShaft, getFilterFunc());
+                        //    if (!shaftProx) continue;
+                        //    shaftProx->normalize();
+                        //}
                         collisionOutput.add(shaftProx, surfProx);
                     }
                 }
