@@ -145,7 +145,7 @@ class InsertionAlgorithm : public BaseAlgorithm
                 auto createTipProximity =
                     Operations::CreateCenterProximity::Operation::get(l_tipGeom->getTypeInfo());
                 auto projectOnTip = Operations::Project::Operation::get(l_tipGeom);
-    
+
                 const SReal punctureForceThreshold = d_punctureForceThreshold.getValue();
                 for (auto itTip = l_tipGeom->begin(); itTip != l_tipGeom->end(); itTip++)
                 {
@@ -156,7 +156,7 @@ class InsertionAlgorithm : public BaseAlgorithm
                     if (surfProx)
                     {
                         surfProx->normalize();
-    
+
                         // Check whether puncture is happening - if so, create coupling point ...
                         if (m_constraintSolver)
                         {
@@ -175,7 +175,7 @@ class InsertionAlgorithm : public BaseAlgorithm
                                 continue;
                             }
                         }
-    
+
                         // ... if not, create a proximity pair for the tip-surface collision
                         collisionOutput.add(tipProx, surfProx);
                     }
