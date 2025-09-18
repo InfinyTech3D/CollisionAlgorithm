@@ -29,7 +29,7 @@ class InsertionAlgorithm : public BaseAlgorithm
 
     GeomLink l_tipGeom, l_surfGeom, l_shaftGeom, l_volGeom;
     Data<AlgorithmOutput> d_collisionOutput, d_insertionOutput;
-    Data<bool> d_projective, d_enablePuncture;
+    Data<bool> d_projective, d_enablePuncture, d_enableInsertion;
     Data<SReal> d_punctureForceThreshold, d_tipDistThreshold;
     ConstraintSolver::SPtr m_constraintSolver;
     std::vector<BaseProximity::SPtr> m_couplingPts;
@@ -52,6 +52,8 @@ class InsertionAlgorithm : public BaseAlgorithm
               "Projection of closest detected proximity back onto the needle tip element.")),
           d_enablePuncture(
               initData(&d_enablePuncture, true, "enablePuncture", "Enable puncture algorithm.")),
+          d_enableInsertion(
+              initData(&d_enableInsertion, true, "enableInsertion", "Enable insertion algorithm.")),
           d_punctureForceThreshold(initData(&d_punctureForceThreshold, -1_sreal,
                                             "punctureForceThreshold",
                                             "Threshold for the force applied to the needle tip. "
@@ -209,6 +211,8 @@ class InsertionAlgorithm : public BaseAlgorithm
         else
         {
             // Insertion sequence
+            if (!d_enableInsertion.getValue()) return;
+
             ElementIterator::SPtr itTip = l_tipGeom->begin();
             auto createTipProximity =
                 Operations::CreateCenterProximity::Operation::get(itTip->getTypeInfo());
@@ -307,7 +311,7 @@ class InsertionAlgorithm : public BaseAlgorithm
             }
         }
 
-        if (!m_couplingPts.empty())
+        if (d_enableInsertion.getValue() && !m_couplingPts.empty())
         {
             // Reprojection on shaft geometry sequence
             auto findClosestProxOnShaft =
