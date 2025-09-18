@@ -3,11 +3,11 @@
 #include <CollisionAlgorithm/BaseAlgorithm.h>
 #include <CollisionAlgorithm/BaseGeometry.h>
 #include <CollisionAlgorithm/BaseOperation.h>
+#include <CollisionAlgorithm/operations/ContainsPoint.h>
 #include <CollisionAlgorithm/operations/CreateCenterProximity.h>
 #include <CollisionAlgorithm/operations/FindClosestProximity.h>
-#include <CollisionAlgorithm/operations/Project.h>
-#include <CollisionAlgorithm/operations/ContainsPoint.h>
 #include <CollisionAlgorithm/operations/NeedleOperations.h>
+#include <CollisionAlgorithm/operations/Project.h>
 #include <CollisionAlgorithm/proximity/EdgeProximity.h>
 #include <sofa/component/constraint/lagrangian/solver/ConstraintSolverImpl.h>
 #include <sofa/component/statecontainer/MechanicalObject.h>
@@ -128,7 +128,7 @@ class InsertionAlgorithm : public BaseAlgorithm
 
         if (m_couplingPts.empty())
         {
-            // 1. Puncture algorithm
+            // Puncture sequence
             auto createTipProximity =
                 Operations::CreateCenterProximity::Operation::get(l_tipGeom->getTypeInfo());
             auto findClosestProxOnSurf =
@@ -147,7 +147,7 @@ class InsertionAlgorithm : public BaseAlgorithm
                 {
                     surfProx->normalize();
 
-                    // 1.1 Check whether puncture is happening - if so, create coupling point
+                    // Check whether puncture is happening - if so, create coupling point ...
                     if (m_constraintSolver)
                     {
                         const MechStateTipType::SPtr mstate =
@@ -171,7 +171,7 @@ class InsertionAlgorithm : public BaseAlgorithm
                 }
             }
 
-            // 1.3 Collision with the shaft geometry
+            // Shaft collision sequence - Disable if coupling points have been added
             if (m_couplingPts.empty())
             {
                 auto createShaftProximity =
@@ -187,7 +187,6 @@ class InsertionAlgorithm : public BaseAlgorithm
                     {
                         surfProx->normalize();
 
-                        // 1.2 If not, create a proximity pair for the tip-surface collision
                         if (d_projective.getValue())
                         {
                             shaftProx =
@@ -202,7 +201,7 @@ class InsertionAlgorithm : public BaseAlgorithm
         }
         else
         {
-            // 2. Needle insertion algorithm
+            // Insertion sequence
             ElementIterator::SPtr itTip = l_tipGeom->begin();
             auto createTipProximity =
                 Operations::CreateCenterProximity::Operation::get(itTip->getTypeInfo());
@@ -303,7 +302,7 @@ class InsertionAlgorithm : public BaseAlgorithm
 
         if (!m_couplingPts.empty())
         {
-            // 3. Re-project proximities on the shaft geometry
+            // Reprojection on shaft geometry sequence
             auto findClosestProxOnShaft =
                 Operations::FindClosestProximity::Operation::get(l_shaftGeom);
             auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
