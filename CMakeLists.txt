@@ -1,47 +1,107 @@
 cmake_minimum_required(VERSION 3.12)
 project(CollisionAlgorithm VERSION 0.1 LANGUAGES CXX)
 
-set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-
-file(GLOB_RECURSE HEADER_FILES
-    "src/*.h"
-    "src/*.inl"
-)
-
-file(GLOB_RECURSE SOURCE_FILES
-    "src/*.cpp"
-)
-
-file(GLOB_RECURSE SCENES_FILES
-    "scenes/*.scn"
-    "*.xml"
-)
-
-file(GLOB_RECURSE IGNORED_FILES
-    "ignored/*.h"
-    "ignored/*.inl"
-    "ignored/*.cpp"
-)
-
-file(GLOB_RECURSE DEPRECATED_FILES
-    "deprecated/*.h"
-    "deprecated/*.inl"
-    "deprecated/*.cpp"
-)
-
 find_package(Sofa.Simulation.Core REQUIRED)
 find_package(Sofa.Component.StateContainer REQUIRED)
 find_package(Sofa.Component.Constraint.Lagrangian.Solver REQUIRED)
 find_package(Sofa.GL REQUIRED)
 
+set(COLLISIONALGORITHM_SRC "src/${PROJECT_NAME}")
 
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/ignored")
-#include_directories("${CMAKE_CURRENT_SOURCE_DIR}/deprecated")
+set(HEADER_FILES 
+    ${COLLISIONALGORITHM_SRC}/config.h.in
+    ${COLLISIONALGORITHM_SRC}/initCollisionAlgorithm.h
 
-set_source_files_properties(${IGNORED_FILES} PROPERTIES HEADER_FILE_ONLY TRUE)
+    ${COLLISIONALGORITHM_SRC}/BaseAABBBroadPhase.h
+    ${COLLISIONALGORITHM_SRC}/BaseAlgorithm.h
+    ${COLLISIONALGORITHM_SRC}/BaseElement.h
+    ${COLLISIONALGORITHM_SRC}/BaseGeometry.h
+    ${COLLISIONALGORITHM_SRC}/BaseOperation.h
+    ${COLLISIONALGORITHM_SRC}/BaseProximity.h
+    ${COLLISIONALGORITHM_SRC}/CollisionPipeline.h
+    ${COLLISIONALGORITHM_SRC}/DataDetectionOutput.h
+    ${COLLISIONALGORITHM_SRC}/ElementIterator.h
+    ${COLLISIONALGORITHM_SRC}/InternalData.h
 
-add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES} ${SCENES_FILES} ${IGNORED_FILES} ${DEPRECATED_FILES} ${README_FILES})
-set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-DPLUGIN_DATA_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/\"")
+    ${COLLISIONALGORITHM_SRC}/algorithm/Find2DClosestProximityAlgorithm.h
+    ${COLLISIONALGORITHM_SRC}/algorithm/FindClosestProximityAlgorithm.h
+    ${COLLISIONALGORITHM_SRC}/algorithm/InsertionAlgorithm.h
+    
+    ${COLLISIONALGORITHM_SRC}/broadphase/AABBBroadPhase.h
+    ${COLLISIONALGORITHM_SRC}/broadphase/FullAABBBroadPhase.h
+
+    ${COLLISIONALGORITHM_SRC}/elements/EdgeElement.h
+    ${COLLISIONALGORITHM_SRC}/elements/PointElement.h
+    ${COLLISIONALGORITHM_SRC}/elements/TetrahedronElement.h
+    ${COLLISIONALGORITHM_SRC}/elements/TriangleElement.h
+
+    ${COLLISIONALGORITHM_SRC}/filters/DistanceFilter.h
+
+    ${COLLISIONALGORITHM_SRC}/geometry/EdgeGeometry.h
+    ${COLLISIONALGORITHM_SRC}/geometry/PointGeometry.h
+    ${COLLISIONALGORITHM_SRC}/geometry/SubsetGeometry.h
+    ${COLLISIONALGORITHM_SRC}/geometry/TetrahedronGeometry.h
+    ${COLLISIONALGORITHM_SRC}/geometry/TriangleGeometry.h
+
+    ${COLLISIONALGORITHM_SRC}/operations/CreateCenterProximity.h
+    ${COLLISIONALGORITHM_SRC}/operations/FindClosestProximity.h
+    ${COLLISIONALGORITHM_SRC}/operations/Project.h
+    ${COLLISIONALGORITHM_SRC}/operations/ContainsPoint.h
+    ${COLLISIONALGORITHM_SRC}/operations/NeedleOperations.h
+
+    ${COLLISIONALGORITHM_SRC}/proximity/EdgeProximity.h
+    ${COLLISIONALGORITHM_SRC}/proximity/FixedProximity.h
+    ${COLLISIONALGORITHM_SRC}/proximity/MechanicalProximity.h
+    ${COLLISIONALGORITHM_SRC}/proximity/MultiProximity.h
+    ${COLLISIONALGORITHM_SRC}/proximity/PointProximity.h
+    ${COLLISIONALGORITHM_SRC}/proximity/TetrahedronProximity.h
+    ${COLLISIONALGORITHM_SRC}/proximity/TriangleProximity.h
+
+    ${COLLISIONALGORITHM_SRC}/toolbox/EdgeToolBox.h
+    ${COLLISIONALGORITHM_SRC}/toolbox/PointToolBox.h
+    ${COLLISIONALGORITHM_SRC}/toolbox/TetrahedronToolBox.h
+    ${COLLISIONALGORITHM_SRC}/toolbox/TriangleToolBox.h
+)
+
+set(SOURCE_FILES
+    ${COLLISIONALGORITHM_SRC}/initCollisionAlgorithm.cpp
+
+    ${COLLISIONALGORITHM_SRC}/CollisionPipeline.cpp
+    
+    ${COLLISIONALGORITHM_SRC}/algorithm/Find2DClosestProximityAlgorithm.cpp
+    ${COLLISIONALGORITHM_SRC}/algorithm/FindClosestProximityAlgorithm.cpp
+    ${COLLISIONALGORITHM_SRC}/algorithm/InsertionAlgorithm.cpp
+
+    ${COLLISIONALGORITHM_SRC}/broadphase/AABBBroadPhase.cpp
+    ${COLLISIONALGORITHM_SRC}/broadphase/FullAABBBroadPhase.cpp
+
+    ${COLLISIONALGORITHM_SRC}/elements/EdgeElement.cpp
+    ${COLLISIONALGORITHM_SRC}/elements/PointElement.cpp
+    ${COLLISIONALGORITHM_SRC}/elements/TetrahedronElement.cpp
+    ${COLLISIONALGORITHM_SRC}/elements/TriangleElement.cpp
+
+    ${COLLISIONALGORITHM_SRC}/filters/DistanceFilter.cpp
+
+    ${COLLISIONALGORITHM_SRC}/geometry/EdgeGeometry.cpp
+    ${COLLISIONALGORITHM_SRC}/geometry/PointGeometry.cpp
+    ${COLLISIONALGORITHM_SRC}/geometry/SubsetGeometry.cpp
+    ${COLLISIONALGORITHM_SRC}/geometry/TetrahedronGeometry.cpp
+    ${COLLISIONALGORITHM_SRC}/geometry/TriangleGeometry.cpp
+
+    ${COLLISIONALGORITHM_SRC}/operations/CreateCenterProximity.cpp
+    ${COLLISIONALGORITHM_SRC}/operations/FindClosestProximity.cpp
+    ${COLLISIONALGORITHM_SRC}/operations/Project.cpp
+    ${COLLISIONALGORITHM_SRC}/operations/ContainsPoint.cpp
+    ${COLLISIONALGORITHM_SRC}/operations/NeedleOperations.cpp
+
+    ${COLLISIONALGORITHM_SRC}/toolbox/EdgeToolBox.cpp
+    ${COLLISIONALGORITHM_SRC}/toolbox/PointToolBox.cpp
+    ${COLLISIONALGORITHM_SRC}/toolbox/TetrahedronToolBox.cpp
+    ${COLLISIONALGORITHM_SRC}/toolbox/TriangleToolBox.cpp
+)
+
+add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES} ${README_FILES})
+
 target_link_libraries(${PROJECT_NAME}
     Sofa.Simulation.Core
     Sofa.Component.StateContainer
@@ -49,8 +109,12 @@ target_link_libraries(${PROJECT_NAME}
     Sofa.GL
 )
 
-## Install rules for the library and headers; CMake package configurations files
-set(${PROJECT_NAME}_INCLUDE_DIRS "include/${PROJECT_NAME}")
-target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>")
-target_include_directories(${PROJECT_NAME} PUBLIC "$<INSTALL_INTERFACE:${${PROJECT_NAME}_INCLUDE_DIRS}>")
-sofa_create_package_with_targets(PACKAGE_NAME ${PROJECT_NAME} PACKAGE_VERSION 0.1 TARGETS ${PROJECT_NAME} INCLUDE_INSTALL_DIR ${${PROJECT_NAME}_INCLUDE_DIRS})
+sofa_create_package_with_targets(
+    PACKAGE_NAME ${PROJECT_NAME} 
+    PACKAGE_VERSION ${PROJECT_VERSION}
+    TARGETS ${PROJECT_NAME} AUTO_SET_TARGET_PROPERTIES
+    INCLUDE_SOURCE_DIR "src"
+    INCLUDE_INSTALL_DIR ${PROJECT_NAME}
+    EXAMPLE_INSTALL_DIR "scenes"
+    RELOCATABLE "plugins"
+    )
