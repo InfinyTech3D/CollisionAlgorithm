@@ -151,7 +151,7 @@ jobs:
           tag_name: ${{ env.RELEASE_TAGNAME }}
           fail_on_unmatched_files: true
           files: |
-            artifacts/${{PROJECT_NAME}}_*_Linux.zip
-            artifacts/${{PROJECT_NAME}}_*_Windows.zip
-            artifacts/${{PROJECT_NAME}}_*_macOS.zip
+            artifacts/${{ env.PROJECT_NAME }}_*_Linux.zip
+            artifacts/${{ env.PROJECT_NAME }}_*_Windows.zip
+            artifacts/${{ env.PROJECT_NAME }}_*_macOS.zip
 
