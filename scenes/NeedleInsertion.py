@@ -12,7 +12,7 @@ g_needleMechanicalParameters = {
 g_needleTotalMass=0.01
 
 g_gelRegularGridParameters = {
-    "n":[8, 8, 8],
+    "n":[6, 6, 6],
     "min":[-0.125, -0.125, -0.350],
     "max":[0.125, 0.125, -0.100]
 } #Again all in mm
@@ -65,13 +65,12 @@ def createScene(root):
 
     needleBaseMaster = root.addChild("NeedleBaseMaster")
     needleBaseMaster.addObject("MechanicalObject", name="mstate_baseMaster", template="Rigid3d", showObjectScale=0.002, showObject=False, drawMode=1
-        #, position=[0.04, 0.04, 0, 0, 0, 0, 1])
         , position="@reader.position")
-    #needleBaseMaster.addObject("LinearMovementProjectiveConstraint",indices=[0], keyTimes=[0,1,7,9],movements=
-    #    [ [0.04, 0.04,0,0,0,0]
-    #    , [0.04, 0.04,0.05,0,3.14/2,0]
-    #    , [0.04, 0.04,-0.07,0,3.14/2,0]
-    #    , [0.05, 0.04,-0.07,0,3.14/2 + 3.14/16,0]
+    #    , position=[0.04, 0.04, 0, 0, 0, 0, 1])
+    #needleBaseMaster.addObject("LinearMovementProjectiveConstraint",indices=[0], keyTimes=[0,1.0,1.5],movements=
+    #    [ [0.04, 0.04,  0.05, 0, 3.14/2, 0]
+    #    , [0.04, 0.04, -0.04, 0, 3.14/2, 0]
+    #    , [0.05, 0.04, -0.04, 0, 3.14/2 + 3.14/16, 0]
     #],relativeMovements=False)
     #needleBaseMaster.addObject("WriteState", name="writer", filename="RecordState/NeedleInsertion.txt"
     #    , period=0.01, writeX=True, writeV=True, time=0)
@@ -149,8 +148,7 @@ def createScene(root):
 
     volume.addObject("MechanicalObject", name="mstate_gel", template="Vec3d")
     volume.addObject("TetrahedronGeometry", name="geom_tetra", mstate="@mstate_gel", topology="@TetraContainer", draw=False)
-    volume.addObject("AABBBroadPhase",name="AABBTetra",geometry="@geom_tetra",nbox=[3,3,3],thread=1)
-    volume.addObject("TetrahedronFEMForceField", name="FF",**g_gelMechanicalParameters)
+    volume.addObject("FastTetrahedralCorotationalForceField", name="FF",**g_gelMechanicalParameters)
     volume.addObject("MeshMatrixMass", name="Mass",totalMass=g_gelTotalMass)
 
     volume.addObject("BoxROI",name="BoxROI",box=g_gelFixedBoxROI)
@@ -165,7 +163,7 @@ def createScene(root):
     volumeCollision.addObject("MechanicalObject", name="mstate_gelColi",position="@../TetraContainer.position")
     volumeCollision.addObject("TriangleGeometry", name="geom_tri", mstate="@mstate_gelColi", topology="@TriContainer",draw=False)
     volumeCollision.addObject("PhongTriangleNormalHandler", name="SurfaceTriangles", geometry="@geom_tri")
-    volumeCollision.addObject("AABBBroadPhase",name="AABBTriangles",thread=1,nbox=[2,2,3])
+    volumeCollision.addObject("AABBBroadPhase", name="AABBTriangles", thread=1, nbox=[2,2,3], method=2)
 
     volumeCollision.addObject("IdentityMapping", name="identityMappingToCollision", input="@../mstate_gel", output="@mstate_gelColi", isMechanical=True)
 
@@ -189,7 +187,7 @@ def createScene(root):
         surfGeom="@Volume/collision/geom_tri", 
         shaftGeom="@Needle/bodyCollision/geom_body", 
         volGeom="@Volume/geom_tetra", 
-        punctureForceThreshold=20, 
+        punctureForceThreshold=16, 
         tipDistThreshold=0.003,
         drawcollision=True,
         drawPointsScale=0.0001
@@ -199,4 +197,4 @@ def createScene(root):
     root.addObject("ConstraintUnilateral",input="@InsertionAlgo.collisionOutput",directions="@punctureDirection",draw_scale=0.001)
 
     root.addObject("FirstDirection",name="bindDirection", handler="@Needle/bodyCollision/NeedleBeams")
-    root.addObject("ConstraintInsertion",input="@InsertionAlgo.insertionOutput", directions="@bindDirection",draw_scale=0.002, frictionCoeff=0.01)
+    root.addObject("ConstraintInsertion",input="@InsertionAlgo.insertionOutput", directions="@bindDirection",draw_scale=0.002, frictionCoeff=0.002)
