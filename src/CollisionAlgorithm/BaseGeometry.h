@@ -1,5 +1,6 @@
 #pragma once
 
+#include <CollisionAlgorithm/config.h>
 #include <CollisionAlgorithm/CollisionPipeline.h>
 #include <CollisionAlgorithm/BaseElement.h>
 #include <CollisionAlgorithm/BaseProximity.h>
@@ -20,7 +21,7 @@ namespace sofa ::collisionalgorithm {
  * \brief The BaseGeometry class is an abstract class defining a basic geometry
  * iterates through Proximity elements and draws them
  */
-class BaseGeometry : public CollisionComponent {
+class SOFA_COLLISIONALGORITHM_API BaseGeometry : public CollisionComponent {
 public:
 
     class BroadPhase : public sofa::core::objectmodel::BaseObject {

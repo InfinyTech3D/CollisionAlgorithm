@@ -15,7 +15,7 @@
 namespace sofa::collisionalgorithm
 {
 
-class InsertionAlgorithm : public BaseAlgorithm
+class SOFA_COLLISIONALGORITHM_API InsertionAlgorithm : public BaseAlgorithm
 {
    public:
     SOFA_CLASS(InsertionAlgorithm, BaseAlgorithm);

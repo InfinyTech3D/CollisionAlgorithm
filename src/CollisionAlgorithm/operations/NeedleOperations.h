@@ -1,5 +1,6 @@
 #pragma once
 
+#include <CollisionAlgorithm/config.h>
 #include <CollisionAlgorithm/BaseOperation.h>
 #include <CollisionAlgorithm/BaseProximity.h>
 #include <CollisionAlgorithm/elements/EdgeElement.h>
@@ -7,7 +8,7 @@
 namespace sofa::collisionalgorithm::Operations::Needle
 {
 
-class PrunePointsAheadOfTip
+class SOFA_COLLISIONALGORITHM_API PrunePointsAheadOfTip
     : public GenericOperation<PrunePointsAheadOfTip,  // Type of the operation
                               bool,                   // Default return type
                               std::vector<BaseProximity::SPtr>&,

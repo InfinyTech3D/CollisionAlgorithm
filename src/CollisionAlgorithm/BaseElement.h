@@ -1,5 +1,6 @@
 #pragma once
 
+#include <CollisionAlgorithm/config.h>
 #include <CollisionAlgorithm/BaseProximity.h>
 #include <sofa/core/visual/VisualParams.h>
 
@@ -45,7 +46,7 @@ private:
     std::vector<SPtr> m_data;
 };
 
-class BaseElement {
+class SOFA_COLLISIONALGORITHM_API BaseElement {
 public:
 
     typedef std::shared_ptr<BaseElement> SPtr;

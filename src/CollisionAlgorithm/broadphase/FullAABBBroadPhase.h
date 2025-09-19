@@ -7,7 +7,7 @@
 
 namespace sofa::collisionalgorithm {
 
-class FullAABBBroadPhase : public BaseAABBBroadPhase {
+class SOFA_COLLISIONALGORITHM_API FullAABBBroadPhase : public BaseAABBBroadPhase {
 public:
 
     SOFA_CLASS(FullAABBBroadPhase,BaseAABBBroadPhase);

@@ -5,7 +5,7 @@
 
 namespace sofa::collisionalgorithm {
 
-class PointElement : public BaseElement {
+class SOFA_COLLISIONALGORITHM_API PointElement : public BaseElement {
 public:
 
     typedef std::shared_ptr<PointElement> SPtr;

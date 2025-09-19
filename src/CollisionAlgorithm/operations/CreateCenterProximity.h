@@ -1,5 +1,6 @@
 #pragma once
 
+#include <CollisionAlgorithm/config.h>
 #include <CollisionAlgorithm/BaseProximity.h>
 #include <CollisionAlgorithm/BaseOperation.h>
 #include <CollisionAlgorithm/elements/EdgeElement.h>
@@ -9,7 +10,7 @@ namespace sofa::collisionalgorithm::Operations::CreateCenterProximity {
 
 typedef BaseProximity::SPtr Result;
 
-class Operation : public GenericOperation<Operation, //type of operation
+class SOFA_COLLISIONALGORITHM_API Operation : public GenericOperation<Operation, //type of operation
                                           Result, //Default return type
                                           const BaseElement::SPtr &//Parameters
                                           > {

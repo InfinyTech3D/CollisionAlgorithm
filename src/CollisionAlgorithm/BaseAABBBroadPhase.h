@@ -9,7 +9,7 @@
 
 namespace sofa::collisionalgorithm {
 
-class BaseAABBBroadPhase : public BaseGeometry::BroadPhase {
+class SOFA_COLLISIONALGORITHM_API BaseAABBBroadPhase : public BaseGeometry::BroadPhase {
 public:
 
     SOFA_ABSTRACT_CLASS(BaseAABBBroadPhase,BaseGeometry::BroadPhase);

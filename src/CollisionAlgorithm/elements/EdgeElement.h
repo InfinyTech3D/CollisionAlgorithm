@@ -5,7 +5,7 @@
 
 namespace sofa::collisionalgorithm {
 
-class EdgeElement : public BaseElement {
+class SOFA_COLLISIONALGORITHM_API EdgeElement : public BaseElement {
 public:
     typedef std::shared_ptr<EdgeElement> SPtr;
 

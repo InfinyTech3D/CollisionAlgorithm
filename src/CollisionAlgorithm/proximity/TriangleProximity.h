@@ -1,12 +1,13 @@
 ﻿#pragma once
 
+#include <CollisionAlgorithm/config.h>
 #include <CollisionAlgorithm/BaseProximity.h>
 #include <CollisionAlgorithm/elements/TriangleElement.h>
 #include <CollisionAlgorithm/toolbox/TriangleToolBox.h>
 
 namespace sofa::collisionalgorithm {
 
-class TriangleProximity : public BaseProximity {
+class SOFA_COLLISIONALGORITHM_API TriangleProximity : public BaseProximity {
 public:
 
     typedef std::shared_ptr<TriangleProximity> SPtr;

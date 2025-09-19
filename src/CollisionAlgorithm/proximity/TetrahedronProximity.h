@@ -1,12 +1,13 @@
 ﻿#pragma once
 
+#include <CollisionAlgorithm/config.h>
 #include <CollisionAlgorithm/elements/TetrahedronElement.h>
 #include <CollisionAlgorithm/toolbox/TriangleToolBox.h>
 #include <CollisionAlgorithm/toolbox/TetrahedronToolBox.h>
 
 namespace sofa::collisionalgorithm {
 
-class TetrahedronProximity : public BaseProximity {
+class SOFA_COLLISIONALGORITHM_API TetrahedronProximity : public BaseProximity {
 public:
 
     typedef std::shared_ptr<TetrahedronProximity> SPtr;

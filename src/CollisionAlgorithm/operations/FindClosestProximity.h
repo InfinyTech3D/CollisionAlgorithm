@@ -1,5 +1,6 @@
 #pragma once
 
+#include <CollisionAlgorithm/config.h>
 #include <CollisionAlgorithm/BaseProximity.h>
 #include <CollisionAlgorithm/BaseOperation.h>
 #include <limits.h>
@@ -11,7 +12,7 @@ typedef BaseProximity::SPtr Result;
 typedef std::function<bool(const BaseProximity::SPtr&,const BaseProximity::SPtr&)> FilterFUNC;
 
 //Specific operation to find the closest point on a geometry (the code is in the c++ class)
-class Operation : public Operations::GenericOperation<Operation,//operation type
+class SOFA_COLLISIONALGORITHM_API Operation : public Operations::GenericOperation<Operation,//operation type
                                                       Result, // default return
                                                       const BaseProximity::SPtr &,BaseGeometry *, Operations::Project::FUNC, FilterFUNC // parameters
                                                       > {

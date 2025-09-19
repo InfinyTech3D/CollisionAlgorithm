@@ -1,5 +1,6 @@
 #pragma once
 
+#include <CollisionAlgorithm/config.h>
 #include <CollisionAlgorithm/BaseProximity.h>
 #include <CollisionAlgorithm/BaseElement.h>
 
@@ -7,7 +8,7 @@ namespace sofa::collisionalgorithm {
 
 class BaseGeometry;
 
-class ElementIterator {
+class SOFA_COLLISIONALGORITHM_API ElementIterator {
 public:
 
     typedef std::shared_ptr<ElementIterator> SPtr;
@@ -43,7 +44,7 @@ static inline void operator ++ (ElementIterator::SPtr & it, int /*NB*/) {
         it->next();
 }
 
-class EmptyIterator : public ElementIterator {
+class SOFA_COLLISIONALGORITHM_API EmptyIterator : public ElementIterator {
 public:
     friend class ElementIterator;
 

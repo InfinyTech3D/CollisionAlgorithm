@@ -1,5 +1,6 @@
 #pragma once
 
+#include <CollisionAlgorithm/config.h>
 #include <CollisionAlgorithm/BaseProximity.h>
 #include <CollisionAlgorithm/elements/TriangleElement.h>
 #include <CollisionAlgorithm/operations/Project.h>
@@ -8,7 +9,7 @@
 
 namespace sofa::collisionalgorithm::toolbox {
 
-class TriangleToolBox {
+class SOFA_COLLISIONALGORITHM_API TriangleToolBox {
 public:
 
     static Operations::CreateCenterProximity::Result createCenterProximity(const TriangleElement::SPtr & tri);
