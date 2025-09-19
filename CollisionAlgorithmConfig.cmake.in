@@ -4,6 +4,8 @@
 @PACKAGE_INIT@
 
 find_package(Sofa.Simulation.Core QUIET REQUIRED)
+find_package(Sofa.Component.StateContainer QUIET REQUIRED)
+find_package(Sofa.Component.Constraint.Lagrangian.Solver QUIET REQUIRED)
 find_package(Sofa.GL QUIET REQUIRED)
 
 if(NOT TARGET @PROJECT_NAME@)
