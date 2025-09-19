@@ -144,14 +144,14 @@ jobs:
         run: sleep 60
         shell: bash
 
-      #- name: Upload release
-      #  uses: softprops/action-gh-release@v1
-      #  with:
-      #    name: ${{ env.RELEASE_NAME }}
-      #    tag_name: ${{ env.RELEASE_TAGNAME }}
-      #    fail_on_unmatched_files: true
-      #    files: |
-      #      artifacts/${{PROJECT_NAME}}_*_Linux.zip
-      #      artifacts/${{PROJECT_NAME}}_*_Windows.zip
-      #      artifacts/${{PROJECT_NAME}}_*_macOS.zip
+      - name: Upload release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ env.RELEASE_NAME }}
+          tag_name: ${{ env.RELEASE_TAGNAME }}
+          fail_on_unmatched_files: true
+          files: |
+            artifacts/${{PROJECT_NAME}}_*_Linux.zip
+            artifacts/${{PROJECT_NAME}}_*_Windows.zip
+            artifacts/${{PROJECT_NAME}}_*_macOS.zip
 
