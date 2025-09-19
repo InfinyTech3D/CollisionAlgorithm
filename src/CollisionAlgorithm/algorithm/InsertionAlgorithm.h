@@ -136,7 +136,6 @@ class InsertionAlgorithm : public BaseAlgorithm
             auto projectOnSurf = Operations::Project::Operation::get(l_surfGeom);
             auto projectOnTip = Operations::Project::Operation::get(l_tipGeom);
 
-            const bool isProjective = d_projective.getValue();
             const SReal punctureForceThreshold = d_punctureForceThreshold.getValue();
             for (auto itTip = l_tipGeom->begin(); itTip != l_tipGeom->end(); itTip++)
             {
@@ -167,13 +166,7 @@ class InsertionAlgorithm : public BaseAlgorithm
                         }
                     }
 
-                    // 1.2 If not, create a proximity pair for the tip-surface collision
-                    if (isProjective)
-                    {
-                        tipProx = projectOnTip(surfProx->getPosition(), itTip->element()).prox;
-                        if (!tipProx) continue;
-                        tipProx->normalize();
-                    }
+                    // ... if not, create a proximity pair for the tip-surface collision
                     collisionOutput.add(tipProx, surfProx);
                 }
             }
