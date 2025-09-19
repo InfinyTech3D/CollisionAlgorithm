@@ -338,13 +338,13 @@ class SOFA_COLLISIONALGORITHM_API InsertionAlgorithm : public BaseAlgorithm
             auto findClosestProxOnShaft =
                 Operations::FindClosestProximity::Operation::get(l_shaftGeom);
             auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
-            for (int i = 0; i < m_couplingPts.size(); i++)
+            for (const auto& cp : m_couplingPts)
             {
                 const BaseProximity::SPtr shaftProx = findClosestProxOnShaft(
-                    m_couplingPts[i], l_shaftGeom.get(), projectOnShaft, getFilterFunc());
+                    cp, l_shaftGeom.get(), projectOnShaft, getFilterFunc());
                 if (!shaftProx) continue;
                 shaftProx->normalize();
-                insertionOutput.add(shaftProx, m_couplingPts[i]);
+                insertionOutput.add(shaftProx, cp);
             }
             // This is a final-frontier check: If there are coupling points stored, but the
             // findClosestProxOnShaf operation yields no proximities on the shaft, it could be
