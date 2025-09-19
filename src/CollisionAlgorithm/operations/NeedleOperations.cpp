@@ -18,6 +18,7 @@ bool prunePointsUsingEdges(std::vector<BaseProximity::SPtr>& couplingPts,
 
     const int initSize = couplingPts.size();
 
+    int safeCounter = initSize;
     while(!couplingPts.empty())
     {
         const type::Vec3 tip2Pt = couplingPts.back()->getPosition() - tip;
@@ -25,6 +26,14 @@ bool prunePointsUsingEdges(std::vector<BaseProximity::SPtr>& couplingPts,
         // Negative dot product means the point is behind the tip
         if(dot(tip2Pt, edgeDirection) < 0_sreal) break;
         couplingPts.pop_back();
+
+        // Temporary safety to avoid infinite loops - remove when confident
+        safeCounter--;
+        if (safeCounter < 0)
+        {
+            msg_warning("Needle::PrunePointsAheadOfTip") << "Counter expired; breaking loop";
+            break;
+        }
     }
     return (initSize == couplingPts.size());
 }
