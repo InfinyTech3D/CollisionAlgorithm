@@ -132,17 +132,17 @@ jobs:
           echo "RELEASE_TAGNAME=$RELEASE_TAGNAME" | tee -a $GITHUB_ENV
           echo "RELEASE_DATE=$RELEASE_DATE" | tee -a $GITHUB_ENV
 
-      #- name: Delete old release
-      #  uses: dev-drprasad/delete-tag-and-release@v0.2.1
-      #  with:
-      #      tag-name: ${{ env.RELEASE_TAGNAME}}
-      #      delete_release: true
-      #  env:
-      #      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Delete old release
+        uses: dev-drprasad/delete-tag-and-release@v0.2.1
+        with:
+            tag-name: ${{ env.RELEASE_TAGNAME}}
+            delete_release: true
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      #- name: Sleep for 60 seconds
-      #  run: sleep 60
-      #  shell: bash
+      - name: Sleep for 60 seconds
+        run: sleep 60
+        shell: bash
 
       #- name: Upload release
       #  uses: softprops/action-gh-release@v1
