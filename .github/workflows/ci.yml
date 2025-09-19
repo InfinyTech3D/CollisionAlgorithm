@@ -135,7 +135,7 @@ jobs:
       - name: Delete old release
         uses: dev-drprasad/delete-tag-and-release@v0.2.1
         with:
-            tag-name: ${{ env.RELEASE_TAGNAME}}
+            tag_name: ${{ env.RELEASE_TAGNAME}}
             delete_release: true
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
