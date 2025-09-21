@@ -161,7 +161,7 @@ jobs:
             $SUDO mv "${{ runner.temp }}"/regression_tmp/install/Regression_*/bin/* "${SOFA_ROOT}/bin"
             chmod +x ${SOFA_ROOT}/bin/Regression_test${{ steps.sofa.outputs.exe }}
             # Setup mandatory env vars
-            export REGRESSION_SCENES_DIR="${WORKSPACE_SRC_PATH}/examples"
+            export REGRESSION_SCENES_DIR="${WORKSPACE_SRC_PATH}/scenes"
             export REGRESSION_REFERENCES_DIR="${WORKSPACE_SRC_PATH}/regression/references"
             export PYTHONPATH=$SOFA_ROOT/plugins/SofaPython3/lib/python3/site-packages
             # Run regression test bench
