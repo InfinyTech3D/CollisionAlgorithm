@@ -55,7 +55,7 @@ def createScene(root):
                                                 'MultiThreading',
                                                 'CollisionAlgorithm',
                                                 'ConstraintGeometry',
-                                                'Geomagic',
+                                                ('Geomagic' if GeomagicActive else ''),
                                                 'Sofa.Component.Haptics',
                                                 'Sofa.Component.IO.Mesh',
                                                 'Sofa.Component.Playback'
