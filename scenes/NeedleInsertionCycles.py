@@ -65,27 +65,27 @@ def createScene(root):
 
     needleBaseMaster = root.addChild("NeedleBaseMaster")
     needleBaseMaster.addObject("MechanicalObject", name="mstate_baseMaster", template="Rigid3d", showObjectScale=0.002, showObject=True, drawMode=1
-        #, position=[0.04, 0.04, 0, 0, 0, 0, 1])
         , position="@reader.position")
+    #    , position=[0.04, 0.04, 0, 0, 0, 0, 1])
     #needleBaseMaster.addObject("LinearMovementProjectiveConstraint",indices=[0], 
     #    keyTimes=[
-    #        0, 1, 4, 4.5, 5, 8
-    #        ,8.5,9,12,12.5,13,16
+    #        0, 0.04, 0.25, 0.3, 0.35, 0.55
+    #        ,0.6, 0.65, 0.85, 0.95, 1.05, 1.15
     #    ],
     #    movements=[
-    #        [0.04, 0.04,0,0,0,0],
-    #        [0.04, 0.04,0.05,0,3.14/2,0],
-    #        [0.04, 0.04,-0.07,0,3.14/2,0],
-    #        [0.05, 0.04,-0.07,0,3.14/2 + 3.14/16,0],
-    #        [0.04, 0.04,-0.07,0,3.14/2,0],
-    #        [0.04, 0.04,0.005,0,3.14/2,0],
+    #        [0.04, 0.04,  0, 0, 0, 0],
+    #        [0.04, 0.04,  0.02, 0, 3.14/2, 0],
+    #        [0.04, 0.04, -0.07, 0, 3.14/2, 0],
+    #        [0.05, 0.04, -0.07, 0, 3.14/2 + 3.14/16, 0],
+    #        [0.04, 0.04, -0.07, 0, 3.14/2, 0],
+    #        [0.04, 0.04,  0.005,0, 3.14/2, 0],
     #        # Change to insertion at an angle
-    #        [0.06, 0.04,0.005,0,3.14/2,0],
-    #        [0.06, 0.04,0.005,0,3.14/2 + 3.14/8,0],
-    #        [0.030866, 0.04,-0.04119,0,3.14/2 + 3.14/8,0],
-    #        [0.030866, 0.04,-0.04119,0,3.14/2,0],
-    #        [0.030866, 0.04,-0.04119,0,3.14/2 + 3.14/8,0],
-    #        [0.06, 0.04,0.005,0,3.14/2 + 3.14/8,0]
+    #        [0.06, 0.04,  0.005, 0, 3.14/2, 0],
+    #        [0.06, 0.04,  0.005, 0, 3.14/2 + 3.14/8, 0],
+    #        [0.030866, 0.04, -0.04119, 0, 3.14/2 + 3.14/8, 0],
+    #        [0.030866, 0.04, -0.04119, 0, 3.14/2, 0],
+    #        [0.030866, 0.04, -0.04119, 0, 3.14/2 + 3.14/8, 0],
+    #        [0.06, 0.04, 0.005, 0, 3.14/2 + 3.14/8, 0]
     #    ]
     #    ,relativeMovements=False
     #)
@@ -165,8 +165,7 @@ def createScene(root):
     volume.addObject("MechanicalObject", name="mstate_gel", template="Vec3d")
     volume.addObject("TetrahedronGeometry", name="geom_tetra", mstate="@mstate_gel", topology="@TetraContainer", draw=False)
     volume.addObject("PhongTriangleNormalHandler", name="InternalTriangles", geometry="@geom_tetra")
-    volume.addObject("AABBBroadPhase",name="AABBTetra",geometry="@geom_tetra",nbox=[3,3,3],thread=1)
-    volume.addObject("TetrahedronFEMForceField", name="FF",**g_gelMechanicalParameters)
+    volume.addObject("FastTetrahedralCorotationalForceField", name="FF",**g_gelMechanicalParameters)
     volume.addObject("MeshMatrixMass", name="Mass",totalMass=g_gelTotalMass)
 
     volume.addObject("BoxROI",name="BoxROI",box=g_gelFixedBoxROI)
@@ -181,7 +180,7 @@ def createScene(root):
     volumeCollision.addObject("MechanicalObject", name="mstate_gelColi",position="@../TetraContainer.position")
     volumeCollision.addObject("TriangleGeometry", name="geom_tri", mstate="@mstate_gelColi", topology="@TriContainer",draw=False)
     volumeCollision.addObject("PhongTriangleNormalHandler", name="SurfaceTriangles", geometry="@geom_tri")
-    volumeCollision.addObject("AABBBroadPhase",name="AABBTriangles",thread=1,nbox=[2,2,3])
+    volumeCollision.addObject("AABBBroadPhase", name="AABBTriangles", thread=1, nbox=[2,2,3], method=2)
 
     volumeCollision.addObject("IdentityMapping", name="identityMappingToCollision", input="@../mstate_gel", output="@mstate_gelColi", isMechanical=True)
 
@@ -215,4 +214,4 @@ def createScene(root):
     root.addObject("ConstraintUnilateral",input="@InsertionAlgo.collisionOutput",directions="@punctureDirection",draw_scale=0.001, mu=0.001)
 
     root.addObject("FirstDirection",name="bindDirection", handler="@Needle/bodyCollision/NeedleBeams")
-    root.addObject("ConstraintInsertion",input="@InsertionAlgo.insertionOutput", directions="@bindDirection",draw_scale=0.002, frictionCoeff=0.0023)
+    root.addObject("ConstraintInsertion",input="@InsertionAlgo.insertionOutput", directions="@bindDirection",draw_scale=0.002, frictionCoeff=0.00)#23)
