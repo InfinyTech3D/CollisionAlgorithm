@@ -200,21 +200,18 @@ class InsertionAlgorithm : public BaseAlgorithm
 
                         if (d_projective.getValue())
                         {
-                            shaftProx =
-                                projectOnShaft(surfProx->getPosition(), itShaft->element()).prox;
+                            //shaftProx =
+                            //    projectOnShaft(surfProx->getPosition(), itShaft->element()).prox;
+                            //if (!shaftProx) continue;
+                            //shaftProx->normalize();
+                            // Experimental - This enables projection anywhere on the edge
+                            auto findClosestProxOnShaft =
+                                Operations::FindClosestProximity::Operation::get(l_shaftGeom);
+                            shaftProx = findClosestProxOnShaft(surfProx, l_shaftGeom,
+                                                               projectOnShaft, getFilterFunc());
                             if (!shaftProx) continue;
                             shaftProx->normalize();
                         }
-                        // Experimental
-                        //else
-                        //{
-                        //    auto findClosestProxOnShaft =
-                        //        Operations::FindClosestProximity::Operation::get(l_shaftGeom);
-                        //    shaftProx = findClosestProxOnShaft(surfProx, l_shaftGeom,
-                        //                                       projectOnShaft, getFilterFunc());
-                        //    if (!shaftProx) continue;
-                        //    shaftProx->normalize();
-                        //}
                         collisionOutput.add(shaftProx, surfProx);
                     }
                 }
