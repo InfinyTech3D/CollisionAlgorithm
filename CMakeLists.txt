@@ -24,7 +24,6 @@ set(HEADER_FILES
     ${COLLISIONALGORITHM_SRC}/InternalData.h
 
     ${COLLISIONALGORITHM_SRC}/algorithm/Find2DClosestProximityAlgorithm.h
-    ${COLLISIONALGORITHM_SRC}/algorithm/FindClosestProximityAlgorithm.h
     ${COLLISIONALGORITHM_SRC}/algorithm/InsertionAlgorithm.h
     
     ${COLLISIONALGORITHM_SRC}/broadphase/AABBBroadPhase.h
@@ -69,7 +68,6 @@ set(SOURCE_FILES
     ${COLLISIONALGORITHM_SRC}/CollisionPipeline.cpp
     
     ${COLLISIONALGORITHM_SRC}/algorithm/Find2DClosestProximityAlgorithm.cpp
-    ${COLLISIONALGORITHM_SRC}/algorithm/FindClosestProximityAlgorithm.cpp
     ${COLLISIONALGORITHM_SRC}/algorithm/InsertionAlgorithm.cpp
 
     ${COLLISIONALGORITHM_SRC}/broadphase/AABBBroadPhase.cpp
