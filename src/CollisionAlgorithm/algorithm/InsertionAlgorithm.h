@@ -130,15 +130,13 @@ class InsertionAlgorithm : public BaseAlgorithm
 
     void doDetection()
     {
-        if (!l_tipGeom || !l_surfGeom || !l_shaftGeom || !l_volGeom) return;
-
         auto& collisionOutput = *d_collisionOutput.beginEdit();
         auto& insertionOutput = *d_insertionOutput.beginEdit();
 
         insertionOutput.clear();
         collisionOutput.clear();
 
-        if (m_couplingPts.empty())
+        if (m_couplingPts.empty() && l_surfGeom)
         {
             // Operations on surface geometry
             auto findClosestProxOnSurf =
@@ -146,7 +144,7 @@ class InsertionAlgorithm : public BaseAlgorithm
             auto projectOnSurf = Operations::Project::Operation::get(l_surfGeom);
 
             // Puncture sequence
-            if (d_enablePuncture.getValue())
+            if (d_enablePuncture.getValue() && l_tipGeom)
             {
                 auto createTipProximity =
                     Operations::CreateCenterProximity::Operation::get(l_tipGeom->getTypeInfo());
@@ -189,7 +187,7 @@ class InsertionAlgorithm : public BaseAlgorithm
             }
 
             // Shaft collision sequence - Disable if coupling points have been added
-            if (d_enableShaftCollision.getValue() && m_couplingPts.empty())
+            if (d_enableShaftCollision.getValue() && m_couplingPts.empty() && l_shaftGeom)
             {
                 auto createShaftProximity =
                     Operations::CreateCenterProximity::Operation::get(l_shaftGeom->getTypeInfo());
@@ -226,7 +224,7 @@ class InsertionAlgorithm : public BaseAlgorithm
         else
         {
             // Insertion sequence
-            if (!d_enableInsertion.getValue()) return;
+            if (!d_enableInsertion.getValue() || !l_tipGeom || !l_volGeom || !l_shaftGeom) return;
 
             ElementIterator::SPtr itTip = l_tipGeom->begin();
             auto createTipProximity =
@@ -326,7 +324,7 @@ class InsertionAlgorithm : public BaseAlgorithm
             }
         }
 
-        if (d_enableInsertion.getValue() && !m_couplingPts.empty())
+        if (d_enableInsertion.getValue() && !m_couplingPts.empty() && l_shaftGeom)
         {
             // Reprojection on shaft geometry sequence
             auto findClosestProxOnShaft =
