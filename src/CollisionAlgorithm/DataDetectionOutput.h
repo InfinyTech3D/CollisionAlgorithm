@@ -58,6 +58,11 @@ public:
         m_output.push_back(PairDetection(p1,p2));
     }
 
+    inline void add(const DetectionOutput& addition) {
+        for (auto& it : addition)
+            this->add(it.first, it.second);
+    }
+
     inline const PairDetection & operator[](int i) const {
         return m_output[i];
     }

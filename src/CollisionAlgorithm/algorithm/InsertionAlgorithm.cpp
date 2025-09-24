@@ -119,10 +119,7 @@ void InsertionAlgorithm::doDetection()
         // Shaft collision sequence - Disable if coupling points have been added
         sofa::helper::AdvancedTimer::stepBegin("Shaft collision - " + this->getName());
         if (d_enableShaftCollision.getValue() && m_couplingPts.empty())
-        {
-            AlgorithmOutput shaftCollisions = shaftCollisionPhase();
-            for (auto& it : shaftCollisions) collisionOutput.add(it.first, it.second);
-        }
+            collisionOutput.add(shaftCollisionPhase());
         sofa::helper::AdvancedTimer::stepEnd("Shaft collision - " + this->getName());
     }
     else
