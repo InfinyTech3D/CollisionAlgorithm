@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <CollisionAlgorithm/config.h>
 #include <CollisionAlgorithm/BaseProximity.h>
 #include <CollisionAlgorithm/BaseGeometry.h>
 

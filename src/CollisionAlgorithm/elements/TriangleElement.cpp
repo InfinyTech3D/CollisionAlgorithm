@@ -6,6 +6,8 @@
 
 namespace sofa::collisionalgorithm {
 
+template class SOFA_COLLISIONALGORITHM_API ElementContainer<TriangleElement>;
+
 TriangleElement::SPtr TriangleElement::create(BaseProximity::SPtr prox0, BaseProximity::SPtr prox1,BaseProximity::SPtr prox2) {
     PointElement::SPtr p0 = PointElement::create(prox0);
     PointElement::SPtr p1 = PointElement::create(prox1);

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <CollisionAlgorithm/config.h>
 #include <CollisionAlgorithm/BaseElement.h>
 #include <CollisionAlgorithm/BaseOperation.h>
 
@@ -8,7 +9,7 @@ namespace sofa::collisionalgorithm::Operations::ContainsPointInElement
 
 typedef bool Result;
 
-class Operation : public GenericOperation<Operation,  // Type of the operation
+class SOFA_COLLISIONALGORITHM_API Operation : public GenericOperation<Operation,  // Type of the operation
                                           Result,     // Default return type
                                           const type::Vec3&, const BaseElement::SPtr&  // Parameters
                                           >
@@ -33,7 +34,7 @@ namespace sofa::collisionalgorithm::Operations::ContainsPointInProximity
 
 typedef bool Result;
 
-class Operation
+class SOFA_COLLISIONALGORITHM_API Operation
     : public GenericOperation<Operation,  // Type of the operation
                               Result,     // Default return type
                               const type::Vec3&, const BaseProximity::SPtr&  // Parameters

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <CollisionAlgorithm/config.h>
 #include <CollisionAlgorithm/BaseProximity.h>
 #include <CollisionAlgorithm/BaseOperation.h>
 #include <CollisionAlgorithm/elements/PointElement.h>
@@ -15,7 +16,7 @@ struct Result {
     BaseProximity::SPtr prox;
 };
 
-class Operation : public GenericOperation<Operation,//Type of the operation
+class SOFA_COLLISIONALGORITHM_API Operation : public GenericOperation<Operation,//Type of the operation
                                           Result,//Default return type
                                           const type::Vec3 & , const BaseElement::SPtr & //Parameters
                                           > {

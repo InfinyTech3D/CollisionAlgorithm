@@ -1,5 +1,6 @@
 #pragma once
 
+#include <CollisionAlgorithm/config.h>
 #include <CollisionAlgorithm/CollisionPipeline.h>
 #include <CollisionAlgorithm/BaseElement.h>
 #include <CollisionAlgorithm/BaseProximity.h>
@@ -14,7 +15,7 @@
 namespace sofa ::collisionalgorithm {
 
 
-class InternalDataContainer {
+class SOFA_COLLISIONALGORITHM_API InternalDataContainer {
 public:
 
 

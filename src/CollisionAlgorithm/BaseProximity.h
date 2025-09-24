@@ -1,5 +1,6 @@
 #pragma once
 
+#include <CollisionAlgorithm/config.h>
 #include <sofa/core/VecId.h>
 #include <sofa/core/MultiVecId.h>
 #include <sofa/linearalgebra/BaseVector.h>
@@ -31,7 +32,7 @@ public:
     const std::type_info & getTypeInfo() { return typeid(*this); }
 };
 
-class BaseProximity : public virtual BaseBaseProximity {
+class SOFA_COLLISIONALGORITHM_API BaseProximity : public virtual BaseBaseProximity {
 public:
     typedef std::shared_ptr<BaseProximity> SPtr;
 

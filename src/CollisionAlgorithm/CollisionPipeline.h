@@ -17,21 +17,21 @@
 
 namespace sofa ::collisionalgorithm {
 
-class CollisionComponent : public core::objectmodel::BaseObject {
+class SOFA_COLLISIONALGORITHM_API CollisionComponent : public core::objectmodel::BaseObject {
 public:
 
     virtual void prepareDetection() = 0;
 
 };
 
-class CollisionAlgorithm : public core::objectmodel::BaseObject {
+class SOFA_COLLISIONALGORITHM_API CollisionAlgorithm : public core::objectmodel::BaseObject {
 public:
 
     virtual void doDetection() = 0;
 
 };
 
-class CollisionLoop : public core::objectmodel::BaseObject {
+class SOFA_COLLISIONALGORITHM_API CollisionLoop : public core::objectmodel::BaseObject {
 public:
 
     SOFA_ABSTRACT_CLASS(CollisionLoop,core::objectmodel::BaseObject);

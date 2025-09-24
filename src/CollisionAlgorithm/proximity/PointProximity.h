@@ -1,10 +1,11 @@
 ﻿#pragma once
 
+#include <CollisionAlgorithm/config.h>
 #include <CollisionAlgorithm/elements/PointElement.h>
 
 namespace sofa::collisionalgorithm {
 
-class PointProximity : public BaseProximity {
+class SOFA_COLLISIONALGORITHM_API PointProximity : public BaseProximity {
 public:
 
     typedef std::shared_ptr<PointProximity> SPtr;
