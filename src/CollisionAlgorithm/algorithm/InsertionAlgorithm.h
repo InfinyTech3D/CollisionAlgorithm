@@ -44,6 +44,8 @@ class SOFA_COLLISIONALGORITHM_API InsertionAlgorithm : public BaseAlgorithm
     /// Detection outputs are used to create collisions and needle-tissue coupling.
     /// Handles puncture, shaft collisions and insertion into tissue phases.
     void doDetection() override;
+
+    virtual AlgorithmOutput puncturePhase();
 };
 
 }  // namespace sofa::collisionalgorithm

@@ -109,60 +109,17 @@ void InsertionAlgorithm::doDetection()
     insertionOutput.clear();
     collisionOutput.clear();
 
-    if (m_couplingPts.empty() && l_surfGeom)
+    if (m_couplingPts.empty())
     {
-        // Operations on surface geometry
-        sofa::helper::AdvancedTimer::stepBegin("Puncture detection - " + this->getName());
-
-        auto findClosestProxOnSurf = Operations::FindClosestProximity::Operation::get(l_surfGeom);
-        auto projectOnSurf = Operations::Project::Operation::get(l_surfGeom);
-
         // Puncture sequence
-        if (d_enablePuncture.getValue() && l_tipGeom)
-        {
-            auto createTipProximity =
-                Operations::CreateCenterProximity::Operation::get(l_tipGeom->getTypeInfo());
-            auto projectOnTip = Operations::Project::Operation::get(l_tipGeom);
-
-            const SReal punctureForceThreshold = d_punctureForceThreshold.getValue();
-            for (auto itTip = l_tipGeom->begin(); itTip != l_tipGeom->end(); itTip++)
-            {
-                BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
-                if (!tipProx) continue;
-                const BaseProximity::SPtr surfProx = findClosestProxOnSurf(
-                    tipProx, l_surfGeom.get(), projectOnSurf, getFilterFunc());
-                if (surfProx)
-                {
-                    surfProx->normalize();
-
-                    // Check whether puncture is happening - if so, create coupling point ...
-                    if (m_constraintSolver)
-                    {
-                        const MechStateTipType::SPtr mstate =
-                            l_tipGeom->getContext()->get<MechStateTipType>();
-                        const auto& lambda =
-                            m_constraintSolver->getLambda()[mstate.get()].read()->getValue();
-                        SReal norm{0_sreal};
-                        for (const auto& l : lambda)
-                        {
-                            norm += l.norm();
-                        }
-                        if (norm > punctureForceThreshold)
-                        {
-                            m_couplingPts.push_back(surfProx);
-                            continue;
-                        }
-                    }
-
-                    // ... if not, create a proximity pair for the tip-surface collision
-                    collisionOutput.add(tipProx, surfProx);
-                }
-            }
-        }
+        sofa::helper::AdvancedTimer::stepBegin("Puncture detection - " + this->getName());
+        if (d_enablePuncture.getValue()) collisionOutput = puncturePhase();
         sofa::helper::AdvancedTimer::stepEnd("Puncture detection - " + this->getName());
 
         // Shaft collision sequence - Disable if coupling points have been added
         sofa::helper::AdvancedTimer::stepBegin("Shaft collision - " + this->getName());
+        auto findClosestProxOnSurf = Operations::FindClosestProximity::Operation::get(l_surfGeom);
+        auto projectOnSurf = Operations::Project::Operation::get(l_surfGeom);
         if (d_enableShaftCollision.getValue() && m_couplingPts.empty() && l_shaftGeom)
         {
             auto createShaftProximity =
@@ -324,6 +281,56 @@ void InsertionAlgorithm::doDetection()
 
     d_collisionOutput.endEdit();
     d_insertionOutput.endEdit();
+}
+
+InsertionAlgorithm::AlgorithmOutput InsertionAlgorithm::puncturePhase()
+{
+    if (!l_tipGeom || !l_surfGeom) return AlgorithmOutput();
+
+    AlgorithmOutput punctureCollisionOutput;
+
+    auto findClosestProxOnSurf = Operations::FindClosestProximity::Operation::get(l_surfGeom);
+    auto projectOnSurf = Operations::Project::Operation::get(l_surfGeom);
+
+    auto createTipProximity =
+        Operations::CreateCenterProximity::Operation::get(l_tipGeom->getTypeInfo());
+    auto projectOnTip = Operations::Project::Operation::get(l_tipGeom);
+
+    const SReal punctureForceThreshold = d_punctureForceThreshold.getValue();
+    for (auto itTip = l_tipGeom->begin(); itTip != l_tipGeom->end(); itTip++)
+    {
+        BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
+        if (!tipProx) continue;
+        const BaseProximity::SPtr surfProx =
+            findClosestProxOnSurf(tipProx, l_surfGeom.get(), projectOnSurf, getFilterFunc());
+        if (surfProx)
+        {
+            surfProx->normalize();
+
+            // Check whether puncture is happening - if so, create coupling point ...
+            if (m_constraintSolver)
+            {
+                const MechStateTipType::SPtr mstate =
+                    l_tipGeom->getContext()->get<MechStateTipType>();
+                const auto& lambda =
+                    m_constraintSolver->getLambda()[mstate.get()].read()->getValue();
+                SReal norm{0_sreal};
+                for (const auto& l : lambda)
+                {
+                    norm += l.norm();
+                }
+                if (norm > punctureForceThreshold)
+                {
+                    m_couplingPts.push_back(surfProx);
+                    continue;
+                }
+            }
+
+            // ... if not, create a proximity pair for the tip-surface collision
+            punctureCollisionOutput.add(tipProx, surfProx);
+        }
+    }
+    return punctureCollisionOutput;
 }
 
 }  // namespace sofa::collisionalgorithm
