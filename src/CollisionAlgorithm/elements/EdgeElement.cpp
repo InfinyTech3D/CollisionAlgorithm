@@ -6,6 +6,8 @@
 
 namespace sofa::collisionalgorithm {
 
+template class SOFA_COLLISIONALGORITHM_API ElementContainer<EdgeElement>;
+
 EdgeElement::SPtr EdgeElement::create(const PointElement::SPtr & p0, const PointElement::SPtr & p1) {
     EdgeElement::SPtr res = EdgeElement::SPtr(new EdgeElement());
 
