@@ -126,124 +126,12 @@ void InsertionAlgorithm::doDetection()
     {
         // Insertion sequence
         sofa::helper::AdvancedTimer::stepBegin("Needle insertion - " + this->getName());
-        if (!d_enableInsertion.getValue() || !l_tipGeom || !l_volGeom || !l_shaftGeom) return;
-
-        ElementIterator::SPtr itTip = l_tipGeom->begin();
-        auto createTipProximity =
-            Operations::CreateCenterProximity::Operation::get(itTip->getTypeInfo());
-        const BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
-        if (!tipProx) return;
-
-        // Remove coupling points that are ahead of the tip in the insertion direction
-        ElementIterator::SPtr itShaft = l_shaftGeom->begin(l_shaftGeom->getSize() - 2);
-        auto prunePointsAheadOfTip =
-            Operations::Needle::PrunePointsAheadOfTip::get(itShaft->getTypeInfo());
-        prunePointsAheadOfTip(m_couplingPts, itShaft->element());
-
-        if (m_couplingPts.empty()) return;
-
-        type::Vec3 lastCP = m_couplingPts.back()->getPosition();
-        const SReal tipDistThreshold = this->d_tipDistThreshold.getValue();
-
-        // Vector from tip to last coupling point; used for distance and directional checks
-        const type::Vec3 tipToLastCP = lastCP - tipProx->getPosition();
-
-        // Only add a new coupling point if the needle tip has advanced far enough
-        if (tipToLastCP.norm() > tipDistThreshold)
-        {
-            // Prepare the operations before entering the loop
-            auto createShaftProximity =
-                Operations::CreateCenterProximity::Operation::get(l_shaftGeom->getTypeInfo());
-            auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
-            auto findClosestProxOnVol = Operations::FindClosestProximity::Operation::get(l_volGeom);
-            auto projectOnVol = Operations::Project::Operation::get(l_volGeom);
-            auto containsPointInVol =
-                Operations::ContainsPointInProximity::Operation::get(l_volGeom);
-
-            // Iterate over shaft segments to find which one contains the next candidate CP
-            for (auto itShaft = l_shaftGeom->begin(); itShaft != l_shaftGeom->end(); itShaft++)
-            {
-                BaseProximity::SPtr shaftProx = createShaftProximity(itShaft->element());
-                if (!shaftProx) continue;
-
-                const EdgeProximity::SPtr edgeProx = dynamic_pointer_cast<EdgeProximity>(shaftProx);
-                if (!edgeProx) continue;
-
-                const type::Vec3 p0 = edgeProx->element()->getP0()->getPosition();
-                const type::Vec3 p1 = edgeProx->element()->getP1()->getPosition();
-                const type::Vec3 shaftEdgeDir = (p1 - p0).normalized();
-                const type::Vec3 lastCPToP1 = p1 - lastCP;
-
-                // Skip if last CP lies after edge end point
-                if (dot(shaftEdgeDir, lastCPToP1) < 0_sreal) continue;
-
-                const int numCPs = floor(lastCPToP1.norm() / tipDistThreshold);
-
-                for (int idCP = 0; idCP < numCPs; idCP++)
-                {
-                    // Candidate coupling point along shaft segment
-                    const type::Vec3 candidateCP = lastCP + tipDistThreshold * shaftEdgeDir;
-
-                    // Project candidate CP onto the edge element and compute scalar coordinate
-                    // along segment
-                    const SReal edgeSegmentLength = (p1 - p0).norm();
-                    const type::Vec3 p0ToCandidateCP = candidateCP - p0;
-                    const SReal projPtOnEdge = dot(p0ToCandidateCP, shaftEdgeDir);
-
-                    // Skip if candidate CP is outside current edge segment
-                    if (projPtOnEdge < 0_sreal || projPtOnEdge > edgeSegmentLength) break;
-
-                    // Project candidate CP onto shaft geometry ...
-                    shaftProx = projectOnShaft(candidateCP, itShaft->element()).prox;
-                    if (!shaftProx) continue;
-
-                    // ... then find nearest volume proximity
-                    const BaseProximity::SPtr volProx = findClosestProxOnVol(
-                        shaftProx, l_volGeom.get(), projectOnVol, getFilterFunc());
-                    if (!volProx) continue;
-
-                    // Proximity can be detected before the tip enters the tetra (e.g. near a
-                    // boundary face) Only accept proximities if the tip is inside the tetra
-                    // during insertion
-                    if (containsPointInVol(shaftProx->getPosition(), volProx))
-                    {
-                        volProx->normalize();
-                        m_couplingPts.push_back(volProx);
-                        lastCP = volProx->getPosition();
-                    }
-                }
-            }
-        }
-        else  // Don't bother with removing the point that was just added
-        {
-            // Remove coupling points that are ahead of the tip in the insertion direction
-            ElementIterator::SPtr itShaft = l_shaftGeom->begin(l_shaftGeom->getSize() - 2);
-            auto prunePointsAheadOfTip =
-                Operations::Needle::PrunePointsAheadOfTip::get(itShaft->getTypeInfo());
-            prunePointsAheadOfTip(m_couplingPts, itShaft->element());
-        }
+        if (d_enableInsertion.getValue()) insertionPhase();
         sofa::helper::AdvancedTimer::stepEnd("Needle insertion - " + this->getName());
     }
 
     sofa::helper::AdvancedTimer::stepBegin("Reproject coupling points - " + this->getName());
-    if (d_enableInsertion.getValue() && !m_couplingPts.empty() && l_shaftGeom)
-    {
-        // Reprojection on shaft geometry sequence
-        auto findClosestProxOnShaft = Operations::FindClosestProximity::Operation::get(l_shaftGeom);
-        auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
-        for (const auto& cp : m_couplingPts)
-        {
-            const BaseProximity::SPtr shaftProx =
-                findClosestProxOnShaft(cp, l_shaftGeom.get(), projectOnShaft, getFilterFunc());
-            if (!shaftProx) continue;
-            shaftProx->normalize();
-            insertionOutput.add(shaftProx, cp);
-        }
-        // This is a final-frontier check: If there are coupling points stored, but the
-        // findClosestProxOnShaf operation yields no proximities on the shaft, it could be
-        // because the needle has exited abruptly. Thus, we clear the coupling points.
-        if (insertionOutput.size() == 0) m_couplingPts.clear();
-    }
+    if (d_enableInsertion.getValue()) insertionOutput = reprojectCouplingPoints();
     sofa::helper::AdvancedTimer::stepEnd("Reproject coupling points - " + this->getName());
 
     d_collisionOutput.endEdit();
@@ -341,6 +229,130 @@ InsertionAlgorithm::AlgorithmOutput InsertionAlgorithm::shaftCollisionPhase()
         }
     }
     return shaftCollisionOutput;
+}
+
+void InsertionAlgorithm::insertionPhase()
+{
+    if (!l_tipGeom || !l_volGeom || !l_shaftGeom) return;
+
+    ElementIterator::SPtr itTip = l_tipGeom->begin();
+    auto createTipProximity =
+        Operations::CreateCenterProximity::Operation::get(itTip->getTypeInfo());
+    const BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
+    if (!tipProx) return;
+
+    // Remove coupling points that are ahead of the tip in the insertion direction
+    ElementIterator::SPtr itShaft = l_shaftGeom->begin(l_shaftGeom->getSize() - 2);
+    auto prunePointsAheadOfTip =
+        Operations::Needle::PrunePointsAheadOfTip::get(itShaft->getTypeInfo());
+    prunePointsAheadOfTip(m_couplingPts, itShaft->element());
+
+    if (m_couplingPts.empty()) return;
+
+    type::Vec3 lastCP = m_couplingPts.back()->getPosition();
+    const SReal tipDistThreshold = this->d_tipDistThreshold.getValue();
+
+    // Vector from tip to last coupling point; used for distance and directional checks
+    const type::Vec3 tipToLastCP = lastCP - tipProx->getPosition();
+
+    // Only add a new coupling point if the needle tip has advanced far enough
+    if (tipToLastCP.norm() > tipDistThreshold)
+    {
+        // Prepare the operations before entering the loop
+        auto createShaftProximity =
+            Operations::CreateCenterProximity::Operation::get(l_shaftGeom->getTypeInfo());
+        auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
+        auto findClosestProxOnVol = Operations::FindClosestProximity::Operation::get(l_volGeom);
+        auto projectOnVol = Operations::Project::Operation::get(l_volGeom);
+        auto containsPointInVol = Operations::ContainsPointInProximity::Operation::get(l_volGeom);
+
+        // Iterate over shaft segments to find which one contains the next candidate CP
+        for (auto itShaft = l_shaftGeom->begin(); itShaft != l_shaftGeom->end(); itShaft++)
+        {
+            BaseProximity::SPtr shaftProx = createShaftProximity(itShaft->element());
+            if (!shaftProx) continue;
+
+            const EdgeProximity::SPtr edgeProx = dynamic_pointer_cast<EdgeProximity>(shaftProx);
+            if (!edgeProx) continue;
+
+            const type::Vec3 p0 = edgeProx->element()->getP0()->getPosition();
+            const type::Vec3 p1 = edgeProx->element()->getP1()->getPosition();
+            const type::Vec3 shaftEdgeDir = (p1 - p0).normalized();
+            const type::Vec3 lastCPToP1 = p1 - lastCP;
+
+            // Skip if last CP lies after edge end point
+            if (dot(shaftEdgeDir, lastCPToP1) < 0_sreal) continue;
+
+            const int numCPs = floor(lastCPToP1.norm() / tipDistThreshold);
+
+            for (int idCP = 0; idCP < numCPs; idCP++)
+            {
+                // Candidate coupling point along shaft segment
+                const type::Vec3 candidateCP = lastCP + tipDistThreshold * shaftEdgeDir;
+
+                // Project candidate CP onto the edge element and compute scalar coordinate
+                // along segment
+                const SReal edgeSegmentLength = (p1 - p0).norm();
+                const type::Vec3 p0ToCandidateCP = candidateCP - p0;
+                const SReal projPtOnEdge = dot(p0ToCandidateCP, shaftEdgeDir);
+
+                // Skip if candidate CP is outside current edge segment
+                if (projPtOnEdge < 0_sreal || projPtOnEdge > edgeSegmentLength) break;
+
+                // Project candidate CP onto shaft geometry ...
+                shaftProx = projectOnShaft(candidateCP, itShaft->element()).prox;
+                if (!shaftProx) continue;
+
+                // ... then find nearest volume proximity
+                const BaseProximity::SPtr volProx =
+                    findClosestProxOnVol(shaftProx, l_volGeom.get(), projectOnVol, getFilterFunc());
+                if (!volProx) continue;
+
+                // Proximity can be detected before the tip enters the tetra (e.g. near a
+                // boundary face) Only accept proximities if the tip is inside the tetra
+                // during insertion
+                if (containsPointInVol(shaftProx->getPosition(), volProx))
+                {
+                    volProx->normalize();
+                    m_couplingPts.push_back(volProx);
+                    lastCP = volProx->getPosition();
+                }
+            }
+        }
+    }
+    else  // Don't bother with removing the point that was just added
+    {
+        // Remove coupling points that are ahead of the tip in the insertion direction
+        ElementIterator::SPtr itShaft = l_shaftGeom->begin(l_shaftGeom->getSize() - 2);
+        auto prunePointsAheadOfTip =
+            Operations::Needle::PrunePointsAheadOfTip::get(itShaft->getTypeInfo());
+        prunePointsAheadOfTip(m_couplingPts, itShaft->element());
+    }
+}
+
+InsertionAlgorithm::AlgorithmOutput InsertionAlgorithm::reprojectCouplingPoints()
+{
+    if (m_couplingPts.empty() || !l_shaftGeom) return AlgorithmOutput();
+
+    AlgorithmOutput reprojectionOutput;
+
+    // Reprojection on shaft geometry sequence
+    auto findClosestProxOnShaft = Operations::FindClosestProximity::Operation::get(l_shaftGeom);
+    auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
+    for (const auto& cp : m_couplingPts)
+    {
+        const BaseProximity::SPtr shaftProx =
+            findClosestProxOnShaft(cp, l_shaftGeom.get(), projectOnShaft, getFilterFunc());
+        if (!shaftProx) continue;
+        shaftProx->normalize();
+        reprojectionOutput.add(shaftProx, cp);
+    }
+    // This is a final-frontier check: If there are coupling points stored, but the
+    // findClosestProxOnShaf operation yields no proximities on the shaft, it could be
+    // because the needle has exited abruptly. Thus, we clear the coupling points.
+    if (reprojectionOutput.size() == 0) m_couplingPts.clear();
+
+    return reprojectionOutput;
 }
 
 }  // namespace sofa::collisionalgorithm

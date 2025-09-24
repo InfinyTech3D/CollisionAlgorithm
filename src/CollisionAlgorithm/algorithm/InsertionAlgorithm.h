@@ -47,6 +47,8 @@ class SOFA_COLLISIONALGORITHM_API InsertionAlgorithm : public BaseAlgorithm
 
     virtual AlgorithmOutput puncturePhase();
     virtual AlgorithmOutput shaftCollisionPhase();
+    virtual void insertionPhase();
+    virtual AlgorithmOutput reprojectCouplingPoints();
 };
 
 }  // namespace sofa::collisionalgorithm
