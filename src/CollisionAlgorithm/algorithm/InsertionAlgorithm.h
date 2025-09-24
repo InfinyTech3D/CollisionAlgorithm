@@ -46,6 +46,7 @@ class SOFA_COLLISIONALGORITHM_API InsertionAlgorithm : public BaseAlgorithm
     void doDetection() override;
 
     virtual AlgorithmOutput puncturePhase();
+    virtual AlgorithmOutput shaftCollisionPhase();
 };
 
 }  // namespace sofa::collisionalgorithm

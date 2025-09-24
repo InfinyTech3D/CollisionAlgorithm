@@ -118,40 +118,10 @@ void InsertionAlgorithm::doDetection()
 
         // Shaft collision sequence - Disable if coupling points have been added
         sofa::helper::AdvancedTimer::stepBegin("Shaft collision - " + this->getName());
-        auto findClosestProxOnSurf = Operations::FindClosestProximity::Operation::get(l_surfGeom);
-        auto projectOnSurf = Operations::Project::Operation::get(l_surfGeom);
-        if (d_enableShaftCollision.getValue() && m_couplingPts.empty() && l_shaftGeom)
+        if (d_enableShaftCollision.getValue() && m_couplingPts.empty())
         {
-            auto createShaftProximity =
-                Operations::CreateCenterProximity::Operation::get(l_shaftGeom->getTypeInfo());
-            auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
-            for (auto itShaft = l_shaftGeom->begin(); itShaft != l_shaftGeom->end(); itShaft++)
-            {
-                BaseProximity::SPtr shaftProx = createShaftProximity(itShaft->element());
-                if (!shaftProx) continue;
-                const BaseProximity::SPtr surfProx = findClosestProxOnSurf(
-                    shaftProx, l_surfGeom.get(), projectOnSurf, getFilterFunc());
-                if (surfProx)
-                {
-                    surfProx->normalize();
-
-                    if (d_projective.getValue())
-                    {
-                        // shaftProx =
-                        //     projectOnShaft(surfProx->getPosition(), itShaft->element()).prox;
-                        // if (!shaftProx) continue;
-                        // shaftProx->normalize();
-                        //  Experimental - This enables projection anywhere on the edge
-                        auto findClosestProxOnShaft =
-                            Operations::FindClosestProximity::Operation::get(l_shaftGeom);
-                        shaftProx = findClosestProxOnShaft(surfProx, l_shaftGeom, projectOnShaft,
-                                                           getFilterFunc());
-                        if (!shaftProx) continue;
-                        shaftProx->normalize();
-                    }
-                    collisionOutput.add(shaftProx, surfProx);
-                }
-            }
+            AlgorithmOutput shaftCollisions = shaftCollisionPhase();
+            for (auto& it : shaftCollisions) collisionOutput.add(it.first, it.second);
         }
         sofa::helper::AdvancedTimer::stepEnd("Shaft collision - " + this->getName());
     }
@@ -331,6 +301,49 @@ InsertionAlgorithm::AlgorithmOutput InsertionAlgorithm::puncturePhase()
         }
     }
     return punctureCollisionOutput;
+}
+
+InsertionAlgorithm::AlgorithmOutput InsertionAlgorithm::shaftCollisionPhase()
+{
+    if (!l_shaftGeom || !l_surfGeom) return AlgorithmOutput();
+
+    AlgorithmOutput shaftCollisionOutput;
+
+    auto findClosestProxOnSurf = Operations::FindClosestProximity::Operation::get(l_surfGeom);
+    auto projectOnSurf = Operations::Project::Operation::get(l_surfGeom);
+    {
+        auto createShaftProximity =
+            Operations::CreateCenterProximity::Operation::get(l_shaftGeom->getTypeInfo());
+        auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
+        for (auto itShaft = l_shaftGeom->begin(); itShaft != l_shaftGeom->end(); itShaft++)
+        {
+            BaseProximity::SPtr shaftProx = createShaftProximity(itShaft->element());
+            if (!shaftProx) continue;
+            const BaseProximity::SPtr surfProx =
+                findClosestProxOnSurf(shaftProx, l_surfGeom.get(), projectOnSurf, getFilterFunc());
+            if (surfProx)
+            {
+                surfProx->normalize();
+
+                if (d_projective.getValue())
+                {
+                    // shaftProx =
+                    //     projectOnShaft(surfProx->getPosition(), itShaft->element()).prox;
+                    // if (!shaftProx) continue;
+                    // shaftProx->normalize();
+                    //  Experimental - This enables projection anywhere on the edge
+                    auto findClosestProxOnShaft =
+                        Operations::FindClosestProximity::Operation::get(l_shaftGeom);
+                    shaftProx = findClosestProxOnShaft(surfProx, l_shaftGeom, projectOnShaft,
+                                                       getFilterFunc());
+                    if (!shaftProx) continue;
+                    shaftProx->normalize();
+                }
+                shaftCollisionOutput.add(shaftProx, surfProx);
+            }
+        }
+    }
+    return shaftCollisionOutput;
 }
 
 }  // namespace sofa::collisionalgorithm
