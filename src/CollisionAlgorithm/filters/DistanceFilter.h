@@ -1,5 +1,6 @@
 #pragma once
 
+#include <CollisionAlgorithm/config.h>
 #include <CollisionAlgorithm/BaseAlgorithm.h>
 
 namespace sofa::collisionalgorithm {
@@ -8,7 +9,7 @@ namespace sofa::collisionalgorithm {
  * \brief The DistanceFilter class
  * accepts proximities which positions are within a limited distance from each other
  */
-class DistanceFilter : public BaseAlgorithm::BaseFilter {
+class SOFA_COLLISIONALGORITHM_API DistanceFilter : public BaseAlgorithm::BaseFilter {
 public:
     SOFA_CLASS(DistanceFilter, BaseFilter);
 

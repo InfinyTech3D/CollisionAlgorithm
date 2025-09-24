@@ -6,6 +6,8 @@
 
 namespace sofa::collisionalgorithm {
 
+template class SOFA_COLLISIONALGORITHM_API ElementContainer<PointElement>;
+
 PointElement::SPtr PointElement::create(const BaseProximity::SPtr &prox) {
     return PointElement::SPtr(new PointElement(prox));
 }
