@@ -139,6 +139,8 @@ class SOFA_COLLISIONALGORITHM_API InsertionAlgorithm : public BaseAlgorithm
         if (m_couplingPts.empty() && l_surfGeom)
         {
             // Operations on surface geometry
+            sofa::helper::AdvancedTimer::stepBegin("Puncture detection - "+this->getName());
+
             auto findClosestProxOnSurf =
                 Operations::FindClosestProximity::Operation::get(l_surfGeom);
             auto projectOnSurf = Operations::Project::Operation::get(l_surfGeom);
@@ -185,8 +187,11 @@ class SOFA_COLLISIONALGORITHM_API InsertionAlgorithm : public BaseAlgorithm
                     }
                 }
             }
+            sofa::helper::AdvancedTimer::stepEnd("Puncture detection - "+this->getName());
 
             // Shaft collision sequence - Disable if coupling points have been added
+            sofa::helper::AdvancedTimer::stepBegin("Shaft collision - "+this->getName());
+
             if (d_enableShaftCollision.getValue() && m_couplingPts.empty() && l_shaftGeom)
             {
                 auto createShaftProximity =
@@ -220,10 +225,13 @@ class SOFA_COLLISIONALGORITHM_API InsertionAlgorithm : public BaseAlgorithm
                     }
                 }
             }
+            sofa::helper::AdvancedTimer::stepEnd("Shaft collision - "+this->getName());
         }
         else
         {
             // Insertion sequence
+            sofa::helper::AdvancedTimer::stepBegin("Needle insertion - " + this->getName());
+
             if (!d_enableInsertion.getValue() || !l_tipGeom || !l_volGeom || !l_shaftGeom) return;
 
             ElementIterator::SPtr itTip = l_tipGeom->begin();
@@ -322,7 +330,10 @@ class SOFA_COLLISIONALGORITHM_API InsertionAlgorithm : public BaseAlgorithm
                     Operations::Needle::PrunePointsAheadOfTip::get(itShaft->getTypeInfo());
                 prunePointsAheadOfTip(m_couplingPts, itShaft->element());
             }
+            sofa::helper::AdvancedTimer::stepEnd("Needle insertion - " + this->getName());
         }
+
+        sofa::helper::AdvancedTimer::stepBegin("Reproject coupling points - "+this->getName());
 
         if (d_enableInsertion.getValue() && !m_couplingPts.empty() && l_shaftGeom)
         {
@@ -343,6 +354,7 @@ class SOFA_COLLISIONALGORITHM_API InsertionAlgorithm : public BaseAlgorithm
             // because the needle has exited abruptly. Thus, we clear the coupling points.
             if (insertionOutput.size() == 0) m_couplingPts.clear();
         }
+        sofa::helper::AdvancedTimer::stepEnd("Reproject coupling points - "+this->getName());
 
         d_collisionOutput.endEdit();
         d_insertionOutput.endEdit();

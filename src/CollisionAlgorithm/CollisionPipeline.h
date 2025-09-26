@@ -66,11 +66,9 @@ public:
 
         void processObject(simulation::Node*, core::objectmodel::BaseObject* obj) {
             if (CollisionAlgorithm * component = dynamic_cast<CollisionAlgorithm *>(obj)) {
-//                std::string timerName = std::string("-- Do detection : ") + obj->getName();
-
-//                sofa::helper::AdvancedTimer::stepBegin(timerName.c_str());
+                sofa::helper::AdvancedTimer::stepBegin("doDetection - "+obj->getName());
                 component->doDetection();
-//                sofa::helper::AdvancedTimer::stepEnd(timerName.c_str());
+                sofa::helper::AdvancedTimer::stepEnd("doDetection - "+obj->getName());
             }
         }
 

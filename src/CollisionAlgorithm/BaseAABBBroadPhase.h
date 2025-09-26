@@ -61,12 +61,12 @@ public:
     }
 
     inline void doUpdate() {
-        sofa::helper::AdvancedTimer::stepBegin("========================= AABBBroadPhase do update =========================");
+        sofa::helper::AdvancedTimer::stepBegin("AABBBroadPhase::doUpdate - "+this->getName());
         m_Bmin = l_geometry->getPosition(0);
         m_Bmax = m_Bmin;
 
         //updates bounding box area
-//        sofa::helper::AdvancedTimer::stepBegin("========================= BBox area update in AABBBroadPhase do update =========================");
+        sofa::helper::AdvancedTimer::stepBegin("AABBBroadPhase BBox area update - "+this->getName());
         for (unsigned j=1;j<l_geometry->getSize();j++) {
             type::Vec3 pos = l_geometry->getPosition(j);
 
@@ -78,7 +78,7 @@ public:
             }
 
         }
-//        sofa::helper::AdvancedTimer::stepEnd("========================= BBox area update in AABBBroadPhase do update =========================");
+        sofa::helper::AdvancedTimer::stepEnd("AABBBroadPhase BBox area update - "+this->getName());
 
         //fixes cell size
         for (int i = 0 ; i < 3 ; i++) {
@@ -98,9 +98,9 @@ public:
             }
         }
 
-//        sofa::helper::AdvancedTimer::stepBegin("========================= CLEAR MAP =========================");
+        sofa::helper::AdvancedTimer::stepBegin("AABBBroadPhase clear map - "+this->getName());
         newContainer();
-//        sofa::helper::AdvancedTimer::stepEnd("========================= CLEAR MAP =========================");
+        sofa::helper::AdvancedTimer::stepEnd("AABBBroadPhase clear map - "+this->getName());
 
         // center in -0.5 cellwidth
         m_Bmin -= m_cellSize * 0.5;
@@ -112,11 +112,11 @@ public:
             return;
         }
 
-//        sofa::helper::AdvancedTimer::stepBegin("========================= Elements rangés dans boites in AABB doUpdate =========================");
+        sofa::helper::AdvancedTimer::stepBegin("AABBBroadPhase updateElemInBoxes - " + this->getName());
         updateElemInBoxes();
+        sofa::helper::AdvancedTimer::stepEnd("AABBBroadPhase updateElemInBoxes - " + this->getName());
 
-//        sofa::helper::AdvancedTimer::stepEnd("========================= Elements rangés dans boites in AABB doUpdate =========================");
-        sofa::helper::AdvancedTimer::stepEnd("========================= AABBBroadPhase do update =========================");
+        sofa::helper::AdvancedTimer::stepEnd("AABBBroadPhase::doUpdate - "+this->getName());
     }
 
 
