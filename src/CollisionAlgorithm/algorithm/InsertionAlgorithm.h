@@ -3,11 +3,11 @@
 #include <CollisionAlgorithm/BaseAlgorithm.h>
 #include <CollisionAlgorithm/BaseGeometry.h>
 #include <CollisionAlgorithm/BaseOperation.h>
+#include <CollisionAlgorithm/operations/ContainsPoint.h>
 #include <CollisionAlgorithm/operations/CreateCenterProximity.h>
 #include <CollisionAlgorithm/operations/FindClosestProximity.h>
-#include <CollisionAlgorithm/operations/Project.h>
-#include <CollisionAlgorithm/operations/ContainsPoint.h>
 #include <CollisionAlgorithm/operations/NeedleOperations.h>
+#include <CollisionAlgorithm/operations/Project.h>
 #include <CollisionAlgorithm/proximity/EdgeProximity.h>
 #include <sofa/component/constraint/lagrangian/solver/ConstraintSolverImpl.h>
 #include <sofa/component/statecontainer/MechanicalObject.h>
@@ -29,7 +29,7 @@ class SOFA_COLLISIONALGORITHM_API InsertionAlgorithm : public BaseAlgorithm
 
     GeomLink l_tipGeom, l_surfGeom, l_shaftGeom, l_volGeom;
     Data<AlgorithmOutput> d_collisionOutput, d_insertionOutput;
-    Data<bool> d_projective;
+    Data<bool> d_projective, d_enablePuncture, d_enableInsertion, d_enableShaftCollision;
     Data<SReal> d_punctureForceThreshold, d_tipDistThreshold;
     ConstraintSolver::SPtr m_constraintSolver;
     std::vector<BaseProximity::SPtr> m_couplingPts;
@@ -50,6 +50,12 @@ class SOFA_COLLISIONALGORITHM_API InsertionAlgorithm : public BaseAlgorithm
           d_projective(initData(
               &d_projective, false, "projective",
               "Projection of closest detected proximity back onto the needle tip element.")),
+          d_enablePuncture(
+              initData(&d_enablePuncture, true, "enablePuncture", "Enable puncture algorithm.")),
+          d_enableInsertion(
+              initData(&d_enableInsertion, true, "enableInsertion", "Enable insertion algorithm.")),
+          d_enableShaftCollision(initData(&d_enableShaftCollision, true, "enableShaftCollision",
+                                          "Enable shaft-surface collision.")),
           d_punctureForceThreshold(initData(&d_punctureForceThreshold, -1_sreal,
                                             "punctureForceThreshold",
                                             "Threshold for the force applied to the needle tip. "
@@ -70,24 +76,30 @@ class SOFA_COLLISIONALGORITHM_API InsertionAlgorithm : public BaseAlgorithm
     void init() override
     {
         BaseAlgorithm::init();
-        this->getContext()->get<ConstraintSolver>(m_constraintSolver);
-        msg_warning_when(!m_constraintSolver)
-            << "No constraint solver found in context. Insertion algorithm is disabled.";
 
-        if (d_punctureForceThreshold.getValue() < 0)
+        if (d_enablePuncture.getValue())
         {
-            msg_warning() << d_punctureForceThreshold.getName() +
-                                 " parameter not defined or set to negative value." msgendl
-                          << "Puncture will not function properly; provide a positive value";
-            d_punctureForceThreshold.setValue(std::numeric_limits<double>::max());
+            this->getContext()->get<ConstraintSolver>(m_constraintSolver);
+            msg_warning_when(!m_constraintSolver)
+                << "No constraint solver found in context. Insertion algorithm is disabled.";
+            if (d_punctureForceThreshold.getValue() < 0)
+            {
+                msg_warning() << d_punctureForceThreshold.getName() +
+                                     " parameter not defined or set to negative value." msgendl
+                              << "Puncture will not function properly; provide a positive value";
+                d_punctureForceThreshold.setValue(std::numeric_limits<double>::max());
+            }
         }
 
-        if (d_tipDistThreshold.getValue() < 0)
+        if (d_enableInsertion.getValue())
         {
-            msg_warning() << d_tipDistThreshold.getName() +
-                                 " parameter not defined or set to negative value." msgendl
-                          << "Needle-volume coupling is disabled; provide a positive value";
-            d_tipDistThreshold.setValue(std::numeric_limits<double>::max());
+            if (d_tipDistThreshold.getValue() < 0)
+            {
+                msg_warning() << d_tipDistThreshold.getName() +
+                                     " parameter not defined or set to negative value." msgendl
+                              << "Needle-volume coupling is disabled; provide a positive value";
+                d_tipDistThreshold.setValue(std::numeric_limits<double>::max());
+            }
         }
     }
 
@@ -118,61 +130,64 @@ class SOFA_COLLISIONALGORITHM_API InsertionAlgorithm : public BaseAlgorithm
 
     void doDetection()
     {
-        if (!l_tipGeom || !l_surfGeom || !l_shaftGeom || !l_volGeom) return;
-
         auto& collisionOutput = *d_collisionOutput.beginEdit();
         auto& insertionOutput = *d_insertionOutput.beginEdit();
 
         insertionOutput.clear();
         collisionOutput.clear();
 
-        if (m_couplingPts.empty())
+        if (m_couplingPts.empty() && l_surfGeom)
         {
-            // 1. Puncture algorithm
-            auto createTipProximity =
-                Operations::CreateCenterProximity::Operation::get(l_tipGeom->getTypeInfo());
+            // Operations on surface geometry
             auto findClosestProxOnSurf =
                 Operations::FindClosestProximity::Operation::get(l_surfGeom);
             auto projectOnSurf = Operations::Project::Operation::get(l_surfGeom);
-            auto projectOnTip = Operations::Project::Operation::get(l_tipGeom);
 
-            const SReal punctureForceThreshold = d_punctureForceThreshold.getValue();
-            for (auto itTip = l_tipGeom->begin(); itTip != l_tipGeom->end(); itTip++)
+            // Puncture sequence
+            if (d_enablePuncture.getValue() && l_tipGeom)
             {
-                BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
-                if (!tipProx) continue;
-                const BaseProximity::SPtr surfProx = findClosestProxOnSurf(
-                    tipProx, l_surfGeom.get(), projectOnSurf, getFilterFunc());
-                if (surfProx)
+                auto createTipProximity =
+                    Operations::CreateCenterProximity::Operation::get(l_tipGeom->getTypeInfo());
+                auto projectOnTip = Operations::Project::Operation::get(l_tipGeom);
+
+                const SReal punctureForceThreshold = d_punctureForceThreshold.getValue();
+                for (auto itTip = l_tipGeom->begin(); itTip != l_tipGeom->end(); itTip++)
                 {
-                    surfProx->normalize();
-
-                    // 1.1 Check whether puncture is happening - if so, create coupling point
-                    if (m_constraintSolver)
+                    BaseProximity::SPtr tipProx = createTipProximity(itTip->element());
+                    if (!tipProx) continue;
+                    const BaseProximity::SPtr surfProx = findClosestProxOnSurf(
+                        tipProx, l_surfGeom.get(), projectOnSurf, getFilterFunc());
+                    if (surfProx)
                     {
-                        const MechStateTipType::SPtr mstate =
-                            l_tipGeom->getContext()->get<MechStateTipType>();
-                        const auto& lambda =
-                            m_constraintSolver->getLambda()[mstate.get()].read()->getValue();
-                        SReal norm{0_sreal};
-                        for (const auto& l : lambda)
-                        {
-                            norm += l.norm();
-                        }
-                        if (norm > punctureForceThreshold)
-                        {
-                            m_couplingPts.push_back(surfProx);
-                            continue;
-                        }
-                    }
+                        surfProx->normalize();
 
-                    // ... if not, create a proximity pair for the tip-surface collision
-                    collisionOutput.add(tipProx, surfProx);
+                        // Check whether puncture is happening - if so, create coupling point ...
+                        if (m_constraintSolver)
+                        {
+                            const MechStateTipType::SPtr mstate =
+                                l_tipGeom->getContext()->get<MechStateTipType>();
+                            const auto& lambda =
+                                m_constraintSolver->getLambda()[mstate.get()].read()->getValue();
+                            SReal norm{0_sreal};
+                            for (const auto& l : lambda)
+                            {
+                                norm += l.norm();
+                            }
+                            if (norm > punctureForceThreshold)
+                            {
+                                m_couplingPts.push_back(surfProx);
+                                continue;
+                            }
+                        }
+
+                        // ... if not, create a proximity pair for the tip-surface collision
+                        collisionOutput.add(tipProx, surfProx);
+                    }
                 }
             }
 
-            // 1.3 Collision with the shaft geometry
-            if (m_couplingPts.empty())
+            // Shaft collision sequence - Disable if coupling points have been added
+            if (d_enableShaftCollision.getValue() && m_couplingPts.empty() && l_shaftGeom)
             {
                 auto createShaftProximity =
                     Operations::CreateCenterProximity::Operation::get(l_shaftGeom->getTypeInfo());
@@ -187,11 +202,17 @@ class SOFA_COLLISIONALGORITHM_API InsertionAlgorithm : public BaseAlgorithm
                     {
                         surfProx->normalize();
 
-                        // 1.2 If not, create a proximity pair for the tip-surface collision
                         if (d_projective.getValue())
                         {
-                            shaftProx =
-                                projectOnShaft(surfProx->getPosition(), itShaft->element()).prox;
+                            //shaftProx =
+                            //    projectOnShaft(surfProx->getPosition(), itShaft->element()).prox;
+                            //if (!shaftProx) continue;
+                            //shaftProx->normalize();
+                            // Experimental - This enables projection anywhere on the edge
+                            auto findClosestProxOnShaft =
+                                Operations::FindClosestProximity::Operation::get(l_shaftGeom);
+                            shaftProx = findClosestProxOnShaft(surfProx, l_shaftGeom,
+                                                               projectOnShaft, getFilterFunc());
                             if (!shaftProx) continue;
                             shaftProx->normalize();
                         }
@@ -202,7 +223,9 @@ class SOFA_COLLISIONALGORITHM_API InsertionAlgorithm : public BaseAlgorithm
         }
         else
         {
-            // 2. Needle insertion algorithm
+            // Insertion sequence
+            if (!d_enableInsertion.getValue() || !l_tipGeom || !l_volGeom || !l_shaftGeom) return;
+
             ElementIterator::SPtr itTip = l_tipGeom->begin();
             auto createTipProximity =
                 Operations::CreateCenterProximity::Operation::get(itTip->getTypeInfo());
@@ -256,7 +279,7 @@ class SOFA_COLLISIONALGORITHM_API InsertionAlgorithm : public BaseAlgorithm
 
                     const int numCPs = floor(lastCPToP1.norm() / tipDistThreshold);
 
-                    for(int idCP = 0 ; idCP < numCPs ; idCP++)
+                    for (int idCP = 0; idCP < numCPs; idCP++)
                     {
                         // Candidate coupling point along shaft segment
                         const type::Vec3 candidateCP = lastCP + tipDistThreshold * shaftEdgeDir;
@@ -270,7 +293,7 @@ class SOFA_COLLISIONALGORITHM_API InsertionAlgorithm : public BaseAlgorithm
                         // Skip if candidate CP is outside current edge segment
                         if (projPtOnEdge < 0_sreal || projPtOnEdge > edgeSegmentLength) break;
 
-                        // Project candidate CP onto shaft geometry ... 
+                        // Project candidate CP onto shaft geometry ...
                         shaftProx = projectOnShaft(candidateCP, itShaft->element()).prox;
                         if (!shaftProx) continue;
 
@@ -279,8 +302,8 @@ class SOFA_COLLISIONALGORITHM_API InsertionAlgorithm : public BaseAlgorithm
                             shaftProx, l_volGeom.get(), projectOnVol, getFilterFunc());
                         if (!volProx) continue;
 
-                        // Proximity can be detected before the tip enters the tetra (e.g. near a 
-                        // boundary face) Only accept proximities if the tip is inside the tetra 
+                        // Proximity can be detected before the tip enters the tetra (e.g. near a
+                        // boundary face) Only accept proximities if the tip is inside the tetra
                         // during insertion
                         if (containsPointInVol(shaftProx->getPosition(), volProx))
                         {
@@ -291,11 +314,19 @@ class SOFA_COLLISIONALGORITHM_API InsertionAlgorithm : public BaseAlgorithm
                     }
                 }
             }
+            else  // Don't bother with removing the point that was just added
+            {
+                // Remove coupling points that are ahead of the tip in the insertion direction
+                ElementIterator::SPtr itShaft = l_shaftGeom->begin(l_shaftGeom->getSize() - 2);
+                auto prunePointsAheadOfTip =
+                    Operations::Needle::PrunePointsAheadOfTip::get(itShaft->getTypeInfo());
+                prunePointsAheadOfTip(m_couplingPts, itShaft->element());
+            }
         }
 
-        if (!m_couplingPts.empty())
+        if (d_enableInsertion.getValue() && !m_couplingPts.empty() && l_shaftGeom)
         {
-            // 3. Re-project proximities on the shaft geometry
+            // Reprojection on shaft geometry sequence
             auto findClosestProxOnShaft =
                 Operations::FindClosestProximity::Operation::get(l_shaftGeom);
             auto projectOnShaft = Operations::Project::Operation::get(l_shaftGeom);
