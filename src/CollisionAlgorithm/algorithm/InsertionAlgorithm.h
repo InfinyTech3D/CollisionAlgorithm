@@ -191,6 +191,7 @@ class SOFA_COLLISIONALGORITHM_API InsertionAlgorithm : public BaseAlgorithm
 
             // Shaft collision sequence - Disable if coupling points have been added
             sofa::helper::AdvancedTimer::stepBegin("Shaft collision - "+this->getName());
+
             if (d_enableShaftCollision.getValue() && m_couplingPts.empty() && l_shaftGeom)
             {
                 auto createShaftProximity =
@@ -230,6 +231,7 @@ class SOFA_COLLISIONALGORITHM_API InsertionAlgorithm : public BaseAlgorithm
         {
             // Insertion sequence
             sofa::helper::AdvancedTimer::stepBegin("Needle insertion - " + this->getName());
+
             if (!d_enableInsertion.getValue() || !l_tipGeom || !l_volGeom || !l_shaftGeom) return;
 
             ElementIterator::SPtr itTip = l_tipGeom->begin();
@@ -332,6 +334,7 @@ class SOFA_COLLISIONALGORITHM_API InsertionAlgorithm : public BaseAlgorithm
         }
 
         sofa::helper::AdvancedTimer::stepBegin("Reproject coupling points - "+this->getName());
+
         if (d_enableInsertion.getValue() && !m_couplingPts.empty() && l_shaftGeom)
         {
             // Reprojection on shaft geometry sequence
