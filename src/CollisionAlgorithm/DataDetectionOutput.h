@@ -13,6 +13,17 @@ class DetectionOutput {
 public:
     typedef std::pair<typename FIRST::SPtr,typename SECOND::SPtr> PairDetection;
 
+    DetectionOutput() = default;
+    ~DetectionOutput() = default;
+
+    // Copy
+    DetectionOutput(const DetectionOutput&) = default;
+    DetectionOutput& operator=(const DetectionOutput&) = default;
+
+    // Move
+    DetectionOutput(DetectionOutput&&) noexcept = default;
+    DetectionOutput& operator=(DetectionOutput&&) noexcept = default;
+
     friend std::ostream& operator<<(std::ostream& os, const DetectionOutput& t)  {
         os << t.m_output.size() << ":" ;
         for (unsigned i=0;i<t.m_output.size();i++) {
@@ -45,6 +56,11 @@ public:
         if (p1 == NULL) return;
         if (p2 == NULL) return;
         m_output.push_back(PairDetection(p1,p2));
+    }
+
+    inline void add(const DetectionOutput& addition) {
+        for (auto& it : addition)
+            this->add(it.first, it.second);
     }
 
     inline const PairDetection & operator[](int i) const {
