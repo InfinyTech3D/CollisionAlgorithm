@@ -1,6 +1,6 @@
 import Sofa
 
-GeomagicActive = True
+GeomagicActive = False
 
 g_needleLength=0.200 #(m)
 g_needleNumberOfElems=40 #(# of edges)
