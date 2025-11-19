@@ -23,6 +23,39 @@ plugin by InfinyTech3D for an enhanced simulation experience. Contact us for mor
 - Support for haptic feedback such as resistance during puncture and friction during insertion
 - Compatible with SOFA-Unity integration for real-time interactive applications
 
+## Installation and Setup
+
+First review the official SOFA documentation for building and registering SOFA plugins
+https://sofa-framework.github.io/doc/plugins/build-a-plugin-from-sources/
+
+### Build Steps
+
+- Set up your `external_directories` directory (described in the SOFA documentation link above)
+- Clone this repository into your `external_directories` directory:
+    - git clone https://github.com/InfinyTech3D/CollisionAlgorithm.git
+- Register the path to your local `CollisionAlgorithm` repository in the CMakeLists.txt file located inside your `external_directories` directory
+```sofa_add_subdirectory(plugin CollisionAlgorithm CollisionAlgorithm)```
+- Set `SOFA_EXTERNAL_DIRECTORIES` variable (preferably using CMake GUI) to point to your `external_directories` directory
+- Configure and generate the SOFA solution using CMake
+- Compile SOFA solution (the plugin will be compiled as well)
+
+> [!IMPORTANT]
+> In order to use the plugin, make sure that you have also built the downstream 
+[`ConstraintGeometry`](https://github.com/InfinyTech3D/ConstraintGeometry) plugin.
+
+Supported SOFA version: v25.06 and above
+
+## Architecture
+
+- doc:
+    - Documentation and screenshots of the examples
+- scenes:
+    - Various simple demo scenes
+- src/CollisionAlgorithm:
+    - source code of the insertion algorithm SOFA component and supporting collision pipeline classes
+- regression:
+    - Files for automated regression testing in alignment with SOFA's testing framework
+
 ## Usage
 
 - To use the plugin, include the `CollisionAlgorithm` plugin in your SOFA .xml scene file.
@@ -75,39 +108,6 @@ Refer to the `scenes/NeedleInsertion.xml` example scene for guidance.
     />
 </Node>
 ```
-
-## Installation and Setup
-
-First review the official SOFA documentation for building and registering SOFA plugins
-https://sofa-framework.github.io/doc/plugins/build-a-plugin-from-sources/
-
-### Build Steps
-
-- Set up your `external_directories` directory (described in the SOFA documentation link above)
-- Clone this repository into your `external_directories` directory:
-    - git clone https://github.com/InfinyTech3D/CollisionAlgorithm.git
-- Register the path to your local `CollisionAlgorithm` repository in the CMakeLists.txt file located inside your `external_directories` directory
-```sofa_add_subdirectory(plugin CollisionAlgorithm CollisionAlgorithm)```
-- Set `SOFA_EXTERNAL_DIRECTORIES` variable (preferably using CMake GUI) to point to your `external_directories` directory
-- Configure and generate the SOFA solution using CMake
-- Compile SOFA solution (the plugin will be compiled as well)
-
-> [!IMPORTANT]
-> In order to use the plugin, make sure that you have also built the downstream 
-[`ConstraintGeometry`](https://github.com/InfinyTech3D/ConstraintGeometry) plugin.
-
-Supported SOFA version: v25.06 and above
-
-## Architecture
-
-- doc:
-    - Documentation and screenshots of the examples
-- scenes:
-    - Various simple demo scenes
-- src/CollisionAlgorithm:
-    - source code of the insertion algorithm SOFA component and supporting collision pipeline classes
-- regression:
-    - Files for automated regression testing in alignment with SOFA's testing framework
 
 ## Acknowledgments
 This project builds upon the original repository from 
