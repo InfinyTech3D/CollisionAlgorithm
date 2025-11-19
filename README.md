@@ -23,6 +23,59 @@ plugin by InfinyTech3D for an enhanced simulation experience. Contact us for mor
 - Support for haptic feedback such as resistance during puncture and friction during insertion
 - Compatible with SOFA-Unity integration for real-time interactive applications
 
+## Usage
+
+- To use the plugin, include the `CollisionAlgorithm` plugin in your SOFA .xml scene file.
+
+``` <RequiredPlugin name=`CollisionAlgorithm`/> ```
+- Add the `CollisionLoop` component in the root node of your scene.
+
+``` 
+<FreeMotionAnimationLoop/>
+<ProjectedGaussSeidelConstraintSolver tolerance='<your tolerance>' maxIt='<maximum solver iterations>' />
+<CollisionLoop/>
+
+<CollisionPipeline/>
+<BruteForceBroadPhase/>
+<BVHNarrowPhase/>
+<CollisionResponse name='response' response='FrictionContactConstraint'/>
+<LocalMinDistance name='proximity' alarmDistance='0.2' contactDistance='0.08'/>
+``` 
+This component substitutes the default `CollisionPipeline` and manages the needle insertion algorithm.
+However, the two components can co-exist, allowing users to mix the standard collision detection/constraint resolution pipelines of SOFA.
+
+- Create a node to represent the needle and additional nodes for the needle tip and shaft geometries
+Refer to the `scenes/NeedleInsertion.xml` example scene for guidance.
+
+- Add an `InsertionAlgorithm` component inside the needle node as shown below.
+```
+<Node name='needleInsertion'>
+    <InsertionAlgorithm name='algorithm'
+        tipGeom='@<path to needle tip geometry component>'
+        shaftGeom='@<path to needle shaft geometry component>'
+        surfGeom='@<path to tissue surface geometry component>'
+        volGeom='@<path to tissue volume geometry component>'
+        punctureForceThreshold='<float>'
+        tipDistThreshold='<float>'
+    />
+    <DistanceFilter algo='@algorithm' distance='<float>'/>
+    <SecondDirection name='punctureDirection' 
+        handler='@<path to the tissue surface triangle handler>'
+    />
+    <ConstraintUnilateral name='punctureConstraint' 
+        input='@algoSkin.collisionOutput' 
+        directions='@punctureDirection' 
+        mu='<float>'
+    />
+    <FirstDirection name='bindDirection' handler='@<path to the normal handler of the needle beam'/>
+    <ConstraintInsertion name='insertionConstraint' 
+        input='@algorithm.insertionOutput' 
+        directions='@bindDirection' 
+        frictionCoeff='<float>' 
+    />
+</Node>
+```
+
 ## Installation and Setup
 
 First review the official SOFA documentation for building and registering SOFA plugins
