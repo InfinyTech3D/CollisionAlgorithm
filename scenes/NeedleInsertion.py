@@ -60,7 +60,7 @@ def createScene(root):
     root.addObject("ConstraintAttachButtonSetting")
     root.addObject("VisualStyle", displayFlags="showVisualModels hideBehaviorModels showCollisionModels hideMappings hideForceFields showWireframe showInteractionForceFields" )
     root.addObject("FreeMotionAnimationLoop")
-    root.addObject("ProjectedGaussSeidelConstraintSolver", tolerance=1e-5, maxIt=5000)
+    root.addObject("BlockGaussSeidelConstraintSolver", tolerance=1e-5, maxIt=5000)
     root.addObject("CollisionLoop")
 
     needleBaseMaster = root.addChild("NeedleBaseMaster")
