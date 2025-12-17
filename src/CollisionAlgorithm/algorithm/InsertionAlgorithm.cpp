@@ -180,12 +180,15 @@ InsertionAlgorithm::AlgorithmOutput InsertionAlgorithm::puncturePhase()
                     l_tipGeom->getContext()->get<MechStateTipType>();
                 const auto& lambda =
                     m_constraintSolver->getLambda()[mstate.get()].read()->getValue();
+                const auto dt = l_tipGeom->getContext()->getDt();
                 SReal norm{0_sreal};
 
                 for (const auto& l : lambda)
                 {
                     norm += l.norm();
                 }
+                // Convert impulse to force
+                norm /= dt;
 
                 if (norm > punctureForceThreshold)
                 {
