@@ -10,8 +10,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, windows-2022] #macos-14, 
-        sofa_branch: [master]
+        os: [ubuntu-22.04, macos-14, windows-2022]
+        sofa_branch: [v25.12]
 
     steps:
       - name: Setup SOFA and environment
