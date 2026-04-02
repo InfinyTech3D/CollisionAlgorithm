@@ -2,15 +2,21 @@ name: CI
 
 on:
   push:
+    branches:
+      - main
+      - master
 
 jobs:
   build-and-test:
     name: Run on ${{ matrix.os }} with SOFA ${{ matrix.sofa_branch }}
+    if: >
+      github.event_name == 'push' ||
+      contains(github.event.pull_request.labels.*.name, 'pr: run ci')
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, windows-2022] #macos-14, 
+        os: [ubuntu-22.04, macos-14, windows-2022] 
         sofa_branch: [master]
 
     steps:
