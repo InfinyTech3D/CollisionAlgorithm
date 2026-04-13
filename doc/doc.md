@@ -27,6 +27,7 @@ Proximity Layer (EdgeProximity, TriangleProximity, etc.)
 1. **Geometry Hierarchy** - Progressive complexity through inheritance:
    - `PointGeometry` → `EdgeGeometry` → `TriangleGeometry` → `TetrahedronGeometry`
    - Each adds element types from parent
+   - `SubsetGeometry` wraps any geometry to expose a filtered index subset
 
 2. **Element Classes** - Geometric primitives with caching:
    - Store precomputed data (normals, areas, barycentric denominators)
@@ -45,16 +46,23 @@ Proximity Layer (EdgeProximity, TriangleProximity, etc.)
    - `FindClosestProximity`: Spatial search with filtering
    - Factory pattern for runtime type dispatch
 
-### Main Algorithm: InsertionAlgorithm
+### Algorithms
 
-Executes three phases:
-1. **Puncture Phase**: Detects first tissue contact
-2. **Shaft Collision Phase**: Tracks needle-tissue collisions along shaft
-3. **Insertion Phase**: Maintains coupling points during insertion
+**InsertionAlgorithm** — the main needle insertion algorithm. Each detection step runs one of two mutually exclusive mode sequences depending on whether puncture has occurred (`m_couplingPts` empty):
+
+*Before puncture* (`m_couplingPts` empty):
+1. **Puncture Phase**: Finds the closest surface proximity to the needle tip. When the constraint force exceeds `punctureForceThreshold`, records the contact as a coupling point, transitioning to insertion mode.
+2. **Shaft Collision Phase**: Finds closest surface proximities along the needle shaft (skipped if puncture just occurred in the same step).
+
+*After puncture* (`m_couplingPts` non-empty):
+3. **Insertion Phase**: Adds new shaft↔volume coupling points as the needle tip advances past `tipDistThreshold`.
+4. **Reprojection Phase**: Reprojects stored coupling points back onto the current shaft geometry.
 
 **Outputs:**
-- `d_collisionOutput` → proximity pairs for puncture/contact
-- `d_insertionOutput` → proximity pairs for insertion coupling
+- `d_collisionOutput` → proximity pairs from the puncture and shaft collision phases
+- `d_insertionOutput` → shaft↔tissue coupling pairs produced by reprojection
+
+**Find2DClosestProximityAlgorithm** — finds closest proximities between two geometries using a 2D projection matrix to restrict the search plane.
 
 ---
 
