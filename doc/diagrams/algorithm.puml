@@ -1,0 +1,152 @@
+@startuml collision-algorithm-algorithm
+
+skinparam backgroundColor #FAFAFA
+skinparam defaultFontName Sans
+skinparam defaultFontSize 11
+
+skinparam class {
+  BackgroundColor #EEF2FB
+  BorderColor     #5577AA
+  HeaderBackgroundColor #7AA3CC
+  FontColor       #222222
+  HeaderFontColor #FFFFFF
+  HeaderFontStyle bold
+  ArrowColor      #2E3436
+  AttributeFontSize 10
+}
+
+skinparam class<<abstract>> {
+  HeaderBackgroundColor #4E9A06
+}
+
+skinparam class<<data>> {
+  HeaderBackgroundColor #75507B
+}
+
+skinparam class<<SOFA>> {
+  HeaderBackgroundColor #888888
+}
+
+skinparam note {
+  BackgroundColor #FFFBD5
+  BorderColor #C8A000
+}
+
+' ─────────────────────────────────────────────
+'  SOFA root (external)
+' ─────────────────────────────────────────────
+class BaseObject <<SOFA>> {
+}
+
+' ─────────────────────────────────────────────
+'  Pipeline stubs (defined in pipeline.puml)
+' ─────────────────────────────────────────────
+abstract class CollisionAlgorithm <<abstract>> {
+  + {abstract} doDetection()
+}
+
+BaseObject <|-- CollisionAlgorithm
+
+' ─────────────────────────────────────────────
+'  Detection output (repeated for self-containedness)
+' ─────────────────────────────────────────────
+class "DetectionOutput<FIRST, SECOND>" as DetectionOutput <<data>> {
+  + add(first, second)
+  + add(other : DetectionOutput)
+  + size() : unsigned
+  + begin() : const_iterator
+  + end() : const_iterator
+  + operator[](i) : PairDetection
+  + back() : PairDetection
+  + clear()
+  # m_output : vector<PairDetection>
+}
+
+note right of DetectionOutput
+  PairDetection = pair<FIRST::SPtr, SECOND::SPtr>
+  FIRST, SECOND default to BaseProximity.
+end note
+
+' ─────────────────────────────────────────────
+'  BaseAlgorithm + filter (stub with filter detail)
+' ─────────────────────────────────────────────
+abstract class BaseAlgorithm <<abstract>> {
+  + acceptFilter(p1, p2) : bool
+  + addFilter(BaseFilter::SPtr)
+  + getFilterFunc() : FilterFUNC
+  + {static} getDefaultFilterFunc() : FilterFUNC
+  # m_filters : vector<BaseFilter::SPtr>
+}
+
+abstract class "BaseAlgorithm::BaseFilter" as BaseFilter <<abstract>> {
+  + l_algo : SingleLink<BaseAlgorithm>
+  + init()
+  + {abstract} accept(p1, p2) : bool
+}
+
+CollisionAlgorithm <|-- BaseAlgorithm
+BaseAlgorithm "1" o-- "*" BaseFilter : filters >
+
+' ─────────────────────────────────────────────
+'  InsertionAlgorithm
+' ─────────────────────────────────────────────
+class InsertionAlgorithm {
+  .. geometry links ..
+  + l_tipGeom   : SingleLink<BaseGeometry>
+  + l_surfGeom  : SingleLink<BaseGeometry>
+  + l_shaftGeom : SingleLink<BaseGeometry>
+  + l_volGeom   : SingleLink<BaseGeometry>
+  .. detection outputs ..
+  + d_collisionOutput : Data<DetectionOutput>
+  + d_insertionOutput : Data<DetectionOutput>
+  .. flags ..
+  + d_enablePuncture        : Data<bool>
+  + d_enableInsertion       : Data<bool>
+  + d_enableShaftCollision  : Data<bool>
+  + d_projective            : Data<bool>
+  .. thresholds ..
+  + d_punctureForceThreshold : Data<SReal>
+  + d_tipDistThreshold       : Data<SReal>
+  .. state ..
+  + m_couplingPts : vector<BaseProximity::SPtr>
+  .. methods ..
+  + doDetection()
+  + {virtual} puncturePhase() : DetectionOutput
+  + {virtual} shaftCollisionPhase() : DetectionOutput
+  + {virtual} insertionPhase()
+  + {virtual} reprojectCouplingPoints() : DetectionOutput
+}
+
+note right of InsertionAlgorithm
+  puncturePhase, shaftCollisionPhase, and
+  insertionPhase are virtual — subclasses can
+  override individual phases without reimplementing
+  the full detection dispatch in doDetection().
+end note
+
+BaseAlgorithm     <|-- InsertionAlgorithm
+InsertionAlgorithm ..> DetectionOutput : produces >
+
+' ─────────────────────────────────────────────
+'  Find2DClosestProximityAlgorithm
+' ─────────────────────────────────────────────
+class Find2DClosestProximityAlgorithm {
+  + l_from : SingleLink<BaseGeometry>
+  + l_dest : SingleLink<BaseGeometry>
+  + d_projectionMatrix : Data<Mat3x4d>
+  + d_output : Data<DetectionOutput>
+  + doDetection()
+  + project(p : Vec3) : Vec2
+  + findClosestProximity2D(prox, it) : BaseProximity::SPtr
+}
+
+note right of Find2DClosestProximityAlgorithm
+  Projects 3D positions into 2D via a camera
+  projection matrix, then finds the closest
+  element by 2D screen-space distance.
+end note
+
+BaseAlgorithm              <|-- Find2DClosestProximityAlgorithm
+Find2DClosestProximityAlgorithm ..> DetectionOutput : produces >
+
+@enduml

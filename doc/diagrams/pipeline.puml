@@ -1,0 +1,114 @@
+@startuml collision-algorithm-pipeline
+
+skinparam backgroundColor #FAFAFA
+skinparam defaultFontName Sans
+skinparam defaultFontSize 11
+
+skinparam class {
+  BackgroundColor #EEF2FB
+  BorderColor     #5577AA
+  HeaderBackgroundColor #7AA3CC
+  FontColor       #222222
+  HeaderFontColor #FFFFFF
+  HeaderFontStyle bold
+  ArrowColor      #2E3436
+  AttributeFontSize 10
+}
+
+skinparam class<<abstract>> {
+  HeaderBackgroundColor #4E9A06
+}
+
+skinparam class<<data>> {
+  HeaderBackgroundColor #75507B
+}
+
+skinparam class<<SOFA>> {
+  HeaderBackgroundColor #888888
+}
+
+skinparam note {
+  BackgroundColor #FFFBD5
+  BorderColor #C8A000
+}
+
+' ─────────────────────────────────────────────
+'  SOFA root (external)
+' ─────────────────────────────────────────────
+class BaseObject <<SOFA>> {
+}
+
+' ─────────────────────────────────────────────
+'  Pipeline interfaces
+' ─────────────────────────────────────────────
+abstract class CollisionComponent <<abstract>> {
+  + {abstract} prepareDetection()
+}
+
+abstract class CollisionAlgorithm <<abstract>> {
+  + {abstract} doDetection()
+}
+
+class CollisionLoop {
+  + handleEvent(Event*)
+  .. nested visitors ..
+  UpdateComponentVisitor
+  UpdateAlgorithmVisitor
+}
+
+BaseObject <|-- CollisionComponent
+BaseObject <|-- CollisionAlgorithm
+BaseObject <|-- CollisionLoop
+
+CollisionLoop ..> CollisionComponent : discovers via visitor >
+CollisionLoop ..> CollisionAlgorithm : discovers via visitor >
+
+' ─────────────────────────────────────────────
+'  Algorithm base + filters
+' ─────────────────────────────────────────────
+class BaseAlgorithm {
+  + acceptFilter(p1, p2) : bool
+  + addFilter(filter)
+  + getFilterFunc() : FilterFUNC
+  + {static} getDefaultFilterFunc() : FilterFUNC
+  # m_filters : vector<BaseFilter::SPtr>
+}
+
+abstract class "BaseAlgorithm::BaseFilter" as BaseFilter <<abstract>> {
+  + l_algo : SingleLink<BaseAlgorithm>
+  + init()
+  + {abstract} accept(p1, p2) : bool
+}
+
+class DistanceFilter {
+  + d_distance : Data<double>
+  + accept(p1, p2) : bool
+}
+
+CollisionAlgorithm <|-- BaseAlgorithm
+BaseAlgorithm "1" o-- "*" BaseFilter : filters >
+BaseFilter <|-- DistanceFilter
+
+' ─────────────────────────────────────────────
+'  Detection output
+' ─────────────────────────────────────────────
+class "DetectionOutput<FIRST, SECOND>" as DetectionOutput <<data>> {
+  + add(first, second)
+  + add(other : DetectionOutput)
+  + size() : unsigned
+  + begin() : const_iterator
+  + end() : const_iterator
+  + operator[](i) : PairDetection
+  + back() : PairDetection
+  + clear()
+  # m_output : vector<PairDetection>
+}
+
+note right of DetectionOutput
+  FIRST, SECOND default to BaseProximity.
+  PairDetection = pair<FIRST::SPtr, SECOND::SPtr>
+end note
+
+BaseAlgorithm ..> DetectionOutput : produces >
+
+@enduml

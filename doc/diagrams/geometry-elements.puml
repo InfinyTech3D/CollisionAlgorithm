@@ -1,0 +1,261 @@
+@startuml collision-algorithm-geometry-elements
+
+skinparam backgroundColor #FAFAFA
+skinparam defaultFontName Sans
+skinparam defaultFontSize 11
+
+skinparam class {
+  BackgroundColor #EEF2FB
+  BorderColor     #5577AA
+  HeaderBackgroundColor #7AA3CC
+  FontColor       #222222
+  HeaderFontColor #FFFFFF
+  HeaderFontStyle bold
+  ArrowColor      #2E3436
+  AttributeFontSize 10
+}
+
+skinparam class<<abstract>> {
+  HeaderBackgroundColor #4E9A06
+}
+
+skinparam class<<data>> {
+  HeaderBackgroundColor #75507B
+}
+
+skinparam note {
+  BackgroundColor #FFFBD5
+  BorderColor #C8A000
+}
+
+' ─────────────────────────────────────────────
+'  Stubs from other diagrams
+' ─────────────────────────────────────────────
+abstract class CollisionComponent <<abstract>> {
+  + {abstract} prepareDetection()
+}
+
+class BaseProximity
+
+' ─────────────────────────────────────────────
+'  Element container (shared by all element types)
+' ─────────────────────────────────────────────
+class "ElementContainer<ELMT>" as ElementContainer <<data>> {
+  + insert(e : SPtr)
+  + operator[](i) : SPtr
+  + clear()
+  + size() : unsigned
+  + cbegin() : const_iterator
+  + cend() : const_iterator
+  + {static} empty() : const ElementContainer&
+  - m_data : vector<SPtr>
+}
+
+' ─────────────────────────────────────────────
+'  Element iterator hierarchy
+' ─────────────────────────────────────────────
+abstract class ElementIterator <<abstract>> {
+  + {abstract} end() : bool
+  + {abstract} next()
+  + {abstract} element() : BaseElement::SPtr
+  + {abstract} getTypeInfo() : type_info&
+  + {static} empty() : SPtr
+}
+
+class EmptyIterator {
+  + end() : bool    ' always true
+  + next()          ' no-op
+  + element() : BaseElement::SPtr
+  + {static} get() : SPtr
+}
+
+class "TDefaultElementIterator<CONTAINER>" as TDefaultElementIterator {
+  + end() : bool
+  + next()
+  + element() : BaseElement::SPtr
+  + getTypeInfo() : type_info&
+  # m_it  : CONTAINER::const_iterator
+  # m_end : CONTAINER::const_iterator
+}
+
+note right of TDefaultElementIterator
+  Two concrete variants:
+  TDefaultElementIterator_ref  — wraps a reference
+  TDefaultElementIterator_copy — owns a copy of the container
+end note
+
+ElementIterator <|-- EmptyIterator
+ElementIterator <|-- TDefaultElementIterator
+
+' ─────────────────────────────────────────────
+'  Base element
+' ─────────────────────────────────────────────
+abstract class BaseElement <<abstract>> {
+  + {abstract} pointElements() : const ElementContainer<PointElement>&
+  + {abstract} edgeElements() : const ElementContainer<EdgeElement>&
+  + {abstract} triangleElements() : const ElementContainer<TriangleElement>&
+  + {abstract} tetrahedronElements() : const ElementContainer<TetrahedronElement>&
+  + {abstract} draw(VisualParams*)
+  + {abstract} getTypeInfo() : type_info&
+  + {abstract} name() : string
+  + {abstract} update()
+  + setDirty(bool)
+  + isDirty() : bool
+  # m_isDirty : bool
+}
+
+' ─────────────────────────────────────────────
+'  Concrete element types
+' ─────────────────────────────────────────────
+class PointElement {
+  + getP0() : BaseProximity::SPtr
+  + triangleAround() : ElementContainer<TriangleElement>&
+  + {static} create(prox) : SPtr
+  - m_prox : BaseProximity::SPtr
+  - m_triangleAround : ElementContainer<TriangleElement>
+}
+
+class EdgeElement {
+  + getP0() : BaseProximity::SPtr
+  + getP1() : BaseProximity::SPtr
+  + {static} create(point0, point1) : SPtr
+  - m_pointElements : ElementContainer<PointElement>
+}
+
+class TriangleElement {
+  + getP0() : BaseProximity::SPtr
+  + getP1() : BaseProximity::SPtr
+  + getP2() : BaseProximity::SPtr
+  + getTriangleInfo() : const TriangleInfo&
+  + {static} create(...) : SPtr
+  .. nested ..
+  TriangleInfo : v0,v1,d00,d01,d11,invDenom,area,ax1,ax2,P0,P1,P2,N
+  ..
+  - m_tinfo : TriangleInfo
+  - m_pointElements : ElementContainer<PointElement>
+  - m_edgeElements : ElementContainer<EdgeElement>
+}
+
+class TetrahedronElement {
+  + getP0() : BaseProximity::SPtr
+  + getP1() : BaseProximity::SPtr
+  + getP2() : BaseProximity::SPtr
+  + getP3() : BaseProximity::SPtr
+  + getTetrahedronInfo() : const TetraInfo&
+  + {static} create(...) : SPtr
+  .. nested ..
+  TetraInfo : V0,P0-P3,ax1-ax3,ax2Cax3
+  ..
+  - m_tinfo : TetraInfo
+  - m_pointElements  : ElementContainer<PointElement>
+  - m_edgeElements   : ElementContainer<EdgeElement>
+  - m_triangleElements : ElementContainer<TriangleElement>
+}
+
+BaseElement <|-- PointElement
+BaseElement <|-- EdgeElement
+BaseElement <|-- TriangleElement
+BaseElement <|-- TetrahedronElement
+
+PointElement    ..> BaseProximity : holds m_prox >
+PointElement    *-- ElementContainer : triangleAround >
+EdgeElement     *-- ElementContainer : m_pointElements >
+TriangleElement *-- ElementContainer : m_pointElements\nm_edgeElements >
+TetrahedronElement *-- ElementContainer : m_pointElements\nm_edgeElements\nm_triangleElements >
+
+' ─────────────────────────────────────────────
+'  Geometry hierarchy
+' ─────────────────────────────────────────────
+abstract class BaseGeometry <<abstract>> {
+  + d_color           : Data<RGBAColor>
+  + d_drawScaleNormal : Data<double>
+  + d_draw            : Data<bool>
+  + {abstract} begin(id) : ElementIterator::SPtr
+  + end() : const BaseGeometry*
+  + {abstract} getSize() : unsigned
+  + {abstract} getPosition(pid, VecCoordId) : Vec3
+  + {abstract} getVelocity(pid, VecDerivId) : Vec3
+  + prepareDetection()
+  + buildPointElements()
+  + buildEdgeElements()
+  + buildTriangleElements()
+  + buildTetrahedronElements()
+  + setBroadPhase(BroadPhase*)
+  + getBroadPhase() : BroadPhase*
+  + pointBegin(id)    : ElementIterator::SPtr
+  + edgeBegin(id)     : ElementIterator::SPtr
+  + triangleBegin(id) : ElementIterator::SPtr
+  + tetrahedronBegin(id) : ElementIterator::SPtr
+  + pointElements()    : ElementContainer<PointElement>&
+  + edgeElements()     : ElementContainer<EdgeElement>&
+  + triangleElements() : ElementContainer<TriangleElement>&
+  + tetrahedronElements() : ElementContainer<TetrahedronElement>&
+  + internalData() : InternalDataContainer&
+  - m_pointElements       : ElementContainer<PointElement>
+  - m_edgeElements        : ElementContainer<EdgeElement>
+  - m_triangleElements    : ElementContainer<TriangleElement>
+  - m_tetrahedronElements : ElementContainer<TetrahedronElement>
+  - m_broadPhase          : BroadPhase*
+  - m_internalData        : InternalDataContainer
+}
+
+abstract class "TBaseGeometry<DataTypes>" as TBaseGeometry <<abstract>> {
+  + l_state : SingleLink<MechanicalState<DataTypes>>
+  + getState() : MechanicalState<DataTypes>*
+  + getSize() : unsigned
+  + getPosition(pid, VecCoordId) : Vec3
+  + getVelocity(pid, VecDerivId) : Vec3
+  + storeLambda(cParams, resId, cid_global, cid_local, lambda)
+}
+
+class "PointGeometry<DataTypes>" as PointGeometry {
+  + buildPointElements()
+  + begin(id) : ElementIterator::SPtr
+}
+
+class "EdgeGeometry<DataTypes>" as EdgeGeometry {
+  + l_topology : SingleLink<BaseMeshTopology>
+  + buildEdgeElements()
+  + begin(id) : ElementIterator::SPtr
+}
+
+class "TriangleGeometry<DataTypes>" as TriangleGeometry {
+  + buildTriangleElements()
+  + begin(id) : ElementIterator::SPtr
+}
+
+class "TetrahedronGeometry<DataTypes>" as TetrahedronGeometry {
+  + buildTetrahedronElements()
+  + begin(id) : ElementIterator::SPtr
+}
+
+class "SubsetGeometry<DataTypes>" as SubsetGeometry {
+  + l_geometry : SingleLink<BaseGeometry>
+  + d_indices  : Data<vector<int>>
+  + begin(id) : ElementIterator::SPtr
+  + prepareDetection()  ' no-op
+  - m_elements : vector<BaseElement::SPtr>
+}
+
+note bottom of TriangleGeometry
+  Geometry hierarchy is cumulative —
+  each level adds its element type
+  to those of its parent.
+  TetrahedronGeometry also builds
+  points, edges, and triangles.
+end note
+
+CollisionComponent   <|-- BaseGeometry
+BaseGeometry         <|-- TBaseGeometry
+TBaseGeometry        <|-- PointGeometry
+PointGeometry        <|-- EdgeGeometry
+EdgeGeometry         <|-- TriangleGeometry
+TriangleGeometry     <|-- TetrahedronGeometry
+TBaseGeometry        <|-- SubsetGeometry
+
+BaseGeometry     *-- ElementContainer   : 4 typed containers >
+BaseGeometry     ..> ElementIterator    : begin() returns >
+SubsetGeometry   ..> BaseGeometry       : l_geometry (draws elements from) >
+ElementContainer  o-- BaseElement       : holds SPtr >
+
+@enduml
