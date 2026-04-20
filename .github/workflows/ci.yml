@@ -38,7 +38,7 @@ jobs:
         with:
           sofa_root: ${{ github.workspace }}/sofa
           sofa_version: ${{ matrix.sofa_branch }}
-          sofa_scope: 'standard'
+          sofa_scope: 'full'
 
       - name: Checkout CollisionAlgorithm
         uses: actions/checkout@v2
@@ -93,6 +93,7 @@ jobs:
                   -DCMAKE_PREFIX_PATH=$SOFA_ROOT/lib/cmake;%WORKSPACE_INSTALL_PATH%/lib/cmake \
                   -DCMAKE_BUILD_TYPE=Release \
                   -DCMAKE_INSTALL_PREFIX=%GITHUB_WORKSPACE%/downstream/ConstraintGeometry/install \
+                  -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=%WORKSPACE_BUILD_PATH% \
                   .. \
               && ninja install"
           else
@@ -102,6 +103,7 @@ jobs:
               -DCMAKE_PREFIX_PATH="$SOFA_ROOT/lib/cmake;$WORKSPACE_INSTALL_PATH/lib/cmake" \
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/downstream/ConstraintGeometry/install \
+              -DCMAKE_LIBRARY_OUTPUT_DIRECTORY="$WORKSPACE_BUILD_PATH" \
               ..
             ninja install
           fi
