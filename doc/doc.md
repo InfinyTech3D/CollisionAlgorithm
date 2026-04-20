@@ -1,13 +1,17 @@
 # Summary: CollisionAlgorithm & ConstraintGeometry Repositories
 
-These two SOFA plugins work together to provide a complete **needle insertion simulation system**. They form a two-stage pipeline: detection → constraint resolution.
+The documentation here includes two SOFA plugins. Although spread across two distinct repositories, these plugins work together 
+to provide a complete **needle insertion simulation model**, forming a two-stage pipeline: detection → constraint resolution.
+For completeness, the documentation is centralized in one document. 
 
 ---
 
 ## CollisionAlgorithm Repository
 
 ### Purpose
-A collision detection plugin specifically designed for **needle insertion simulations** in medical applications. It detects collisions between a needle and tissue, handling puncture, shaft collision, and insertion phases.
+The plugin is specifically designed to detect collision between the simulated needle and one or more tissues. 
+It implements the algorithmic logic that handles tissue puncture, shaft collision, and insertion inside the soft tissue.
+Beyond that, it adapts the collision detection algorithms from SOFA in a way that is more suitable for proximity detection between the modelled needle and soft tissues.
 
 ### Core Architecture
 
@@ -69,7 +73,8 @@ Proximity Layer (EdgeProximity, TriangleProximity, etc.)
 ## ConstraintGeometry Repository
 
 ### Purpose
-A constraint resolution plugin that takes collision detection output and creates **Lagrangian constraints** for the physics solver. Handles bilateral, unilateral, and friction-based constraints.
+Takes collision detection output from the `CollisionAlgorithm` plugin and creates **Lagrangian constraints** prepping them for resolution by the physics solver. 
+Handles bilateral, unilateral, and friction-based constraints.
 
 ### Core Architecture
 
@@ -117,43 +122,43 @@ Force Application (storeLambda)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    CollisionAlgorithm Plugin                     │
-│                                                                  │
+│                    CollisionAlgorithm Plugin                    │
+│                                                                 │
 │  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐       │
 │  │ Geometries   │───▶│ Broad-Phase  │───▶│ InsertionAlg │       │
 │  │ (Needle/     │    │ (AABB Grid)  │    │ (Detection)  │       │
 │  │  Tissue)     │    └──────────────┘    └──────┬───────┘       │
-│  └──────────────┘                               │                │
-│                                                 ▼                │
-│                              ┌───────────────────────────────┐   │
-│                              │ DetectionOutput<Prox1, Prox2> │   │
-│                              │ (Pairs of proximity points)   │   │
-│                              └───────────────┬───────────────┘   │
-└──────────────────────────────────────────────┼───────────────────┘
+│  └──────────────┘                               │               │
+│                                                 ▼               │
+│                              ┌───────────────────────────────┐  │
+│                              │ DetectionOutput<Prox1, Prox2> │  │
+│                              │ (Pairs of proximity points)   │  │
+│                              └───────────────┬───────────────┘  │
+└──────────────────────────────────────────────┼──────────────────┘
                                                │
                                                ▼
-┌──────────────────────────────────────────────────────────────────┐
-│                   ConstraintGeometry Plugin                       │
-│                                                                   │
-│  ┌──────────────────┐    ┌──────────────────┐                     │
-│  │ TBaseConstraint  │───▶│ ConstraintDir    │                     │
-│  │ (Bilateral/      │    │ + NormalHandler  │                     │
-│  │  Unilateral/     │    └────────┬─────────┘                     │
-│  │  Insertion)      │             │                               │
-│  └────────┬─────────┘             ▼                               │
-│           │              ┌──────────────────┐                     │
-│           │              │ ConstraintNormal │                     │
-│           │              │ (directions)     │                     │
-│           │              └────────┬─────────┘                     │
-│           ▼                       ▼                               │
-│  ┌───────────────────────────────────────────┐                    │
-│  │     InternalConstraint (pairs + normals)  │                    │
-│  └────────────────────┬──────────────────────┘                    │
-│                       ▼                                           │
-│  ┌───────────────────────────────────────────┐                    │
-│  │ ConstraintResolution (solver kernels)     │───▶ Forces         │
-│  └───────────────────────────────────────────┘                    │
-└───────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                   ConstraintGeometry Plugin                     │
+│                                                                 │
+│  ┌──────────────────┐    ┌──────────────────┐                   │
+│  │ TBaseConstraint  │───▶│ ConstraintDir    │                   │
+│  │ (Bilateral/      │    │ + NormalHandler  │                   │
+│  │  Unilateral/     │    └────────┬─────────┘                   │
+│  │  Insertion)      │             │                             │
+│  └────────┬─────────┘             ▼                             │
+│           │              ┌──────────────────┐                   │
+│           │              │ ConstraintNormal │                   │
+│           │              │ (directions)     │                   │
+│           │              └────────┬─────────┘                   │
+│           ▼                       ▼                             │
+│  ┌───────────────────────────────────────────┐                  │
+│  │     InternalConstraint (pairs + normals)  │                  │
+│  └────────────────────┬──────────────────────┘                  │
+│                       ▼                                         │
+│  ┌───────────────────────────────────────────┐                  │
+│  │ ConstraintResolution (solver kernels)     │───▶ Forces       │
+│  └───────────────────────────────────────────┘                  │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ### Key Integration Points

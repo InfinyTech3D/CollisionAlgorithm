@@ -71,7 +71,7 @@ Supported SOFA version: v25.06 and above
 ``` 
 <FreeMotionAnimationLoop/>
 <ProjectedGaussSeidelConstraintSolver tolerance='<your tolerance>' maxIt='<maximum solver iterations>' />
-*<CollisionLoop/>*
+**<CollisionLoop/>**
 
 <CollisionPipeline/>
 <BruteForceBroadPhase/>
