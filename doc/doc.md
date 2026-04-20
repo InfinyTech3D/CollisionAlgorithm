@@ -9,9 +9,7 @@ For completeness, the documentation is centralized in one document.
 ## CollisionAlgorithm Repository
 
 ### Purpose
-The plugin is specifically designed to detect collision between the simulated needle and one or more tissues. 
-It implements the algorithmic logic that handles tissue puncture, shaft collision, and insertion inside the soft tissue.
-Beyond that, it adapts the collision detection algorithms from SOFA in a way that is more suitable for proximity detection between the modelled needle and soft tissues.
+This plugin drives the needle insertion simulation logic and provides proximity pairs to be consumed by the constraint resolution layer. It does so through nearest-neighbor queries: for each needle element, find the geometrically closest tissue element and return its barycentric parameterization on the live deforming mesh.
 
 ### Core Architecture
 
