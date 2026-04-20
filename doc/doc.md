@@ -16,6 +16,12 @@ Beyond that, it adapts the collision detection algorithms from SOFA in a way tha
 ### Core Architecture
 
 **Layered Design:**
+
+The plugin is organized in four layers. At the top sits the algorithm layer, which orchestrates detection. 
+Beneath it, the geometry layer provides components that attach to a `MechanicalState` in the scene graph, 
+decompose its topology into typed elements (points, edges, triangles, tetrahedra), and expose them for spatial queries. 
+The element and proximity layers carry the geometric primitives and their barycentric parameterizations that the algorithm layer ultimately queries and stores.
+
 ```
 Algorithm Layer (InsertionAlgorithm)
      ↓
@@ -170,19 +176,6 @@ Force Application (storeLambda)
 3. **CollisionComponent Interface**: `BaseNormalHandler` in ConstraintGeometry inherits from `CollisionComponent` (from CollisionAlgorithm) to participate in the detection preparation phase
 
 4. **Generic Operation System**: Both plugins use the same `GenericOperation` factory pattern for type-dispatched operations
-
----
-
-## Design Patterns Used
-
-| Pattern | Usage |
-|---------|-------|
-| **Template Method** | Base classes define algorithm skeleton, subclasses fill details |
-| **Strategy** | Multiple interchangeable direction/normal handlers |
-| **Factory** | Type-dispatched operations, constraint resolution creation |
-| **Iterator** | Element traversal with `ElementIterator` |
-| **Visitor** | SOFA scene graph traversal |
-| **Decorator** | `TConstraintProximity` wraps proximity with normal |
 
 ---
 
