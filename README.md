@@ -65,7 +65,7 @@ Supported SOFA version: v25.06 and above
 
 - Include the `CollisionAlgorithm` plugin in a scene file.
 
-``` <RequiredPlugin name=`CollisionAlgorithm`/> ```
+``` <RequiredPlugin pluginName=`CollisionAlgorithm`/> ```
 - Add the `CollisionLoop` component at the root node of your scene.
 
 ``` 
