@@ -1,0 +1,208 @@
+@startuml collision-algorithm-overview
+
+skinparam backgroundColor #FAFAFA
+skinparam defaultFontName Sans
+skinparam defaultFontSize 11
+
+skinparam class {
+  BackgroundColor #EEF2FB
+  BorderColor     #5577AA
+  HeaderBackgroundColor #7AA3CC
+  FontColor       #222222
+  HeaderFontColor #FFFFFF
+  HeaderFontStyle bold
+  ArrowColor      #2E3436
+  AttributeFontSize 10
+}
+
+skinparam class<<abstract>> {
+  HeaderBackgroundColor #4E9A06
+}
+
+skinparam class<<data>> {
+  HeaderBackgroundColor #75507B
+}
+
+skinparam class<<utility>> {
+  HeaderBackgroundColor #8F5902
+}
+
+skinparam class<<SOFA>> {
+  HeaderBackgroundColor #888888
+}
+
+skinparam package {
+  BackgroundColor #F5F5F5
+  BorderColor #5577AA
+  FontColor #222222
+  FontStyle bold
+}
+
+skinparam note {
+  BackgroundColor #FFFBD5
+  BorderColor #C8A000
+}
+
+' ─────────────────────────────────────────────
+'  Pipeline
+' ─────────────────────────────────────────────
+package "Pipeline" {
+  class BaseObject <<SOFA>>
+  abstract class CollisionComponent <<abstract>>
+  abstract class CollisionAlgorithm <<abstract>>
+  class CollisionLoop
+
+  BaseObject <|-- CollisionComponent
+  BaseObject <|-- CollisionAlgorithm
+  BaseObject <|-- CollisionLoop
+  CollisionLoop ..> CollisionComponent : prepareDetection >
+  CollisionLoop ..> CollisionAlgorithm : doDetection >
+}
+
+' ─────────────────────────────────────────────
+'  Geometry
+' ─────────────────────────────────────────────
+package "Geometry" {
+  abstract class BaseGeometry <<abstract>>
+  abstract class "TBaseGeometry<T>" as TBaseGeometry <<abstract>>
+  class PointGeometry
+  class EdgeGeometry
+  class TriangleGeometry
+  class TetrahedronGeometry
+  class SubsetGeometry
+
+  BaseGeometry     <|-- TBaseGeometry
+  TBaseGeometry    <|-- PointGeometry
+  PointGeometry    <|-- EdgeGeometry
+  EdgeGeometry     <|-- TriangleGeometry
+  TriangleGeometry <|-- TetrahedronGeometry
+  TBaseGeometry    <|-- SubsetGeometry
+}
+
+' ─────────────────────────────────────────────
+'  BroadPhase
+' ─────────────────────────────────────────────
+package "BroadPhase" {
+  abstract class "BaseGeometry::BroadPhase" as BroadPhase <<abstract>>
+  abstract class BaseAABBBroadPhase <<abstract>>
+  class AABBBroadPhase
+  class FullAABBBroadPhase
+
+  BroadPhase         <|-- BaseAABBBroadPhase
+  BaseAABBBroadPhase <|-- AABBBroadPhase
+  BaseAABBBroadPhase <|-- FullAABBBroadPhase
+}
+
+' ─────────────────────────────────────────────
+'  Elements
+' ─────────────────────────────────────────────
+package "Elements" {
+  abstract class BaseElement <<abstract>>
+  class "ElementContainer<ELMT>" as ElementContainer <<data>>
+  class PointElement
+  class EdgeElement
+  class TriangleElement
+  class TetrahedronElement
+
+  BaseElement      <|-- PointElement
+  BaseElement      <|-- EdgeElement
+  BaseElement      <|-- TriangleElement
+  BaseElement      <|-- TetrahedronElement
+  ElementContainer  o-- BaseElement
+}
+
+' ─────────────────────────────────────────────
+'  Proximity
+' ─────────────────────────────────────────────
+package "Proximity" {
+  abstract class BaseProximity <<abstract>>
+  class PointProximity
+  class EdgeProximity
+  class TriangleProximity
+  class TetrahedronProximity
+  class FixedProximity
+  class "MechanicalProximity<T>" as MechanicalProximity
+  class MultiProximity
+
+  BaseProximity <|-- PointProximity
+  BaseProximity <|-- EdgeProximity
+  BaseProximity <|-- TriangleProximity
+  BaseProximity <|-- TetrahedronProximity
+  BaseProximity <|-- FixedProximity
+  BaseProximity <|-- MechanicalProximity
+  BaseProximity <|-- MultiProximity
+}
+
+' ─────────────────────────────────────────────
+'  Operations
+' ─────────────────────────────────────────────
+package "Operations" {
+  abstract class "GenericOperation<CHILD,R,...>" as GenericOperation <<abstract>>
+  class "Project::Operation" as ProjectOp
+  class "FindClosestProximity::Operation" as FindClosestOp
+  class "ContainsPointInElement::Operation" as ContainsElemOp
+  class "CreateCenterProximity::Operation" as CreateCenterOp
+  class "Needle::PrunePointsAheadOfTip" as PruneOp
+  class PointToolBox <<utility>>
+  class EdgeToolBox <<utility>>
+  class TriangleToolBox <<utility>>
+  class TetrahedronToolBox <<utility>>
+
+  GenericOperation <|-- ProjectOp
+  GenericOperation <|-- FindClosestOp
+  GenericOperation <|-- ContainsElemOp
+  GenericOperation <|-- CreateCenterOp
+  GenericOperation <|-- PruneOp
+}
+
+' ─────────────────────────────────────────────
+'  Algorithms
+' ─────────────────────────────────────────────
+package "Algorithms" {
+  abstract class BaseAlgorithm <<abstract>>
+  abstract class "BaseAlgorithm::BaseFilter" as BaseFilter <<abstract>>
+  class DistanceFilter
+  class InsertionAlgorithm
+  class Find2DClosestProximityAlgorithm
+
+  BaseAlgorithm <|-- InsertionAlgorithm
+  BaseAlgorithm <|-- Find2DClosestProximityAlgorithm
+  BaseAlgorithm  o-- BaseFilter
+  BaseFilter    <|-- DistanceFilter
+}
+
+' ─────────────────────────────────────────────
+'  DetectionOutput (shared data type)
+' ─────────────────────────────────────────────
+class "DetectionOutput<FIRST,SECOND>" as DetectionOutput <<data>>
+
+' ─────────────────────────────────────────────
+'  Inter-package relationships (one per relationship, not per type)
+' ─────────────────────────────────────────────
+
+' Pipeline → Geometry / Algorithms (via inheritance)
+CollisionComponent <|-- BaseGeometry
+CollisionAlgorithm <|-- BaseAlgorithm
+
+' Geometry ↔ BroadPhase
+BaseGeometry ..> BroadPhase : uses >
+
+' Geometry → Elements
+BaseGeometry *-- ElementContainer : owns >
+
+' Elements → Proximity
+BaseElement ..> BaseProximity : references >
+
+' Algorithms → Geometry
+BaseAlgorithm ..> BaseGeometry : links to >
+
+' Algorithms → Operations
+BaseAlgorithm ..> GenericOperation : dispatches via >
+
+' Algorithms → DetectionOutput
+BaseAlgorithm ..> DetectionOutput : produces >
+
+' DetectionOutput → Proximity
+DetectionOutput o-- BaseProximity : contains pairs of >
+
+@enduml

@@ -1,0 +1,182 @@
+@startuml collision-algorithm-proximity
+
+skinparam backgroundColor #FAFAFA
+skinparam defaultFontName Sans
+skinparam defaultFontSize 11
+
+skinparam class {
+  BackgroundColor #EEF2FB
+  BorderColor     #5577AA
+  HeaderBackgroundColor #7AA3CC
+  FontColor       #222222
+  HeaderFontColor #FFFFFF
+  HeaderFontStyle bold
+  ArrowColor      #2E3436
+  AttributeFontSize 10
+}
+
+skinparam class<<abstract>> {
+  HeaderBackgroundColor #4E9A06
+}
+
+skinparam note {
+  BackgroundColor #FFFBD5
+  BorderColor #C8A000
+}
+
+' ─────────────────────────────────────────────
+'  Element stubs (defined in geometry-elements.puml)
+' ─────────────────────────────────────────────
+class PointElement
+class EdgeElement
+class TriangleElement
+class TetrahedronElement
+class "TBaseGeometry<DataTypes>" as TBaseGeometry
+
+' ─────────────────────────────────────────────
+'  Base proximity classes
+' ─────────────────────────────────────────────
+abstract class BaseBaseProximity <<abstract>> {
+  + {abstract} getPosition(VecCoordId) : Vec3
+  + {abstract} getVelocity(VecDerivId) : Vec3
+  + {abstract} buildJacobianConstraint(cId, dirs, fact, constraintId)
+  + {abstract} storeLambda(cParams, res, cid_global, cid_local, lambda)
+  + getTypeInfo() : type_info&
+}
+
+abstract class BaseProximity <<abstract>> {
+  + {abstract} getTypeInfo() : type_info&
+  + {abstract} copy() : SPtr
+  + {abstract} isNormalized() : bool
+  + {abstract} normalize()
+  + {abstract} getBaryCoord() : double*
+  + {static} create<PROXIMITY, ARGS>(args) : PROXIMITY::SPtr
+}
+
+note right of BaseProximity
+  Inherits BaseBaseProximity virtually.
+  Provides empty default implementations
+  of all BaseBaseProximity virtuals;
+  subclasses override selectively.
+end note
+
+BaseBaseProximity <|-- BaseProximity
+
+' ─────────────────────────────────────────────
+'  Concrete proximity types
+' ─────────────────────────────────────────────
+class PointProximity {
+  + element() : PointElement::SPtr
+  + getPosition(VecCoordId) : Vec3
+  + getVelocity(VecDerivId) : Vec3
+  + isNormalized() : bool  ' always true
+  + getBaryCoord() : double*  ' nullptr
+  # m_elmt : PointElement::SPtr
+}
+
+class EdgeProximity {
+  + f0() : double
+  + f1() : double
+  + element() : EdgeElement::SPtr
+  + getPosition(VecCoordId) : Vec3
+  + getVelocity(VecDerivId) : Vec3
+  + getBaryCoord() : double*  ' [f0, f1]
+  + isNormalized() : bool
+  + normalize()
+  # m_elmt : EdgeElement::SPtr
+  # m_f0 : double
+  # m_f1 : double
+}
+
+class TriangleProximity {
+  + f0() : double
+  + f1() : double
+  + f2() : double
+  + element() : TriangleElement::SPtr
+  + getPosition(VecCoordId) : Vec3
+  + getVelocity(VecDerivId) : Vec3
+  + getBaryCoord() : double*  ' [f0, f1, f2]
+  + isNormalized() : bool
+  + normalize()
+  # m_elmt : TriangleElement::SPtr
+  # m_f0 : double
+  # m_f1 : double
+  # m_f2 : double
+}
+
+class TetrahedronProximity {
+  + f0() : double
+  + f1() : double
+  + f2() : double
+  + f3() : double
+  + element() : TetrahedronElement::SPtr
+  + getPosition(VecCoordId) : Vec3
+  + getVelocity(VecDerivId) : Vec3
+  + getBaryCoord() : double*  ' [f0, f1, f2, f3]
+  + isNormalized() : bool
+  + normalize()
+  # m_elmt : TetrahedronElement::SPtr
+  # m_f0 : double
+  # m_f1 : double
+  # m_f2 : double
+  # m_f3 : double
+}
+
+class FixedProximity {
+  + getNormal() : Vec3d
+  + getPosition(VecCoordId) : Vec3
+  + getVelocity(VecDerivId) : Vec3  ' always (0,0,0)
+  + isNormalized() : bool  ' always true
+  + getBaryCoord() : double*  ' nullptr
+  - m_position : Vec3d
+  - m_normal : Vec3d
+}
+
+class "MechanicalProximity<DataTypes>" as MechanicalProximity {
+  + getPId() : unsigned
+  + getGeometry() : BaseGeometry*
+  + getTGeometry() : TBaseGeometry<DataTypes>*
+  + addContributions(c_it, N, fact)
+  + getPosition(VecCoordId) : Vec3
+  + getVelocity(VecDerivId) : Vec3
+  + isNormalized() : bool  ' always true
+  + getBaryCoord() : double*  ' nullptr
+  # m_geometry : TBaseGeometry<DataTypes>*
+  # m_pid : unsigned
+}
+
+class MultiProximity {
+  + getPosition(VecCoordId) : Vec3  ' average of all
+  + getVelocity(VecDerivId) : Vec3  ' average of all
+  + isNormalized() : bool  ' always true
+  + getBaryCoord() : double*  ' nullptr
+  # m_proximities : vector<BaseProximity::SPtr>
+}
+
+note right of MultiProximity
+  Position/velocity = average over
+  all aggregated proximities.
+end note
+
+note bottom of BaseProximity
+  Consumed by ConstraintGeometry to build
+  Lagrangian constraints (buildJacobianConstraint
+  and storeLambda are the solver interface).
+end note
+
+BaseProximity <|-- PointProximity
+BaseProximity <|-- EdgeProximity
+BaseProximity <|-- TriangleProximity
+BaseProximity <|-- TetrahedronProximity
+BaseProximity <|-- FixedProximity
+BaseProximity <|-- MechanicalProximity
+BaseProximity <|-- MultiProximity
+
+PointProximity       ..> PointElement       : holds >
+EdgeProximity        ..> EdgeElement        : holds >
+TriangleProximity    ..> TriangleElement    : holds >
+TetrahedronProximity ..> TetrahedronElement : holds >
+MechanicalProximity  ..> TBaseGeometry      : references >
+MultiProximity "1"   o-- "*" BaseProximity  : aggregates >
+
+@enduml

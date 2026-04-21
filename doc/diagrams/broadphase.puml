@@ -1,0 +1,149 @@
+@startuml collision-algorithm-broadphase
+
+skinparam backgroundColor #FAFAFA
+skinparam defaultFontName Sans
+skinparam defaultFontSize 11
+
+skinparam class {
+  BackgroundColor #EEF2FB
+  BorderColor     #5577AA
+  HeaderBackgroundColor #7AA3CC
+  FontColor       #222222
+  HeaderFontColor #FFFFFF
+  HeaderFontStyle bold
+  ArrowColor      #2E3436
+  AttributeFontSize 10
+}
+
+skinparam class<<abstract>> {
+  HeaderBackgroundColor #4E9A06
+}
+
+skinparam class<<SOFA>> {
+  HeaderBackgroundColor #888888
+}
+
+skinparam note {
+  BackgroundColor #FFFBD5
+  BorderColor #C8A000
+}
+
+' ─────────────────────────────────────────────
+'  SOFA root (external)
+' ─────────────────────────────────────────────
+class BaseObject <<SOFA>> {
+}
+
+' ─────────────────────────────────────────────
+'  Stubs from other diagrams
+' ─────────────────────────────────────────────
+class BaseGeometry
+class BaseElement
+
+' ─────────────────────────────────────────────
+'  BroadPhase interface (nested in BaseGeometry)
+' ─────────────────────────────────────────────
+abstract class "BaseGeometry::BroadPhase" as BroadPhase <<abstract>> {
+  + l_geometry : SingleLink<BaseGeometry>
+  + init()
+  + {abstract} getNbox() : Vec3i
+  + {abstract} getBoxCoord(P : Vec3) : Vec3i
+  + {abstract} getElementSet(i, j, k) : set<BaseElement>
+  + getTypeInfo() : type_info&
+  + {abstract} initBroadPhase()
+  + {abstract} updateBroadPhase()
+}
+
+note right of BroadPhase
+  Nested class inside BaseGeometry.
+  Registered as a slave object —
+  BaseGeometry::setBroadPhase()
+  calls initBroadPhase() on attachment.
+end note
+
+BaseObject <|-- BroadPhase
+BroadPhase ..> BaseGeometry : l_geometry >
+BroadPhase ..> BaseElement  : getElementSet() returns set of >
+
+' ─────────────────────────────────────────────
+'  AABB base
+' ─────────────────────────────────────────────
+abstract class BaseAABBBroadPhase <<abstract>> {
+  + d_nbox    : Data<Vec3i>   ' default (8,8,8)
+  + d_static  : Data<bool>    ' skip update if true
+  + d_method  : Data<int>     ' 0=project, 1=SAT, 2=bbox
+  + d_thread  : Data<int>     ' thread count for method 2
+  + getBBox() : BoundingBox
+  + getMin() : Vec3
+  + getMax() : Vec3
+  + getCellSize() : Vec3
+  + getBoxCoord(P) : Vec3i
+  + getNbox() : Vec3i
+  + initBroadPhase()
+  + updateBroadPhase()
+  + doUpdate()
+  + updateElemInBoxes()
+  + projectElemOnBoxes()  ' method 0
+  + boxTriangleSAT()      ' method 1
+  + bboxIntersection()    ' method 2 — multithreaded
+  + {abstract} newContainer()
+  + {abstract} addElement(i, j, k, elmt)
+  + {abstract} updateData()
+  # m_Bmin     : Vec3
+  # m_Bmax     : Vec3
+  # m_cellSize : Vec3
+  # m_nbox     : Vec3i
+  # m_data     : vector<vector<ELMT_THREAD>>
+}
+
+note right of BaseAABBBroadPhase
+  Three strategies to map elements to cells,
+  selected at runtime via d_method:
+  0 — project element centre, check residual
+  1 — SAT-based triangle-box overlap test
+  2 — pure bounding-box intersection (threaded)
+end note
+
+BroadPhase <|-- BaseAABBBroadPhase
+
+' ─────────────────────────────────────────────
+'  Concrete implementations
+' ─────────────────────────────────────────────
+class AABBBroadPhase {
+  + updateData()
+  + getElementSet(i, j, k) : set<BaseElement>
+  + newContainer()
+  + addElement(i, j, k, elmt)
+  + getKey(i, j, k) : Index
+  + getIKey(key) : unsigned
+  + getJKey(key) : unsigned
+  + getKKey(key) : unsigned
+  # m_indexedElement : map<unsigned, set<BaseElement>>
+  # m_offset : Vec<2, size_t>
+}
+
+class FullAABBBroadPhase {
+  + updateData()   ' no-op — no offset needed
+  + getElementSet(i, j, k) : set<BaseElement>
+  + newContainer()
+  + addElement(i, j, k, elmt)
+  # m_indexedElement : vector<vector<vector<set<BaseElement>>>>
+  # m_offset : Vec<2, size_t>
+}
+
+note bottom of AABBBroadPhase
+  Sparse storage: hash map keyed by
+  a linearised (i,j,k) index.
+  Good for scenes where most cells are empty.
+end note
+
+note bottom of FullAABBBroadPhase
+  Dense storage: pre-allocated 3D vector.
+  O(1) lookup at the cost of memory for
+  all nbox[0]×nbox[1]×nbox[2] cells.
+end note
+
+BaseAABBBroadPhase <|-- AABBBroadPhase
+BaseAABBBroadPhase <|-- FullAABBBroadPhase
+
+@enduml

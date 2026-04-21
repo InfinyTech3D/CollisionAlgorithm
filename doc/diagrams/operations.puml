@@ -1,0 +1,188 @@
+@startuml collision-algorithm-operations
+
+skinparam backgroundColor #FAFAFA
+skinparam defaultFontName Sans
+skinparam defaultFontSize 11
+
+skinparam class {
+  BackgroundColor #EEF2FB
+  BorderColor     #5577AA
+  HeaderBackgroundColor #7AA3CC
+  FontColor       #222222
+  HeaderFontColor #FFFFFF
+  HeaderFontStyle bold
+  ArrowColor      #2E3436
+  AttributeFontSize 10
+}
+
+skinparam class<<abstract>> {
+  HeaderBackgroundColor #4E9A06
+}
+
+skinparam class<<utility>> {
+  HeaderBackgroundColor #8F5902
+}
+
+skinparam note {
+  BackgroundColor #FFFBD5
+  BorderColor #C8A000
+}
+
+' ─────────────────────────────────────────────
+'  Generic operation base templates
+' ─────────────────────────────────────────────
+abstract class "GenericOperation<CHILD, RETURN, PARAMS...>" as GenericOperation <<abstract>> {
+  + {static} get(obj)        : FUNC   ' dispatches via obj->getTypeInfo()
+  + {static} get(type_info)  : FUNC
+  + {static} register_func<ELMT>(f) : int
+  + {abstract} defaultFunc(PARAMS...) : RETURN
+  + notFound(type_info)               ' virtual, empty default
+  - m_map : map<size_t, void*>
+}
+
+note right of GenericOperation
+  Singleton per CHILD type.
+  Concrete element types call
+  register_func<ELMT>() at startup.
+  Unknown types fall back to defaultFunc().
+end note
+
+abstract class "GenericOperation2<CHILD, RETURN, PARAMS...>" as GenericOperation2 <<abstract>> {
+  + {static} get(obj1, obj2)              : FUNC
+  + {static} get(type_info1, type_info2)  : FUNC
+  + {static} register_func<ELMT1,ELMT2>(f) : int
+  + {abstract} defaultFunc(PARAMS...) : RETURN
+  + {abstract} notFound(type_info1, type_info2)
+  - m_map : map<pair<size_t,size_t>, void*>
+}
+
+note right of GenericOperation2
+  Same as GenericOperation but dispatches
+  on a pair of types — for operations that
+  depend on two element types simultaneously.
+end note
+
+' ─────────────────────────────────────────────
+'  Concrete operations
+' ─────────────────────────────────────────────
+class "Project::Operation" as ProjectOp {
+  .. Result ..
+  distance : double
+  prox     : BaseProximity::SPtr
+  ..
+  + defaultFunc(P, elem) : Result   ' returns {max, null}
+  + notFound(type_info)
+}
+
+note bottom of ProjectOp
+  Params: (const Vec3&, const BaseElement::SPtr&)
+  Returns best projection point + distance.
+end note
+
+class "FindClosestProximity::Operation" as FindClosestOp {
+  + {static} broadPhaseIterator(prox, broadphase) : ElementIterator::SPtr
+  + defaultFunc(prox, geometry, projectOp, filter) : BaseProximity::SPtr
+  - doFindClosesPoint(prox, it, projectOp, filter) : BaseProximity::SPtr
+}
+
+note bottom of FindClosestOp
+  Params: (BaseProximity::SPtr, BaseGeometry*,
+           Project::FUNC, FilterFUNC)
+  Uses broad phase if available, else iterates all elements.
+end note
+
+class "ContainsPointInElement::Operation" as ContainsElemOp {
+  + defaultFunc(P, elem) : bool   ' returns false
+  + notFound(type_info)
+}
+
+note bottom of ContainsElemOp
+  Params: (const Vec3&, const BaseElement::SPtr&)
+end note
+
+class "ContainsPointInProximity::Operation" as ContainsProxOp {
+  + defaultFunc(P, prox) : bool   ' returns false
+  + notFound(type_info)
+}
+
+note bottom of ContainsProxOp
+  Params: (const Vec3&, const BaseProximity::SPtr&)
+  Delegates to ContainsPointInElement via prox->element().
+end note
+
+class "CreateCenterProximity::Operation" as CreateCenterOp {
+  + defaultFunc(elem) : BaseProximity::SPtr   ' returns null
+  + notFound(type_info)
+}
+
+note bottom of CreateCenterOp
+  Params: (const BaseElement::SPtr&)
+end note
+
+class "Needle::PrunePointsAheadOfTip" as PruneOp {
+  + defaultFunc(couplingPts, elem) : bool   ' returns false
+  + notFound(type_info)
+}
+
+note bottom of PruneOp
+  Params: (vector<BaseProximity::SPtr>&, const BaseElement::SPtr&)
+  Free function: prunePointsUsingEdges(couplingPts, edgeElem)
+end note
+
+GenericOperation <|-- ProjectOp
+GenericOperation <|-- FindClosestOp
+GenericOperation <|-- ContainsElemOp
+GenericOperation <|-- ContainsProxOp
+GenericOperation <|-- CreateCenterOp
+GenericOperation <|-- PruneOp
+
+FindClosestOp ..> ProjectOp        : calls project func >
+ContainsProxOp ..> ContainsElemOp  : delegates via prox->element() >
+
+' ─────────────────────────────────────────────
+'  Toolboxes — register and implement per-type functions
+' ─────────────────────────────────────────────
+class PointToolBox <<utility>> {
+  + {static} project(P, point) : Project::Result
+  + {static} createCenterProximity(point) : BaseProximity::SPtr
+}
+
+class EdgeToolBox <<utility>> {
+  + {static} project(P, edge) : Project::Result
+  + {static} createCenterProximity(edge) : BaseProximity::SPtr
+  + {static} projectOnEdge(projP, e1, e2, fact_u, fact_v)
+  + {static} normalize(P0, P1, f0, f1)
+}
+
+class TriangleToolBox <<utility>> {
+  + {static} project(P, tri) : Project::Result
+  + {static} createCenterProximity(tri) : BaseProximity::SPtr
+  + {static} containsPoint(P, tri) : bool
+  + {static} computeTriangleBaryCoords(projP, tinfo, f0, f1, f2)
+  + {static} projectOnTriangle(projP, tinfo, f0, f1, f2)
+  + {static} isInTriangle(P, tinfo, f0, f1, f2) : bool
+  + {static} normalize(P0, P1, P2, f0, f1, f2)
+}
+
+class TetrahedronToolBox <<utility>> {
+  + {static} project(P, tetra) : Project::Result
+  + {static} createCenterProximity(tetra) : BaseProximity::SPtr
+  + {static} containsPoint(P, tetra) : bool
+  + {static} projectOnTetra(projP, tinfo, f0, f1, f2, f3)
+  + {static} computeTetraBaryCoords(P, tinfo, f0, f1, f2, f3)
+  + {static} isInTetra(P, tinfo, f0, f1, f2, f3) : bool
+  + {static} normalize(P0, P1, P2, P3, f0, f1, f2, f3)
+}
+
+PointToolBox      ..> ProjectOp       : <<registers>>
+PointToolBox      ..> CreateCenterOp  : <<registers>>
+EdgeToolBox       ..> ProjectOp       : <<registers>>
+EdgeToolBox       ..> CreateCenterOp  : <<registers>>
+TriangleToolBox   ..> ProjectOp       : <<registers>>
+TriangleToolBox   ..> CreateCenterOp  : <<registers>>
+TriangleToolBox   ..> ContainsElemOp  : <<registers>>
+TetrahedronToolBox ..> ProjectOp      : <<registers>>
+TetrahedronToolBox ..> CreateCenterOp : <<registers>>
+TetrahedronToolBox ..> ContainsElemOp : <<registers>>
+
+@enduml
