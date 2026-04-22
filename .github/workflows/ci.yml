@@ -69,6 +69,7 @@ jobs:
               -DCMAKE_PREFIX_PATH=$SOFA_ROOT/lib/cmake \
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_INSTALL_PREFIX="$WORKSPACE_INSTALL_PATH" \
+              -DCMAKE_LIBRARY_OUTPUT_DIRECTORY="$WORKSPACE_BUILD_PATH/lib" \
               ../src
             ninja install
             echo ${CCACHE_BASEDIR}
@@ -103,7 +104,7 @@ jobs:
               -DCMAKE_PREFIX_PATH="$SOFA_ROOT/lib/cmake;$WORKSPACE_INSTALL_PATH/lib/cmake" \
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/downstream/ConstraintGeometry/install \
-              -DCMAKE_LIBRARY_OUTPUT_DIRECTORY="$WORKSPACE_BUILD_PATH" \
+              -DCMAKE_LIBRARY_OUTPUT_DIRECTORY="$WORKSPACE_BUILD_PATH/lib" \
               ..
             ninja install
           fi
