@@ -3,9 +3,6 @@
 namespace sofa::collisionalgorithm::Operations::Needle
 {
 
-// Returns true when at least one coupling point was popped from the back,
-// false when the set was left unchanged (including the null-edge error path
-// and the non-retracting early-exit).
 bool prunePointsUsingEdges(std::vector<BaseProximity::SPtr>& couplingPts,
                            const EdgeElement::SPtr& edge)
 {
@@ -38,6 +35,6 @@ bool prunePointsUsingEdges(std::vector<BaseProximity::SPtr>& couplingPts,
     return (couplingPts.size() < initSize);
 }
 
-int register_PrunePointsAheadOfTip_Edge =
-    PrunePointsAheadOfTip::register_func<EdgeElement>(&prunePointsUsingEdges);
+int register_PrunePointsAheadOfTip_Edge = PrunePointsAheadOfTip::register_func<EdgeElement>(&prunePointsUsingEdges);
+
 }  // namespace sofa::collisionalgorithm::Operations::Needle
