@@ -29,6 +29,11 @@ class SOFA_COLLISIONALGORITHM_API PrunePointsAheadOfTip
     }
 };
 
+/**
+* Returns true when at least one coupling point was popped from the back, 
+* false when the set was left unchanged (including the null-edge error path
+* and the non-retracting early-exit).
+*/
 bool prunePointsUsingEdges(std::vector<BaseProximity::SPtr>& couplingPts,
                            const EdgeElement::SPtr& edgeProx);
 
