@@ -3,6 +3,9 @@
 namespace sofa::collisionalgorithm::Operations::Needle
 {
 
+// Returns true when at least one coupling point was popped from the back,
+// false when the set was left unchanged (including the null-edge error path
+// and the non-retracting early-exit).
 bool prunePointsUsingEdges(std::vector<BaseProximity::SPtr>& couplingPts,
                            const EdgeElement::SPtr& edge)
 {
@@ -16,11 +19,11 @@ bool prunePointsUsingEdges(std::vector<BaseProximity::SPtr>& couplingPts,
     const type::Vec3 tip(edge->getP1()->getPosition());
     const type::Vec3 edgeDirection = tip - edgeBase;
 
-    // Only prune if the tip is retracting (moving against the insertion direction). 
-    // NOTE: This uses the needle tip velocity only. If retraction results from needle-tissue 
+    // Only prune if the tip is retracting (moving against the insertion direction).
+    // NOTE: This uses the needle tip velocity only. If retraction results from needle-tissue
     //       relative movement, retraction is not detected.
     const type::Vec3 tipVelocity = edge->getP1()->getVelocity();
-    if (dot(tipVelocity, edgeDirection) >= 0_sreal) return true;
+    if (dot(tipVelocity, edgeDirection) >= 0_sreal) return false;
 
     const int initSize = couplingPts.size();
 
@@ -32,7 +35,7 @@ bool prunePointsUsingEdges(std::vector<BaseProximity::SPtr>& couplingPts,
         if(dot(tip2Pt, edgeDirection) < 0_sreal) break;
         couplingPts.pop_back();
     }
-    return (initSize == couplingPts.size());
+    return (couplingPts.size() < initSize);
 }
 
 int register_PrunePointsAheadOfTip_Edge =
