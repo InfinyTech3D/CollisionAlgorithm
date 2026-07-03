@@ -6,7 +6,7 @@
 
 namespace sofa::collisionalgorithm {
 
-class SOFA_COLLISIONALGORITHM_API EdgeProximity : public BaseProximity {
+class EdgeProximity : public BaseProximity {
 public:
 
     typedef std::shared_ptr<EdgeProximity> SPtr;
