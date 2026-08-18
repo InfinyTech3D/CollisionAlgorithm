@@ -7,7 +7,7 @@
 
 namespace sofa::collisionalgorithm {
 
-class SOFA_COLLISIONALGORITHM_API TetrahedronProximity : public BaseProximity {
+class TetrahedronProximity : public BaseProximity {
 public:
 
     typedef std::shared_ptr<TetrahedronProximity> SPtr;

@@ -5,7 +5,7 @@
 
 namespace sofa::collisionalgorithm {
 
-class SOFA_COLLISIONALGORITHM_API MultiProximity : public BaseProximity {
+class MultiProximity : public BaseProximity {
 public:
 
     typedef std::shared_ptr<MultiProximity> SPtr;
