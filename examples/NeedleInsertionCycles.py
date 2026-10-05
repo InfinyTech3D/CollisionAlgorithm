@@ -32,7 +32,7 @@ def createScene(root):
 
     root.addObject("RequiredPlugin",pluginName=['Sofa.Component.AnimationLoop',
                                                 'Sofa.Component.Constraint.Lagrangian.Solver',
-                                                'Sofa.Component.ODESolver.Backward',
+                                                'Sofa.Component.IntegrationScheme.Backward',
                                                 'Sofa.Component.Visual',
                                                 'Sofa.Component.Constraint.Lagrangian.Correction',
                                                 'Sofa.Component.Constraint.Lagrangian.Model',
@@ -95,7 +95,7 @@ def createScene(root):
 
 
     needle = root.addChild("Needle")
-    needle.addObject("EulerImplicitSolver", firstOrder=True)
+    needle.addObject("EulerImplicitIntegrationScheme", firstOrder=True)
     needle.addObject("EigenSparseLU", name="LinearSolver", template="CompressedRowSparseMatrixd")
     needle.addObject("EdgeSetTopologyContainer", name="Container", position=[[i * g_needleLength/(g_needleNumberOfElems) + g_needleBaseOffset[0], g_needleBaseOffset[1],  g_needleBaseOffset[2]] for i in range(g_needleNumberOfElems + 1)]
                                                                  , edges=[[i, i+1] for i in range(g_needleNumberOfElems)])
@@ -156,7 +156,7 @@ def createScene(root):
 
 
     volume = root.addChild("Volume")
-    volume.addObject("EulerImplicitSolver")
+    volume.addObject("EulerImplicitIntegrationScheme")
     volume.addObject("EigenSimplicialLDLT", name="LinearSolver", template='CompressedRowSparseMatrixMat3x3d')
     volume.addObject("TetrahedronSetTopologyContainer", name="TetraContainer", position="@../GelGridTopo/HexaTop.position")
     volume.addObject("TetrahedronSetTopologyModifier", name="TetraModifier")
