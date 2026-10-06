@@ -3,9 +3,9 @@ import Sofa
 
 GeomagicActive = False
 
-g_needleLength=0.200 #(m)
-g_needleNumberOfElems=40 #(# of edges)
-g_needleBaseOffset=[0.180408,-0.131021,-0.165557]
+g_needleLength=0.100 #(m)
+g_needleNumberOfElems=20 #(# of edges)
+g_needleBaseOffset=[0.2117698,-0.169455906,-0.252385541]
 g_needleBaseOrientation=[0.196364774, 0.165221581, 0.0145711472, -0.966400738]
 g_needleDirection=[0.313617996, -0.384349061, -0.868285409]
 # BeamFEMForceField needs the needle along the local x axis of its nodes; the tool holds it along its -z
