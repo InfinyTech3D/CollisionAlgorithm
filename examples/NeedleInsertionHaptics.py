@@ -109,7 +109,13 @@ def createScene(root):
     needle.addObject("MechanicalObject", name="mstate", template="Rigid3d"
         , showObjectScale=0.002, showObject=False, drawMode=1)
 
-    needle.addObject("UniformMass", totalMass=g_needleTotalMass)
+    # Per-unit-mass inertia of a cylindrical beam segment; the RigidMass default (identity) is ~1e5 too large
+    segmentLength = g_needleLength / g_needleNumberOfElems
+    axialInertia = g_needleRadius**2 / 2
+    bendingInertia = g_needleRadius**2 / 4 + segmentLength**2 / 12
+    nodeMass = g_needleTotalMass / (g_needleNumberOfElems + 1)
+    Ixx, Iyy, Izz = bendingInertia, bendingInertia, axialInertia
+    needle.addObject("UniformMass", vertexMass=f"{nodeMass} 1 {Ixx} 0 0 0 {Iyy} 0 0 0 {Izz}")
     needle.addObject("BeamFEMForceField", name="FEM", **g_needleMechanicalParameters)
     needle.addObject("LinearSolverConstraintCorrection", linearSolver="@LinearSolver")
     needle.addObject("RestShapeSpringsForceField",points=[0],stiffness=1e9, angularStiffness=1e11,external_points=[0],external_rest_shape="@/ToolController/mstate_baseMaster")
