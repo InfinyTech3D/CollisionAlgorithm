@@ -195,7 +195,7 @@ def createScene(root):
         surfGeom="@Volume/collision/geom_tri", 
         shaftGeom="@Needle/bodyCollision/geom_body", 
         volGeom="@Volume/geom_tetra", 
-        punctureForceThreshold=1600, 
+        punctureForceThreshold=2, 
         tipDistThreshold=0.003,
         drawcollision=True,
         drawPointsScale=0.0001
