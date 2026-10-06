@@ -8,6 +8,8 @@ g_needleNumberOfElems=40 #(# of edges)
 g_needleBaseOffset=[0.180408,-0.131021,-0.165557]
 g_needleBaseOrientation=[0.196364774, 0.165221581, 0.0145711472, -0.966400738]
 g_needleDirection=[0.313617996, -0.384349061, -0.868285409]
+# BeamFEMForceField needs the needle along the local x axis of its nodes; the tool holds it along its -z
+g_needleOrientation=[0.128547506, -0.566519215, 0.14915422, -0.800177816]
 g_needleRadius = 0.001 #(m)
 g_needleMechanicalParameters = {
     "radius":g_needleRadius,
@@ -111,7 +113,7 @@ def createScene(root):
     )
     needle.addObject("EdgeSetTopologyModifier", name="modifier")
     needle.addObject("PointSetTopologyModifier", name="modifier2")
-    needle.addObject("MechanicalObject", name="mstate", template="Rigid3d", position=[[g_needleBaseOffset[k] + i * g_needleLength/g_needleNumberOfElems * g_needleDirection[k] for k in range(3)] + g_needleBaseOrientation for i in range(g_needleNumberOfElems + 1)]
+    needle.addObject("MechanicalObject", name="mstate", template="Rigid3d", position=[[g_needleBaseOffset[k] + i * g_needleLength/g_needleNumberOfElems * g_needleDirection[k] for k in range(3)] + g_needleOrientation for i in range(g_needleNumberOfElems + 1)]
         , showObjectScale=0.002, showObject=False, drawMode=1)
 
     # Per-unit-mass inertia of a cylindrical beam segment; the RigidMass default (identity) is ~1e5 too large
@@ -119,16 +121,15 @@ def createScene(root):
     axialInertia = g_needleRadius**2 / 2
     bendingInertia = g_needleRadius**2 / 4 + segmentLength**2 / 12
     nodeMass = g_needleTotalMass / (g_needleNumberOfElems + 1)
-    Ixx, Iyy, Izz = bendingInertia, bendingInertia, axialInertia
+    Ixx, Iyy, Izz = axialInertia, bendingInertia, bendingInertia
     needle.addObject("UniformMass", vertexMass=f"{nodeMass} 1 {Ixx} 0 0 0 {Iyy} 0 0 0 {Izz}")
     needle.addObject("BeamFEMForceField", name="FEM", **g_needleMechanicalParameters)
     needle.addObject("LinearSolverConstraintCorrection", linearSolver="@LinearSolver")
-    needle.addObject("RestShapeSpringsForceField",points=[0],stiffness=1e9, angularStiffness=1e4,external_points=[0],external_rest_shape="@/ToolController/mstate_baseMaster")
 
     needleBase = needle.addChild("needleBase")
-    needleBase.addObject("PointSetTopologyContainer", name="Container_base", position="@../mstate.position")
-    needleBase.addObject("MechanicalObject",name="mstate_base", template="Rigid3d")
-    needleBase.addObject("SubsetMapping", indices=0)
+    needleBase.addObject("MechanicalObject",name="mstate_base", template="Rigid3d", position=[g_needleBaseOffset + g_needleBaseOrientation])
+    needleBase.addObject("RestShapeSpringsForceField",points=[0],stiffness=1e9, angularStiffness=1e4,external_points=[0],external_rest_shape="@/ToolController/mstate_baseMaster")
+    needleBase.addObject("RigidMapping", index=0, globalToLocalCoords=True)
 
     needleBodyCollision = needle.addChild("bodyCollision")
     needleBodyCollision.addObject("EdgeSetTopologyContainer", name="Container_body", src="@../Container")
