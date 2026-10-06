@@ -1,3 +1,4 @@
+import math
 import Sofa
 
 GeomagicActive = False
@@ -11,7 +12,8 @@ g_needleMechanicalParameters = {
     "youngModulus":2e13,
     "poissonRatio":0.45
 }
-g_needleTotalMass=0.01
+g_needleDensity = 7850 #(kg/m^3, steel)
+g_needleTotalMass = g_needleDensity * math.pi * g_needleRadius**2 * g_needleLength
 
 g_gelRegularGridParameters = {
     "n":[8, 8, 8],
@@ -98,7 +100,7 @@ def createScene(root):
         toolController.addObject("ReadState", name="reader", filename="RecordState/NeedleInsertionHaptics.txt")
 
     needle = root.addChild("Needle")
-    needle.addObject("EulerImplicitIntegrationScheme")
+    needle.addObject("EulerImplicitIntegrationScheme", rayleighStiffness=0.1, rayleighMass=0.1)
     needle.addObject("EigenSparseLU", name="LinearSolver", template="CompressedRowSparseMatrixd")
     needle.addObject("EdgeSetTopologyContainer", name="Container"
         , position=[[g_needleBaseOffset[0], g_needleBaseOffset[1], -(i * g_needleLength/(g_needleNumberOfElems) + g_needleBaseOffset[2])] for i in range(g_needleNumberOfElems + 1)]
