@@ -12,7 +12,7 @@ g_needleMechanicalParameters = {
     "youngModulus":2e11,
     "poissonRatio":0.3
 }
-g_needleDensity = 7850 #(kg/m^3, steel)
+g_needleDensity = 785 #(kg/m^3)
 g_needleTotalMass = g_needleDensity * math.pi * g_needleRadius**2 * g_needleLength
 
 g_gelRegularGridParameters = {
