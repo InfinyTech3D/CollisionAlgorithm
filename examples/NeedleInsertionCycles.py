@@ -156,7 +156,7 @@ def createScene(root):
 
 
     volume = root.addChild("Volume")
-    volume.addObject("EulerImplicitIntegrationScheme", impulseBased=True)
+    volume.addObject("EulerImplicitIntegrationScheme")
     volume.addObject("EigenSimplicialLDLT", name="LinearSolver", template='CompressedRowSparseMatrixMat3x3d')
     volume.addObject("TetrahedronSetTopologyContainer", name="TetraContainer", position="@../GelGridTopo/HexaTop.position")
     volume.addObject("TetrahedronSetTopologyModifier", name="TetraModifier")

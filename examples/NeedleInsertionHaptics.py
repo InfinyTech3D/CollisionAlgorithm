@@ -164,7 +164,7 @@ def createScene(root):
     FFTip.addObject("RigidMapping", globalToLocalCoords=True)
 
     volume = root.addChild("Volume")
-    volume.addObject("EulerImplicitIntegrationScheme", impulseBased=True)
+    volume.addObject("EulerImplicitIntegrationScheme")
     volume.addObject("EigenSimplicialLDLT", name="LinearSolver", template='CompressedRowSparseMatrixMat3x3d')
     volume.addObject("MeshGmshLoader", name="meshLoader", filename="mesh/liver.msh", scale3d=[0.08, 0.08, 0.08], translation=[0, -0.3, -0.2])
     volume.addObject("TetrahedronSetTopologyContainer", name="TetraContainer", position="@meshLoader.position", tetrahedra="@meshLoader.tetrahedra")
