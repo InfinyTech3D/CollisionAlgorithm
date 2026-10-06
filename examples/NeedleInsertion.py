@@ -107,7 +107,7 @@ def createScene(root):
     needleBase = needle.addChild("needleBase")
     needleBase.addObject("PointSetTopologyContainer", name="Container_base", position=[0, 0, 0])
     needleBase.addObject("MechanicalObject",name="mstate_base", template="Rigid3d",)
-    needleBase.addObject("RestShapeSpringsForceField",points=[0],stiffness=1e9, angularStiffness=1e11,external_points=[0],external_rest_shape="@/NeedleBaseMaster/mstate_baseMaster")
+    needleBase.addObject("RestShapeSpringsForceField",points=[0],stiffness=1e9, angularStiffness=1e4,external_points=[0],external_rest_shape="@/NeedleBaseMaster/mstate_baseMaster")
 
     needleBase.addObject("SubsetMapping", indices="0")
 

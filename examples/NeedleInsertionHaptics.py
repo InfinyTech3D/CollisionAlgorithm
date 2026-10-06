@@ -6,7 +6,7 @@ GeomagicActive = False
 g_needleLength=0.200 #(m)
 g_needleNumberOfElems=40 #(# of edges)
 g_needleBaseOffset=[0.180408,-0.131021,-0.165557]
-g_needleBaseOrientation=[0.196414, 0.165263, 0.0145748, -0.966643]
+g_needleBaseOrientation=[0.196364774, 0.165221581, 0.0145711472, -0.966400738]
 g_needleDirection=[0.313617996, -0.384349061, -0.868285409]
 g_needleRadius = 0.001 #(m)
 g_needleMechanicalParameters = {
@@ -123,7 +123,7 @@ def createScene(root):
     needle.addObject("UniformMass", vertexMass=f"{nodeMass} 1 {Ixx} 0 0 0 {Iyy} 0 0 0 {Izz}")
     needle.addObject("BeamFEMForceField", name="FEM", **g_needleMechanicalParameters)
     needle.addObject("LinearSolverConstraintCorrection", linearSolver="@LinearSolver")
-    needle.addObject("RestShapeSpringsForceField",points=[0],stiffness=1e9, angularStiffness=1e11,external_points=[0],external_rest_shape="@/ToolController/mstate_baseMaster")
+    needle.addObject("RestShapeSpringsForceField",points=[0],stiffness=1e9, angularStiffness=1e4,external_points=[0],external_rest_shape="@/ToolController/mstate_baseMaster")
 
     needleBase = needle.addChild("needleBase")
     needleBase.addObject("PointSetTopologyContainer", name="Container_base", position="@../mstate.position")
