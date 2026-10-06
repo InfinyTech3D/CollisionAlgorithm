@@ -25,7 +25,7 @@ g_gelMechanicalParameters = {
     "poissonRatio":0.3,
     "method":"large"
 }
-g_gelTotalMass = 1
+g_gelDensity = 1000 #(kg/m^3, soft tissue)
 g_cubeColor=[0.8, 0.34, 0.34, 0.3]
 g_gelFixedBoxROI=[-0.350, -0.280, -0.360, 0.130, 0.130, -0.200 ]
 
@@ -182,7 +182,7 @@ def createScene(root):
     volume.addObject("TetrahedronGeometry", name="geom_tetra", mstate="@mstate_gel", topology="@TetraContainer", draw=False)
     volume.addObject("PhongTriangleNormalHandler", name="InternalTriangles", geometry="@geom_tetra")
     volume.addObject("FastTetrahedralCorotationalForceField", name="FF",**g_gelMechanicalParameters)
-    volume.addObject("MeshMatrixMass", name="Mass",totalMass=g_gelTotalMass)
+    volume.addObject("MeshMatrixMass", name="Mass", massDensity=g_gelDensity)
 
     volume.addObject("BoxROI",name="BoxROI",box=g_gelFixedBoxROI)
     volume.addObject("RestShapeSpringsForceField", stiffness=1e3, angularStiffness=1e3, points="@BoxROI.indices"  )
