@@ -31,10 +31,11 @@ g_gelDensity = 1000 #(kg/m^3, soft tissue)
 g_cubeColor=[0.8, 0.34, 0.34, 0.3]
 g_gelFixedBoxROI=[-0.350, -0.280, -0.360, 0.130, 0.130, -0.200 ]
 
+
 # Function called when the scene graph is being created
 def createScene(root):
     root.gravity=[0,0,0]
-    root.dt = 0.001
+    root.dt = 0.01
 
     root.addObject("RequiredPlugin",pluginName=['Sofa.Component.AnimationLoop',
                                                 'Sofa.Component.Constraint.Lagrangian.Solver',
