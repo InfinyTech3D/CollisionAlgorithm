@@ -4,6 +4,8 @@ import Sofa
 g_needleLength=0.100 #(m)
 g_needleNumberOfElems=20 #(# of edges)
 g_needleBaseOffset=[0.04,0.04,0]
+g_needleBaseOrientation=[0, 0, 0, 1]
+g_needleDirection=[1, 0, 0]
 g_needleRadius = 0.001 #(m)
 g_needleMechanicalParameters = {
     "radius":g_needleRadius,
@@ -99,13 +101,13 @@ def createScene(root):
     needle = root.addChild("Needle")
     needle.addObject("EulerImplicitIntegrationScheme")
     needle.addObject("EigenSparseLU", name="LinearSolver", template="CompressedRowSparseMatrixd")
-    needle.addObject("EdgeSetTopologyContainer", name="Container", position=[[i * g_needleLength/(g_needleNumberOfElems) + g_needleBaseOffset[0], g_needleBaseOffset[1],  g_needleBaseOffset[2]] for i in range(g_needleNumberOfElems + 1)]
+    needle.addObject("EdgeSetTopologyContainer", name="Container", position=[[g_needleBaseOffset[k] + i * g_needleLength/g_needleNumberOfElems * g_needleDirection[k] for k in range(3)] for i in range(g_needleNumberOfElems + 1)]
                                                                  , edges=[[i, i+1] for i in range(g_needleNumberOfElems)])
 
     needle.addObject("EdgeSetTopologyModifier", name="modifier")
     needle.addObject("PointSetTopologyModifier", name="modifier2")
 
-    needle.addObject("MechanicalObject", name="mstate", template="Rigid3d", showObjectScale=0.0002, showObject=True, drawMode=1)
+    needle.addObject("MechanicalObject", name="mstate", template="Rigid3d", position=[[g_needleBaseOffset[k] + i * g_needleLength/g_needleNumberOfElems * g_needleDirection[k] for k in range(3)] + g_needleBaseOrientation for i in range(g_needleNumberOfElems + 1)], showObjectScale=0.0002, showObject=True, drawMode=1)
 
     # Per-unit-mass inertia of a cylindrical beam segment; the RigidMass default (identity) is ~1e5 too large
     segmentLength = g_needleLength / g_needleNumberOfElems
@@ -134,7 +136,7 @@ def createScene(root):
 
 
     needleTipCollision = needle.addChild("tipCollision")
-    needleTipCollision.addObject("MechanicalObject",name="mstate_tip",position=[g_needleLength+g_needleBaseOffset[0], g_needleBaseOffset[1], g_needleBaseOffset[2]],template="Vec3d",)
+    needleTipCollision.addObject("MechanicalObject",name="mstate_tip",position=[g_needleBaseOffset[k] + g_needleLength * g_needleDirection[k] for k in range(3)],template="Vec3d",)
     needleTipCollision.addObject("PointGeometry",name="geom_tip",mstate="@mstate_tip")
     needleTipCollision.addObject("RigidMapping",globalToLocalCoords=True,index=g_needleNumberOfElems)
 
@@ -212,7 +214,7 @@ def createScene(root):
         surfGeom="@Volume/collision/geom_tri", 
         shaftGeom="@Needle/bodyCollision/geom_body", 
         volGeom="@Volume/geom_tetra", 
-        punctureForceThreshold=2, 
+        punctureForceThreshold=5, 
         tipDistThreshold=0.003,
         drawcollision=True,
         drawPointsScale=0.0001
