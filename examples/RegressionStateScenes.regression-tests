@@ -15,6 +15,6 @@
 ../regression/references
 
 ### Regression Scenes ###
-NeedleInsertion.py 700 1e-5 1 70
-NeedleInsertionCycles.py 900 1e-5 1 90
-NeedleInsertionHaptics.py 5000 1e-5 1 500
+NeedleInsertion.py 700 1e-5 1 1
+NeedleInsertionCycles.py 900 1e-5 1 1
+NeedleInsertionHaptics.py 5000 1e-5 1 1
