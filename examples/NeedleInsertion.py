@@ -4,7 +4,7 @@ import Sofa
 g_needleLength=0.100 #(m)
 g_needleNumberOfElems=20 #(# of edges)
 g_needleBaseOffset=[0.04,0.04,0.05]
-g_needleBaseOrientation=[0, 0.706825225, 0, 0.707388225]
+g_needleBaseOrientation=[0, 0.706825, 0, 0.707388]
 g_needleDirection=[0.000796202173, 0, -0.999999683]
 g_needleRadius = 0.001 #(m)
 g_needleMechanicalParameters = {
