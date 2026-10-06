@@ -79,7 +79,7 @@ def createScene(root):
 
 
     needle = root.addChild("Needle")
-    needle.addObject("EulerImplicitIntegrationScheme", firstOrder=True)
+    needle.addObject("EulerImplicitIntegrationScheme")
     needle.addObject("EigenSparseLU", name="LinearSolver", template="CompressedRowSparseMatrixd")
     needle.addObject("EdgeSetTopologyContainer", name="Container", position=[[i * g_needleLength/(g_needleNumberOfElems) + g_needleBaseOffset[0], g_needleBaseOffset[1],  g_needleBaseOffset[2]] for i in range(g_needleNumberOfElems + 1)]
                                                                  , edges=[[i, i+1] for i in range(g_needleNumberOfElems)])

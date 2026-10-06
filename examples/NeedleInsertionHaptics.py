@@ -98,7 +98,7 @@ def createScene(root):
         toolController.addObject("ReadState", name="reader", filename="RecordState/NeedleInsertionHaptics.txt")
 
     needle = root.addChild("Needle")
-    needle.addObject("EulerImplicitIntegrationScheme", firstOrder=True)
+    needle.addObject("EulerImplicitIntegrationScheme")
     needle.addObject("EigenSparseLU", name="LinearSolver", template="CompressedRowSparseMatrixd")
     needle.addObject("EdgeSetTopologyContainer", name="Container"
         , position=[[g_needleBaseOffset[0], g_needleBaseOffset[1], -(i * g_needleLength/(g_needleNumberOfElems) + g_needleBaseOffset[2])] for i in range(g_needleNumberOfElems + 1)]
