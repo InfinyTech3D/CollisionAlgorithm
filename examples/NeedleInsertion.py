@@ -7,7 +7,7 @@ g_needleBaseOffset=[0.04,0.04,0]
 g_needleRadius = 0.001 #(m)
 g_needleMechanicalParameters = {
     "radius":g_needleRadius,
-    "youngModulus":1e12,
+    "youngModulus":2e11,
     "poissonRatio":0.3
 }
 g_needleDensity = 7850 #(kg/m^3, steel)
@@ -19,8 +19,8 @@ g_gelRegularGridParameters = {
     "max":[0.125, 0.125, -0.100]
 } #Again all in mm
 g_gelMechanicalParameters = {
-    "youngModulus":1e6,
-    "poissonRatio":0.45,
+    "youngModulus":1e4,
+    "poissonRatio":0.3,
     "method":"large"
 }
 g_gelDensity = 1000 #(kg/m^3, soft tissue)
@@ -29,8 +29,8 @@ g_gelFixedBoxROI=[-0.130, -0.130, -0.360, 0.130, 0.130, -0.300 ]
 
 # Function called when the scene graph is being created
 def createScene(root):
-    root.gravity=[0,0,-9.81]
-    root.dt = 0.01
+    root.gravity=[0,0,0]
+    root.dt = 0.001
 
     root.addObject("RequiredPlugin",pluginName=['Sofa.Component.AnimationLoop',
                                                 'Sofa.Component.Constraint.Lagrangian.Solver',
@@ -81,7 +81,7 @@ def createScene(root):
 
 
     needle = root.addChild("Needle")
-    needle.addObject("EulerImplicitIntegrationScheme", rayleighStiffness=0.1, rayleighMass=0.1)
+    needle.addObject("EulerImplicitIntegrationScheme")
     needle.addObject("EigenSparseLU", name="LinearSolver", template="CompressedRowSparseMatrixd")
     needle.addObject("EdgeSetTopologyContainer", name="Container", position=[[i * g_needleLength/(g_needleNumberOfElems) + g_needleBaseOffset[0], g_needleBaseOffset[1],  g_needleBaseOffset[2]] for i in range(g_needleNumberOfElems + 1)]
                                                                  , edges=[[i, i+1] for i in range(g_needleNumberOfElems)])
@@ -104,7 +104,7 @@ def createScene(root):
     needleBase = needle.addChild("needleBase")
     needleBase.addObject("PointSetTopologyContainer", name="Container_base", position=[0, 0, 0])
     needleBase.addObject("MechanicalObject",name="mstate_base", template="Rigid3d",)
-    needleBase.addObject("RestShapeSpringsForceField",points=[0],stiffness=1e8, angularStiffness=1e8,external_points=[0],external_rest_shape="@/NeedleBaseMaster/mstate_baseMaster")
+    needleBase.addObject("RestShapeSpringsForceField",points=[0],stiffness=1e9, angularStiffness=1e11,external_points=[0],external_rest_shape="@/NeedleBaseMaster/mstate_baseMaster")
 
     needleBase.addObject("SubsetMapping", indices="0")
 
@@ -160,7 +160,7 @@ def createScene(root):
     volume.addObject("MeshMatrixMass", name="Mass", massDensity=g_gelDensity)
 
     volume.addObject("BoxROI",name="BoxROI",box=g_gelFixedBoxROI)
-    volume.addObject("RestShapeSpringsForceField", stiffness=1e6,points="@BoxROI.indices"  )
+    volume.addObject("RestShapeSpringsForceField", stiffness=1e3, points="@BoxROI.indices")
 
     volume.addObject("LinearSolverConstraintCorrection", printLog=False, linearSolver="@LinearSolver")
 

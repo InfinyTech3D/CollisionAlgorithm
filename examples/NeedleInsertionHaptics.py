@@ -9,8 +9,8 @@ g_needleBaseOffset=[0.15,0.04,0.04]
 g_needleRadius = 0.001 #(m)
 g_needleMechanicalParameters = {
     "radius":g_needleRadius,
-    "youngModulus":2e13,
-    "poissonRatio":0.45
+    "youngModulus":2e11,
+    "poissonRatio":0.3
 }
 g_needleDensity = 7850 #(kg/m^3, steel)
 g_needleTotalMass = g_needleDensity * math.pi * g_needleRadius**2 * g_needleLength
@@ -21,7 +21,7 @@ g_gelRegularGridParameters = {
     "max":[0.125, 0.125, -0.100]
 } #Again all in mm
 g_gelMechanicalParameters = {
-    "youngModulus":4e4,
+    "youngModulus":1e4,
     "poissonRatio":0.3,
     "method":"large"
 }
@@ -32,7 +32,7 @@ g_gelFixedBoxROI=[-0.350, -0.280, -0.360, 0.130, 0.130, -0.200 ]
 # Function called when the scene graph is being created
 def createScene(root):
     root.gravity=[0,0,0]
-    root.dt = 0.01
+    root.dt = 0.001
 
     root.addObject("RequiredPlugin",pluginName=['Sofa.Component.AnimationLoop',
                                                 'Sofa.Component.Constraint.Lagrangian.Solver',
@@ -100,7 +100,7 @@ def createScene(root):
         toolController.addObject("ReadState", name="reader", filename="RecordState/NeedleInsertionHaptics.txt")
 
     needle = root.addChild("Needle")
-    needle.addObject("EulerImplicitIntegrationScheme", rayleighStiffness=0.1, rayleighMass=0.1)
+    needle.addObject("EulerImplicitIntegrationScheme")
     needle.addObject("EigenSparseLU", name="LinearSolver", template="CompressedRowSparseMatrixd")
     needle.addObject("EdgeSetTopologyContainer", name="Container"
         , position=[[g_needleBaseOffset[0], g_needleBaseOffset[1], -(i * g_needleLength/(g_needleNumberOfElems) + g_needleBaseOffset[2])] for i in range(g_needleNumberOfElems + 1)]
@@ -185,7 +185,7 @@ def createScene(root):
     volume.addObject("MeshMatrixMass", name="Mass", massDensity=g_gelDensity)
 
     volume.addObject("BoxROI",name="BoxROI",box=g_gelFixedBoxROI)
-    volume.addObject("RestShapeSpringsForceField", stiffness=1e3, angularStiffness=1e3, points="@BoxROI.indices"  )
+    volume.addObject("RestShapeSpringsForceField", stiffness=1e3, points="@BoxROI.indices")
 
     volume.addObject("LinearSolverConstraintCorrection", printLog=False, linearSolver="@LinearSolver")
 
