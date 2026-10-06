@@ -153,8 +153,7 @@ def createScene(root):
     FF = root.addChild("ForceFeedback")
     FF.addObject("MechanicalObject", name="mstate_lcp", template="Rigid3d"
         , showObject=False, src="@../Needle/needleBase/mstate_base")
-    if (GeomagicActive):
-        FF.addObject("LCPForceFeedback", name="lcp_ff", activate=1, forceCoef=1)
+    FF.addObject("LCPForceFeedback", name="lcp_ff", activate=1, forceCoef=1)
     FFCollision = FF.addChild("Collision")
     FFCollision.addObject("EdgeSetTopologyContainer", name="Container", src="@../../Needle/bodyCollision/Container_body")
     FFCollision.addObject("MechanicalObject", name="mstate_coli", constraint="@../../Needle/bodyCollision/mstate_body.constraint")
