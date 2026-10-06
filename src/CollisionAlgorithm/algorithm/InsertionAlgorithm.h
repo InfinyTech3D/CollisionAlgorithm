@@ -32,6 +32,7 @@ class SOFA_COLLISIONALGORITHM_API InsertionAlgorithm : public BaseAlgorithm
     Data<bool> d_projective, d_enablePuncture, d_enableInsertion, d_enableShaftCollision;
     Data<SReal> d_punctureForceThreshold, d_tipDistThreshold;
     ConstraintSolver::SPtr m_constraintSolver;
+    bool m_lambdaIsImpulse{false};
     std::vector<BaseProximity::SPtr> m_couplingPts;
     Data<bool> d_drawCollision, d_drawPoints;
     Data<SReal> d_drawPointsScale;
