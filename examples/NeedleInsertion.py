@@ -105,11 +105,9 @@ def createScene(root):
     needle.addObject("LinearSolverConstraintCorrection", printLog=False, linearSolver="@LinearSolver")
 
     needleBase = needle.addChild("needleBase")
-    needleBase.addObject("PointSetTopologyContainer", name="Container_base", position=[0, 0, 0])
-    needleBase.addObject("MechanicalObject",name="mstate_base", template="Rigid3d",)
+    needleBase.addObject("MechanicalObject",name="mstate_base", template="Rigid3d", position=[g_needleBaseOffset + g_needleBaseOrientation])
     needleBase.addObject("RestShapeSpringsForceField",points=[0],stiffness=1e9, angularStiffness=1e4,external_points=[0],external_rest_shape="@/NeedleBaseMaster/mstate_baseMaster")
-
-    needleBase.addObject("SubsetMapping", indices="0")
+    needleBase.addObject("RigidMapping", index=0, globalToLocalCoords=True)
 
     needleBodyCollision = needle.addChild("bodyCollision")
     needleBodyCollision.addObject("EdgeSetTopologyContainer", name="Container_body", src="@../Container")
