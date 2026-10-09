@@ -34,7 +34,7 @@ def createScene(root):
 
     root.addObject("RequiredPlugin",pluginName=['Sofa.Component.AnimationLoop',
                                                 'Sofa.Component.Constraint.Lagrangian.Solver',
-                                                'Sofa.Component.ODESolver.Backward',
+                                                'Sofa.Component.IntegrationScheme.Backward',
                                                 'Sofa.Component.Visual',
                                                 'Sofa.Component.Constraint.Lagrangian.Correction',
                                                 'Sofa.Component.Constraint.Lagrangian.Model',
@@ -98,7 +98,7 @@ def createScene(root):
         toolController.addObject("ReadState", name="reader", filename="RecordState/NeedleInsertionHaptics.txt")
 
     needle = root.addChild("Needle")
-    needle.addObject("EulerImplicitSolver", firstOrder=True)
+    needle.addObject("EulerImplicitIntegrationScheme", firstOrder=True)
     needle.addObject("EigenSparseLU", name="LinearSolver", template="CompressedRowSparseMatrixd")
     needle.addObject("EdgeSetTopologyContainer", name="Container"
         , position=[[g_needleBaseOffset[0], g_needleBaseOffset[1], -(i * g_needleLength/(g_needleNumberOfElems) + g_needleBaseOffset[2])] for i in range(g_needleNumberOfElems + 1)]
@@ -164,7 +164,7 @@ def createScene(root):
     FFTip.addObject("RigidMapping", globalToLocalCoords=True)
 
     volume = root.addChild("Volume")
-    volume.addObject("EulerImplicitSolver")
+    volume.addObject("EulerImplicitIntegrationScheme", impulseBased=True)
     volume.addObject("EigenSimplicialLDLT", name="LinearSolver", template='CompressedRowSparseMatrixMat3x3d')
     volume.addObject("MeshGmshLoader", name="meshLoader", filename="mesh/liver.msh", scale3d=[0.08, 0.08, 0.08], translation=[0, -0.3, -0.2])
     volume.addObject("TetrahedronSetTopologyContainer", name="TetraContainer", position="@meshLoader.position", tetrahedra="@meshLoader.tetrahedra")
