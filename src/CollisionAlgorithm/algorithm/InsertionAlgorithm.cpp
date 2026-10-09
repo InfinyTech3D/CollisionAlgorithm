@@ -1,5 +1,7 @@
 #include <CollisionAlgorithm/algorithm/InsertionAlgorithm.h>
 #include <sofa/core/ObjectFactory.h>
+#include <sofa/core/behavior/BaseIntegrationScheme.h>
+#include <optional>
 
 namespace sofa::collisionalgorithm
 {
@@ -56,6 +58,48 @@ void InsertionAlgorithm::init()
         this->getContext()->get<ConstraintSolver>(m_constraintSolver);
         msg_warning_when(!m_constraintSolver)
             << "No constraint solver found in context. Insertion algorithm is disabled.";
+
+        // The algorithm must determine whether an impulse-based formulation is in use.
+        // TODO: This check must be performed to enable backward compatibility. Relying on a
+        // force-based formulation should simplify the algorithm.
+        const auto lambdaIsImpulseFor =
+            [this](sofa::core::objectmodel::BaseObject* obj, const char* owner) -> std::optional<bool>
+        {
+            auto* scheme = obj
+                ? obj->getContext()->get<sofa::core::behavior::BaseIntegrationScheme>(
+                      sofa::core::objectmodel::BaseContext::SearchUp)
+                : nullptr;
+            if (!scheme) return std::nullopt;
+
+            // First-order schemes forcefully ignore the impulseBased flag.
+            // Notify user in case they set it.
+            const auto* firstOrderData = dynamic_cast<const Data<bool>*>(scheme->findData("firstOrder"));
+            const auto* impulseBasedData = dynamic_cast<const Data<bool>*>(scheme->findData("impulseBased"));
+            const bool firstOrder = firstOrderData && firstOrderData->getValue();
+            const bool impulseBased = impulseBasedData && impulseBasedData->getValue();
+
+            if (firstOrder)
+            {
+                msg_warning_when(impulseBased)
+                    << "impulseBased is ignored by the first-order integration scheme of the "
+                    << owner << " (" << scheme->getPathName() << ").";
+                return std::nullopt;
+            }
+            return impulseBased;
+        };
+
+        // The tissue and the needle integration schemes set impulseBased independently, so one
+        // may use impulses whereas the other one does not. A user should be warned.
+        // This check only applies to the needle and tissue both using 2nd-order schemes.
+        BaseGeometry* tissueGeom = l_surfGeom ? l_surfGeom.get() : l_volGeom.get();
+        const std::optional<bool> tissueImpulse = lambdaIsImpulseFor(tissueGeom, "tissue");
+        const std::optional<bool> needleImpulse = lambdaIsImpulseFor(l_tipGeom.get(), "needle");
+
+        msg_warning_when(tissueImpulse && needleImpulse && *tissueImpulse != *needleImpulse)
+            << "The tissue and needle integration schemes disagree on impulseBased; "
+               "lambda mixes impulses and forces.";
+        m_lambdaIsImpulse = tissueImpulse.value_or(false) || needleImpulse.value_or(false);
+
         if (d_punctureForceThreshold.getValue() < 0)
         {
             msg_warning() << d_punctureForceThreshold.getName() +
@@ -180,15 +224,14 @@ InsertionAlgorithm::AlgorithmOutput InsertionAlgorithm::puncturePhase()
                     l_tipGeom->getContext()->get<MechStateTipType>();
                 const auto& lambda =
                     m_constraintSolver->getLambda()[mstate.get()].read()->getValue();
-                const auto dt = l_tipGeom->getContext()->getDt();
                 SReal norm{0_sreal};
 
                 for (const auto& l : lambda)
                 {
                     norm += l.norm();
                 }
-                // Convert impulse to force
-                norm /= dt;
+                if (m_lambdaIsImpulse)
+                    norm /= l_tipGeom->getContext()->getDt();
 
                 if (norm > punctureForceThreshold)
                 {

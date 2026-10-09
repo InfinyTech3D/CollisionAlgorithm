@@ -1,15 +1,19 @@
+import math
 import Sofa
 
 g_needleLength=0.100 #(m)
 g_needleNumberOfElems=20 #(# of edges)
-g_needleBaseOffset=[0.04,0.04,0]
+g_needleBaseOffset=[0.04,0.04,0.02]
+g_needleBaseOrientation=[0, 0.706825, 0, 0.707388]
+g_needleDirection=[0.000796202173, 0, -0.999999683]
 g_needleRadius = 0.001 #(m)
 g_needleMechanicalParameters = {
     "radius":g_needleRadius,
-    "youngModulus":1e11,
+    "youngModulus":2e11,
     "poissonRatio":0.3
 }
-g_needleTotalMass=0.01
+g_needleDensity = 785 #(kg/m^3)
+g_needleTotalMass = g_needleDensity * math.pi * g_needleRadius**2 * g_needleLength
 
 g_gelRegularGridParameters = {
     "n":[8, 8, 8],
@@ -17,17 +21,18 @@ g_gelRegularGridParameters = {
     "max":[0.125, 0.125, -0.100]
 } #Again all in mm
 g_gelMechanicalParameters = {
-    "youngModulus":8e5,
-    "poissonRatio":0.45,
+    "youngModulus":1e4,
+    "poissonRatio":0.3,
     "method":"large"
 }
-g_gelTotalMass = 1
+g_gelDensity = 1000 #(kg/m^3, soft tissue)
 g_cubeColor=[0.8, 0.34, 0.34, 0.3]
 g_gelFixedBoxROI=[-0.130, -0.130, -0.360, 0.130, 0.130, -0.300 ]
 
+
 # Function called when the scene graph is being created
 def createScene(root):
-    root.gravity=[0,0,-9.81]
+    root.gravity=[0,0,0]
     root.dt = 0.01
 
     root.addObject("RequiredPlugin",pluginName=['Sofa.Component.AnimationLoop',
@@ -95,26 +100,30 @@ def createScene(root):
 
 
     needle = root.addChild("Needle")
-    needle.addObject("EulerImplicitIntegrationScheme", firstOrder=True)
+    needle.addObject("EulerImplicitIntegrationScheme")
     needle.addObject("EigenSparseLU", name="LinearSolver", template="CompressedRowSparseMatrixd")
-    needle.addObject("EdgeSetTopologyContainer", name="Container", position=[[i * g_needleLength/(g_needleNumberOfElems) + g_needleBaseOffset[0], g_needleBaseOffset[1],  g_needleBaseOffset[2]] for i in range(g_needleNumberOfElems + 1)]
+    needle.addObject("EdgeSetTopologyContainer", name="Container", position=[[g_needleBaseOffset[k] + i * g_needleLength/g_needleNumberOfElems * g_needleDirection[k] for k in range(3)] for i in range(g_needleNumberOfElems + 1)]
                                                                  , edges=[[i, i+1] for i in range(g_needleNumberOfElems)])
 
     needle.addObject("EdgeSetTopologyModifier", name="modifier")
     needle.addObject("PointSetTopologyModifier", name="modifier2")
 
-    needle.addObject("MechanicalObject", name="mstate", template="Rigid3d", showObjectScale=0.0002, showObject=True, drawMode=1)
+    needle.addObject("MechanicalObject", name="mstate", template="Rigid3d", position=[[g_needleBaseOffset[k] + i * g_needleLength/g_needleNumberOfElems * g_needleDirection[k] for k in range(3)] + g_needleBaseOrientation for i in range(g_needleNumberOfElems + 1)], showObjectScale=0.0002, showObject=True, drawMode=1)
 
-    needle.addObject("UniformMass", totalMass=g_needleTotalMass)
+    # Per-unit-mass inertia of a cylindrical beam segment; the RigidMass default (identity) is ~1e5 too large
+    segmentLength = g_needleLength / g_needleNumberOfElems
+    axialInertia = g_needleRadius**2 / 2
+    bendingInertia = g_needleRadius**2 / 4 + segmentLength**2 / 12
+    nodeMass = g_needleTotalMass / (g_needleNumberOfElems + 1)
+    Ixx, Iyy, Izz = axialInertia, bendingInertia, bendingInertia
+    needle.addObject("UniformMass", vertexMass=f"{nodeMass} 1 {Ixx} 0 0 0 {Iyy} 0 0 0 {Izz}")
     needle.addObject("BeamFEMForceField", name="FEM", **g_needleMechanicalParameters)
     needle.addObject("LinearSolverConstraintCorrection", printLog=False, linearSolver="@LinearSolver")
 
     needleBase = needle.addChild("needleBase")
-    needleBase.addObject("PointSetTopologyContainer", name="Container_base", position=[0, 0, 0])
-    needleBase.addObject("MechanicalObject",name="mstate_base", template="Rigid3d",)
-    needleBase.addObject("RestShapeSpringsForceField",points=[0],stiffness=1e8, angularStiffness=1e8,external_points=[0],external_rest_shape="@/NeedleBaseMaster/mstate_baseMaster")
-
-    needleBase.addObject("SubsetMapping", indices="0")
+    needleBase.addObject("MechanicalObject",name="mstate_base", template="Rigid3d", position=[g_needleBaseOffset + g_needleBaseOrientation])
+    needleBase.addObject("RestShapeSpringsForceField",points=[0],stiffness=1e9, angularStiffness=1e4,external_points=[0],external_rest_shape="@/NeedleBaseMaster/mstate_baseMaster")
+    needleBase.addObject("RigidMapping", index=0, globalToLocalCoords=True)
 
     needleBodyCollision = needle.addChild("bodyCollision")
     needleBodyCollision.addObject("EdgeSetTopologyContainer", name="Container_body", src="@../Container")
@@ -126,7 +135,7 @@ def createScene(root):
 
 
     needleTipCollision = needle.addChild("tipCollision")
-    needleTipCollision.addObject("MechanicalObject",name="mstate_tip",position=[g_needleLength+g_needleBaseOffset[0], g_needleBaseOffset[1], g_needleBaseOffset[2]],template="Vec3d",)
+    needleTipCollision.addObject("MechanicalObject",name="mstate_tip",position=[g_needleBaseOffset[k] + g_needleLength * g_needleDirection[k] for k in range(3)],template="Vec3d",)
     needleTipCollision.addObject("PointGeometry",name="geom_tip",mstate="@mstate_tip")
     needleTipCollision.addObject("RigidMapping",globalToLocalCoords=True,index=g_needleNumberOfElems)
 
@@ -156,7 +165,7 @@ def createScene(root):
 
 
     volume = root.addChild("Volume")
-    volume.addObject("EulerImplicitIntegrationScheme", impulseBased=True)
+    volume.addObject("EulerImplicitIntegrationScheme")
     volume.addObject("EigenSimplicialLDLT", name="LinearSolver", template='CompressedRowSparseMatrixMat3x3d')
     volume.addObject("TetrahedronSetTopologyContainer", name="TetraContainer", position="@../GelGridTopo/HexaTop.position")
     volume.addObject("TetrahedronSetTopologyModifier", name="TetraModifier")
@@ -166,10 +175,10 @@ def createScene(root):
     volume.addObject("TetrahedronGeometry", name="geom_tetra", mstate="@mstate_gel", topology="@TetraContainer", draw=False)
     volume.addObject("PhongTriangleNormalHandler", name="InternalTriangles", geometry="@geom_tetra")
     volume.addObject("FastTetrahedralCorotationalForceField", name="FF",**g_gelMechanicalParameters)
-    volume.addObject("MeshMatrixMass", name="Mass",totalMass=g_gelTotalMass)
+    volume.addObject("MeshMatrixMass", name="Mass", massDensity=g_gelDensity)
 
     volume.addObject("BoxROI",name="BoxROI",box=g_gelFixedBoxROI)
-    volume.addObject("RestShapeSpringsForceField", stiffness=1e6,points="@BoxROI.indices"  )
+    volume.addObject("RestShapeSpringsForceField", stiffness=1e3, points="@BoxROI.indices")
 
     volume.addObject("LinearSolverConstraintCorrection", printLog=False, linearSolver="@LinearSolver")
 
@@ -204,7 +213,7 @@ def createScene(root):
         surfGeom="@Volume/collision/geom_tri", 
         shaftGeom="@Needle/bodyCollision/geom_body", 
         volGeom="@Volume/geom_tetra", 
-        punctureForceThreshold=200, 
+        punctureForceThreshold=5, 
         tipDistThreshold=0.003,
         drawcollision=True,
         drawPointsScale=0.0001
